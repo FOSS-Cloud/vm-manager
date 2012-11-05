@@ -1,0 +1,9 @@
+
+.dual-select > div {  float: right; width: 49%; }
+.dual-select > div:first-child { float: left; }
+.dual-select ul    {  border: 1px solid #ccc; margin: 0; padding: 0; overflow: auto; background-color: white; }
+.dual-select li    {  list-style-type: none; cursor: pointer; padding: 4px; border-bottom: 1px solid #eee; }
+.dual-select li:hover { background-color: #cce; }
+.dual-select li.selected { background-color: #ccc; }
+.dual-select > div div { background-color:  transparent; border: 1px solid #ccc; border-top: 0; padding: 4px; }
+

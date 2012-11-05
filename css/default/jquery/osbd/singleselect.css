@@ -1,0 +1,8 @@
+
+.single-select > div {  float: left; width: 100%; }
+.single-select ul    {  border: 1px solid #ccc; margin: 0; padding: 0; overflow: auto; background-color: white; }
+.single-select li    {  list-style-type: none; cursor: pointer; padding: 4px; border-bottom: 1px solid #eee; }
+.single-select li:hover { background-color: #cce; }
+.single-select li.selected { background-color: #ccc; }
+.single-select > div div { background-color:  transparent; border: 1px solid #ccc; border-top: 0; padding: 4px; }
+

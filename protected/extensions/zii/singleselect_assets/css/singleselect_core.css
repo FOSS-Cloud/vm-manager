@@ -1,0 +1,8 @@
+
+button.ds_search {margin-right: 20px; }
+span.ds_close   { background: transparent url(../images/cross.png) no-repeat 2px 2px; width: 20px; height: 20px; }
+
+.single-select .toolbar input[type="text"] {
+	border: 1px solid #D3D3D3;
+	-moz-border-radius: 4px; -webkit-border-radius: 4px;
+}

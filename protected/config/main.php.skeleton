@@ -1,0 +1,139 @@
+<?php
+/*
+ * Copyright (C) 2012 FOSS-Group
+ *                    Germany
+ *                    http://www.foss-group.de
+ *                    support@foss-group.de
+ *
+ * Authors:
+ *  Christian Wittkowski <wittkowski@devroom.de>
+ *  Christian Affolter <christian.affolter@stepping-stone.ch>
+ *
+ * Licensed under the EUPL, Version 1.1 or <96> as soon they
+ * will be approved by the European Commission - subsequent
+ * versions of the EUPL (the "Licence");
+ * You may not use this work except in compliance with the
+ * Licence.
+ * You may obtain a copy of the Licence at:
+ *
+ * http://www.osor.eu/eupl
+ *
+ * Unless required by applicable law or agreed to in
+ * writing, software distributed under the Licence is
+ * distributed on an "AS IS" basis,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either
+ * express or implied.
+ * See the Licence for the specific language governing
+ * permissions and limitations under the Licence.
+ *
+ *
+ */
+
+
+// This is the main Web application configuration. Any writable
+// CWebApplication properties can be configured here.
+return array(
+        'basePath' => dirname(__FILE__) . DIRECTORY_SEPARATOR . '..',
+        'name' => 'FOSS-Cloud',
+        'language'          =>'en',
+        'homeUrl' => '/site/login',
+
+        // preloading 'log' component
+        'preload'=>array('log'),
+
+        // autoloading model and component classes
+        'import'=>array(
+                'application.models.*',
+                'application.components.*',
+                'application.extensions.ldaprecord.*',
+        ),
+
+        // application components
+        'components'=>array(
+                'user'=>array(
+                        'class' => 'COsbdUser',
+                        // enable cookie-based authentication
+                        'allowAutoLogin' => true,
+                        'vmListUrl' => '/vmList/index',
+                ),
+                // uncomment the following to enable URLs in path-format
+                'urlManager'=>array(
+                        'urlFormat' => 'path',
+                        'showScriptName' => false,
+                        'urlSuffix' => '.html',
+                        'rules' => array(
+                                '<controller:\w+>/<id:\d+>'=>'<controller>/view',
+                                '<controller:\w+>/<action:\w+>/<id:\d+>'=>'<controller>/<action>',
+                                '<controller:\w+>/<action:\w+>/<id:\d+>/<cid:\d+>'=>'<controller>/<action>',
+                                '<controller:\w+>/<action:\w+>/<view:\w+>'=>'<controller>/<action>',
+                                '<controller:\w+>/<action:\w+>'=>'<controller>/<action>',
+                        ),
+                ),
+                'errorHandler'=>array(
+                        // use 'site/error' action to display errors
+            'errorAction'=>'site/error',
+        ),
+                'log'=>array(
+                        'class'=>'CLogRouter',
+                        'routes'=>array(
+                                array(
+                                        'class'=>'CFileLogRoute',
+                                        'levels'=>'info, error, warning',
+                                ),
+                                // uncomment the following to log messages for ldap actions
+//                              array(
+//                                      'class' => 'CFileLogRoute',
+//                                      'levels' => 'profile',
+//                                      'categories' => 'ext.ldaprecord.*',
+//                                      'logFile' => 'ldaprecord.log'
+//                              ),
+                                // uncomment the following to show log messages on web pages
+//                              array(
+//                                      'class'=>'CWebLogRoute',
+//                                      //'showInFireBug' => true,
+//                              ),
+
+                        ),
+                ),
+                'ldap'=>array(
+                        'class' => 'ext.ldaprecord.LdapComponent',
+                        'serverclass' => 'COsbdLdapServer',
+                        'server' => 'ldaps://<FOSS-CLOUD-LDAP-HOSTNAME>/',
+                        'bind_rdn' => '<FOSS-CLOUD-LDAP-BIND-DN>',
+                        'bind_pwd' => '<FOSS-CLOUD-LDAP-PASSWORD>',
+                        'port' => 636,
+                        'base_dn' => 'dc=foss-cloud,dc=org',
+                        'passwordtype' => 'SSHA',
+                ),
+        ),
+
+        // application-level parameters that can be accessed
+        // using Yii::app()->params['paramName']
+        'params'=>array(
+                // this is used in contact page
+                'adminEmail'=>'webmaster@example.com',
+                'virtualization' => array(
+                        'version' => '0.6.3',
+                        'isochoosabledir' => '/var/virtualization/iso-choosable/',
+                        'isodir' => '/var/virtualization/iso/',
+                        'dynamicdir' => '/var/virtualization/vm-dynamic/',
+                        'persistentdir' => '/var/virtualization/vm-persistent/',
+                        'templatesdir' => '/var/virtualization/vm-templates/',
+                        'vmstoragepool' => '0f83f084-8080-413e-b558-b678e504836e',
+                        'vmtemplatestoragepool' => '5b77d2f6-061f-410c-8ee7-9e61da6f1927',
+
+                        'servers' => array(
+                               '<FOSS-CLOUD-LIBVIRT-HOSTNAME-01>' => 'qemu+tcp://<FOSS-CLOUD-LIBVIRT-HOSTNAME-01>/system',
+                               '<FOSS-CLOUD-LIBVIRT-HOSTNAME-02>' => 'qemu+tcp://<FOSS-CLOUD-LIBVIRT-HOSTNAME-01>/system',
+                        ),
+
+                        // Don't change the following params if you don't know what you are doing
+                        'spiceByName' => false,
+                ),
+                'easyThemes' => array(
+                ),
+        ),
+        // Modules
+        'modules' => array(
+        ),
+);
