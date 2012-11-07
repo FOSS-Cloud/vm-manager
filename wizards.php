@@ -41,7 +41,7 @@ return array(
 			'actions' => array(
 				array('name' => 'test1', 'title' => Yii::t('node', 'wizard.test1.title'),
 					'ssh' => array('host' => '$wizardNode.nodeip', 'username' => '$wizardNode.nodeuser', 'password' => '$wizardNode.nodepassword'),
-					'call' => '/usr/local/bin/node-integration-check', 'params' => array('--module', 'network'),
+					'call' => '/usr/libexec/foss-cloud/node-integration-check', 'params' => array('--module', 'network'),
 					'ok' => 0, 'return' => array(
 						0 => Yii::t('node', 'wizard.test1.0'),
 						1 => Yii::t('node', 'wizard.test1.1'),
@@ -56,7 +56,7 @@ return array(
 			'actions' => array(
 				array('name' => 'prov1', 'title' => Yii::t('node', 'wizard.prov1.title'),
 					'ssh' => array('host' => '$wizardNode.nodeip', 'username' => '$wizardNode.nodeuser', 'password' => '$wizardNode.nodepassword'),
-					'call' => '/usr/local/bin/node-integration-provisioning', 'params' => array('--module', 'filesystem', '--fstype', 'glusterfs', '--ip1', '127.0.0.1', '--ip2', '127.0.0.1'),
+					'call' => '/usr/libexec/foss-cloud/node-integration-provisioning', 'params' => array('--module', 'filesystem', '--fstype', 'glusterfs', '--ip1', '127.0.0.1', '--ip2', '127.0.0.1'),
 					'ok' => 0, 'return' => array(
 					0 => Yii::t('node', 'wizard.prov1.0'),
 					1 => Yii::t('node', 'wizard.prov1.1'),
