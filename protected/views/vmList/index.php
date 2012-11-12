@@ -65,8 +65,8 @@ else {
 				echo '<a href="' . $vmpool['spiceuri'] . '" style="float: right; padding-top: 3px;"><img src="' . $baseUrl . '/images/vm_login.png" title="use VM"/></a>';
 			}
 			else {
-				echo '<a href="#" style="float: left;" onclick="assignVm(\'' . $vmpool['dn'] . '\');">' . $name . '</a>';
-				echo '<a href="#" style="float: right; padding-top: 3px;" onclick="assignVm(\'' . $vmpool['dn'] . '\');"><img src="' . $baseUrl . '/images/vm_login.png" title="use dyn. VM"/></a>';
+				echo '<a href="#" style="float: left;" onclick="startVm(\'' . $vmpool['dn'] . '\');">' . $name . '</a>';
+				echo '<a href="#" style="float: right; padding-top: 3px;" onclick="startVm(\'' . $vmpool['dn'] . '\');"><img src="' . $baseUrl . '/images/vm_login.png" title="use dyn. VM"/></a>';
 			}
 			echo '<br class="clear" />';
 			echo $vmpool['description'];
