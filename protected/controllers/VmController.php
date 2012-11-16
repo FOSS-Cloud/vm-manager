@@ -751,7 +751,7 @@ EOS;
 								$data[$vm->sstVirtualMachine] = array_merge($answer, array('status' => 'running', 'mem' => $memory . ' / ' . $maxmemory, 'spice' => $vm->getSpiceUri()));
 							}
 							else if ('dynamic' == $vm->sstVirtualMachineType && ('Desktop' == $vm->sstVirtualMachineSubType || 'Server' == $vm->sstVirtualMachineSubType)) {
-								$data[$vm->sstVirtualMachine] = array_merge($answer, array('status' => 'removed'));
+//								$data[$vm->sstVirtualMachine] = array_merge($answer, array('status' => 'removed'));
 
 								// delete User assign
 /*
@@ -764,9 +764,9 @@ EOS;
 									$userAssign->removeVmAssignment($vm->sstVirtualMachine);
 								}
 */
-								@unlink($vm->devices->getDiskByName('vda')->sstSourceFile);
-								$vm->dhcp->delete(true);
-								$vm->delete(true);
+//								@unlink($vm->devices->getDiskByName('vda')->sstSourceFile);
+//								$vm->dhcp->delete(true);
+//								$vm->delete(true);
 							}
 							else {
 								$data[$vm->sstVirtualMachine] = array_merge($answer, array('status' => 'stopped'));
