@@ -118,7 +118,7 @@ class VmController extends Controller
 		if ('static' != $vmtype && 'dynamic' != $vmtype) {
 			$vmtype = 'static';
 		}
-		$criteria = array('attr'=>array('sstVirtualMachinePoolType' => $vmtype, 'sstVirtualMachinePool' => $vmpool));
+		$criteria = array('attr'=>array('sstVirtualMachinePoolType' => $vmtype));
 		$vmpools = CLdapRecord::model('LdapVmPool')->findAll($criteria);
 		$vmpool = Yii::app()->getSession()->get('vm.index.' . $vmtype . '.vmpool', null);
 		if (is_null($vmpool) && 1 == count($vmpools)) {
@@ -292,6 +292,8 @@ class VmController extends Controller
 							$userAssign->removeVmAssignment($vm->sstVirtualMachine);
 						}
 */
+						
+						$libvirt->undefineVm(array('libvirt' => $vm->node->getLibvirtUri(), 'name' => $vm->sstVirtualMachine));
 
 						// delete VM
 						$vm->delete(true);
@@ -422,8 +424,8 @@ class VmController extends Controller
 			else {
 				$s .= "<cell></cell>\n";
 			}
-			//$s .= '<cell>'. substr($vm->createTimestamp, 0, 8) . ' ' . substr($vm->createTimestamp, 8, 6) ."</cell>\n";
-			$s .= "<cell>???</cell>\n";
+			$s .= '<cell>'. $vm->formatCreateTimestamp('d.m.Y H:i:s') ."</cell>\n";
+			//$s .= "<cell>???</cell>\n";
 			if (0 == count($vm->people)) {
 				$s .= "<cell></cell>\n";
 			}
@@ -475,24 +477,18 @@ class VmController extends Controller
 
 		 */
 		echo <<<EOS
-    <table style="margin-bottom: 0px; font-size: 90%;"><tbody>
+    <table style="margin-bottom: 0px; font-size: 90%; width: auto;"><tbody>
     <tr>
       <td style="text-align: right"><b>Type:</b></td>
-      <td colspan="3">{$vm->sstVirtualMachineType}, {$vm->sstVirtualMachineSubType}</td>
-    </tr>
-    <tr>
+      <td>{$vm->sstVirtualMachineType}, {$vm->sstVirtualMachineSubType}</td>
       <td style="text-align: right"><b>VM UUID:</b></td>
-      <td colspan="3">{$vm->sstVirtualMachine}</td>
-    </tr>
-        <tr>
-      <td style="text-align: right"><b>VM Pool:</b></td>
-      <td colspan="3">{$vm->sstVirtualMachinePool}</td>
+      <td>{$vm->sstVirtualMachine}</td>
     </tr>
     <tr>
       <td style="text-align: right"><b>Memory:</b></td>
       <td>$memory</td>
-      <td rowspan="3" style="text-align: right">&nbsp;</td>
-      <td rowspan="3" style="height: 53px; width: 150px">&nbsp;</td>
+      <td style="text-align: right"><b>VM Pool:</b></td>
+      <td>{$vm->sstVirtualMachinePool}</td>
     </tr>
     <tr>
       <td style="text-align: right"><b>CPUs:</b></td>
@@ -507,7 +503,24 @@ EOS;
     </tr>
 EOS;
 		}
-    	echo '</tbody></table>';
+		echo '</tbody></table>';
+		if (!is_null($vm->backup)) {
+			echo <<< EOS
+	<h3>Backups</h3>
+	<table style="margin-bottom: 0px; width: auto;"><tbody>
+    <tr>
+      <th style="text-align: center"><b>Date</b></th>
+      <th style="text-align: center"><b>State</b></th>
+      <th style="text-align: center"><b>Action</b></th>
+					</tr>
+			
+EOS;
+			foreach($vm->backup->backups as $backup) {
+				echo '<tr><td>' . $backup->ou . '</td><td>' . $backup->sstProvisioningMode . '</td>';
+				echo '<td>&nbsp;</td></tr>';
+			}
+			echo '</tbody></table>';
+		}
 	}
 
 	public function actionGetUserGui() {

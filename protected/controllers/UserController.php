@@ -235,7 +235,7 @@ class UserController extends Controller
 			$model->telephone = $user->telephoneNumber;
 			$model->mobile = $user->mobile;
 			$model->userrole = ($user->isAdmin() ? 'admin' : 'user');
-			$model->language = 'en-GB'; //$user->preferredLanguage;
+			$model->language = $user->preferredLanguage;
 			$groups = $user->sstGroupUID;
 			if (!is_array($groups)) {
 				$groups = array($groups);
@@ -318,10 +318,10 @@ class UserController extends Controller
 		if(!$sidx) $sidx = 1;
 
 		$attr = array();
-		if (isset($_GET['name']) & '' != $_GET['name']) {
+		if (isset($_GET['name']) && '' != $_GET['name']) {
 			$attr['surname'] = '*' . $_GET['name'] . '*';
 		}
-		if (isset($_GET['email']) & '' != $_GET['email']) {
+		if (isset($_GET['email']) && '' != $_GET['email']) {
 			$attr['mail'] = '*' . $_GET['email'] . '*';
 		}
 		$users = CLdapRecord::model('LdapUser')->findAll(array('attr' => $attr));

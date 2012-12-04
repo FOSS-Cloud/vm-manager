@@ -141,7 +141,7 @@ abstract class CLdapRecord extends CModel {
 	 */
 	public function __isset($name)
 	{
-		if(isset($this->_attributes[strtolower($name)])) {
+		if(isset($this->_attributes[strtolower($name)]) && isset($this->_attributes[strtolower($name)]['value'])) {
 			return true;
 		}
 		else {
@@ -265,45 +265,61 @@ abstract class CLdapRecord extends CModel {
 			if (isset($this->_attributes[$name]['alias'])) {
 				return $this->setAttribute($this->_attributes[$name]['alias'], $value);
 			}
-			switch($this->_attributes[$name]['type']) {
-				case 'assozarray':
-					preg_match($this->_attributes[$name]['typedata'], $value, $parts);
-					//echo '<pre>' . $value . "\n" . $this->_attributes[$name]['typedata'] . "\n" . print_r($parts, true) . '</pre>';
-					if (3 != count($parts)) {
-						throw new CLdapException(Yii::t('LdapComponent.record', 'Parse value from attr \'{name}\' failed! (Wrong reg pattern)', array('{name}'=>$name)));
-					}
-					$this->_attributes[$name]['value'][$parts[1]] = $parts[2];
-					break;
-				case 'array':
-					if ($this->_overwrite) {
-						if (is_array($value)) {
+			if (isset($this->_attributes[$name]['type'])) {
+				switch($this->_attributes[$name]['type']) {
+					case 'assozarray':
+						preg_match($this->_attributes[$name]['typedata'], $value, $parts);
+						//echo '<pre>' . $value . "\n" . $this->_attributes[$name]['typedata'] . "\n" . print_r($parts, true) . '</pre>';
+						if (3 != count($parts)) {
+							throw new CLdapException(Yii::t('LdapComponent.record', 'Parse value from attr \'{name}\' failed! (Wrong reg pattern)', array('{name}'=>$name)));
+						}
+						$this->_attributes[$name]['value'][$parts[1]] = $parts[2];
+						break;
+					case 'array':
+						if ($this->_overwrite) {
+							if (is_array($value)) {
+								$this->_attributes[$name]['value'] = $value;
+							}
+							else {
+								$this->_attributes[$name]['value'] = array($value);
+							}
+						}
+						else {
+							$this->_attributes[$name]['value'][] = $value;
+						}
+						break;
+					default:
+						if (isset($this->_attributes[$name]['value']) && !$this->_overwrite) {
+							$this->_attributes[$name]['type'] = 'array';
+							$firstvalue = $this->_attributes[$name]['value'];
+							if (is_array($value)) {
+								$this->_attributes[$name]['value'] = array_merge(array($firstvalue), $value);
+							}
+							else {
+								$this->_attributes[$name]['value'] = array($firstvalue, $value);
+							}
+						}
+						else {
 							$this->_attributes[$name]['value'] = $value;
 						}
-						else {
-							$this->_attributes[$name]['value'] = array($value);
-						}
-					}
-					else {
-						$this->_attributes[$name]['value'][] = $value;
-					}
-					break;
-				default:
-					if (isset($this->_attributes[$name]['value']) && !$this->_overwrite) {
-						$this->_attributes[$name]['type'] = 'array';
-						$firstvalue = $this->_attributes[$name]['value'];
-						if (is_array($value)) {
-							$this->_attributes[$name]['value'] = array_merge(array($firstvalue), $value);
-						}
-						else {
-							$this->_attributes[$name]['value'] = array($firstvalue, $value);
-						}
-					}
-					else {
-						$this->_attributes[$name]['value'] = $value;
-					}
-					break;
+						break;
+				}
 			}
-
+			else {
+				if (isset($this->_attributes[$name]['value']) && !$this->_overwrite) {
+					$this->_attributes[$name]['type'] = 'array';
+					$firstvalue = $this->_attributes[$name]['value'];
+					if (is_array($value)) {
+						$this->_attributes[$name]['value'] = array_merge(array($firstvalue), $value);
+					}
+					else {
+						$this->_attributes[$name]['value'] = array($firstvalue, $value);
+					}
+				}
+				else {
+					$this->_attributes[$name]['value'] = $value;
+				}
+			}
 		}
 		else {
 			$attrtype = CLdapServer::getInstance()->getSchema()->getAttributeType($name);
@@ -700,6 +716,7 @@ abstract class CLdapRecord extends CModel {
 		$attributes=array();
 		foreach($this->_attributes as $name => $info) {
 			if (isset($info['alias'])) continue;
+			if (isset($info['readOnly']) && $info['readOnly']) continue;
 			$attributes[$name] = $info['value'];
 		}
 		if(is_array($names))
@@ -818,7 +835,7 @@ abstract class CLdapRecord extends CModel {
 		$item = null;
 		Yii::log('findByDn: ' . get_class($this), 'profile', 'ext.ldaprecord.CLdapRecord');
 		$server = CLdapServer::getInstance();
-		$entry = $server->findByDn($dn);
+		$entry = $server->findByDn($dn, $this);
 		if (1 < $entry['count']) {
 			throw new CLdapException(Yii::t('LdapComponent.record', 'Wrong result count ({count}) on findByDn'), array('{count}'=> $entry['count']));
 		}
@@ -907,7 +924,7 @@ abstract class CLdapRecord extends CModel {
 		$entry = array();
 		foreach($this->_attributes as $key => $value) {
 			if ('member' == $key) continue;
-			if ('dn' != $key && '' != $value['value']) {
+			if ('dn' !== $key && isset($value['value']) && '' !== $value['value'] && (!isset($value['readonly']) || !$value['readonly'])) {
 				if (is_array($value['value'])) {
 					if ('assozarray' == $value['type']) {
 						$retval = array();
@@ -965,7 +982,32 @@ abstract class CLdapRecord extends CModel {
 				$this->_attributes['member'] = array('mandatory' => false, 'type' => 'array');
 			}
 		}
+		$this->_attributes['createtimestamp'] = array('mandatory' => false, 'readOnly' => true, 'type' => '', 'value' => null);
+		$this->_attributes['modifytimestamp'] = array('mandatory' => false, 'readOnly' => true, 'type' => '', 'value' => null);
+
 		//echo '<pre>' . print_r($this->_attributes, true) . '</pre>';
+	}
+	
+	public function formatCreateTimestamp($format=null) {
+		$retval = null;
+		if (isset($this->createTimestamp)) {
+			if (is_null($format)) {
+				$retval = $this->createTimestamp;
+			}
+			else {
+				$retval = $this->formatTimestamp($this->createTimestamp, $format);
+			}
+		}
+		return $retval;
+	}
+	
+	protected function formatTimestamp($date, $format) {
+		/*
+		 * Timestamp format: 20111108221310Z
+		 */
+		$time = mktime (substr($date, 8, 2), substr($date, 10, 2), substr($date, 12, 2), 
+				substr($date, 4, 2), substr($date, 6, 2), substr($date, 0, 4));
+		return date($format, $time);
 	}
 }
 

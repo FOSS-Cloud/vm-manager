@@ -171,14 +171,20 @@ class LdapUser extends CLdapRecord {
 	public static function getLanguages() {
 		$retval = array();
 
-		$dh = opendir(Yii::app()->basePath . DIRECTORY_SEPARATOR . 'messages');
-		while (($file = readdir($dh)) !== false) {
-			if ('.' != $file && '..' != $file &&
-			is_dir(Yii::app()->basePath . DIRECTORY_SEPARATOR . 'messages' . DIRECTORY_SEPARATOR . $file)) {
-				$retval[$file] = $file;
+		if (!isset($_SESSION['languages'])) {
+			$dh = opendir(Yii::app()->basePath . DIRECTORY_SEPARATOR . 'messages');
+			while (($file = readdir($dh)) !== false) {
+				if ('.' != $file && '..' != $file &&
+				is_dir(Yii::app()->basePath . DIRECTORY_SEPARATOR . 'messages' . DIRECTORY_SEPARATOR . $file)) {
+					$retval[$file] = strtoupper($file);
+				}
 			}
+			closedir($dh);
+			$_SESSION['languages'] = $retval;
 		}
-		closedir($dh);
+		else {
+			$retval = $_SESSION['languages'];
+		}
 		return $retval;
 	}
 }

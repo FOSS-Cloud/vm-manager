@@ -105,57 +105,15 @@ class SiteController extends Controller
 	public function actionLogin()
 	{
 		if (!Yii::app()->user->isGuest) {
-			$this->redirect('vmList/index');//Yii::app()->user->vmListUrl);
-		}
-
-		$model = new LoginForm;
-
-		// if it is ajax validation request
-		if(isset($_POST['ajax']) && $_POST['ajax'] === 'login-form')
-		{
-			echo CActiveForm::validate($model);
-			Yii::app()->end();
-		}
-
-		// collect user input data
-		if(isset($_POST['LoginForm']))
-		{
-			$model->attributes = $_POST['LoginForm'];
-			// validate user input and redirect to the previous page if valid
-			if($model->validate() && $model->login())
-			{
-				$this->redirect('vmList/index');//Yii::app()->user->vmListUrl);
-			}
-		}
-
-		$realms = array();
-		$server = CLdapServer::getInstance();
-		$result = $server->search('ou=authentication,ou=virtualization,ou=services', '(&(objectClass=sstLDAPAuthenticationProvider))', array('ou'));
-		//echo '<pre>' . print_r($result, true) . '</pre>';
-		for($i=0; $i<$result['count']; $i++) {
-			$realms[$result[$i]['ou'][0]] = $result[$i]['ou'][0];
-		}
-
-		// display the login form
-		$this->render('login',array('model'=>$model, 'realms' => $realms));
-	}
-
-	/**
-	 * Displays the admin login page
-	 */
-	public function actionAdmin()
-	{
-		if (!Yii::app()->user->isGuest) {
-//			$this->redirect(Yii::app()->homeUrl);
 			if (Yii::app()->user->isAdmin) {
-				$this->redirect('/');
+				$this->redirect('site');
 			}
 			else {
-				$this->redirect(Yii::app()->user->vmListUrl);
+				$this->redirect('vmList/index');
 			}
 		}
 
-		$model = new LoginForm;
+		$model = new LoginForm();
 
 		// if it is ajax validation request
 		if(isset($_POST['ajax']) && $_POST['ajax'] === 'login-form')
@@ -168,14 +126,14 @@ class SiteController extends Controller
 		if(isset($_POST['LoginForm']))
 		{
 			$model->attributes = $_POST['LoginForm'];
-			// validate user input and redirect to the previous page if valid
+			// validate user input and redirect
 			if($model->validate() && $model->login())
 			{
 				if (Yii::app()->user->isAdmin) {
-					$this->redirect('/');
+					$this->redirect('site');
 				}
 				else {
-					$this->redirect(Yii::app()->user->vmListUrl);
+					$this->redirect('vmList/index');
 				}
 			}
 		}
@@ -188,7 +146,7 @@ class SiteController extends Controller
 			$realms[$result[$i]['ou'][0]] = $result[$i]['ou'][0];
 		}
 		// display the login form
-		$this->render('login',array('model'=>$model, 'title' => 'Admin Login', 'realms' => $realms));
+		$this->render('login',array('model'=>$model, 'realms' => $realms));
 	}
 
 	/**
@@ -207,12 +165,11 @@ class SiteController extends Controller
 	{
 		if (isset($_POST['lang'])) {
 			$lang = $_POST['lang'];
-			if (file_exists(Yii::app()->getBasePath() . '/messages/' . $lang)) {
-				Yii::app()->getSession()->add('lang', $lang);
+			if (!file_exists(Yii::app()->getBasePath() . '/messages/' . $lang)) {
+				$lang = 'en';
 			}
-			else {
-				Yii::app()->getSession()->add('lang', 'en');
-			}
+			Yii::app()->user->setState('lang', $lang);
+// 			Yii::app()->user->renewCookie();
 			$this->redirect(Yii::app()->getRequest()->getUrlReferrer());
 		}
 	}

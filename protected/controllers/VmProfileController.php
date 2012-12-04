@@ -95,7 +95,7 @@ class VmProfileController extends Controller
 		);
 	}
 	public function actionIndex() {
-		$this->render('index', array('copyaction' => $_GET['copyaction']));
+		$this->render('index', array('copyaction' => isset($_GET['copyaction']) ? $_GET['copyaction'] : null));
 	}
 
 	public function actionView() {

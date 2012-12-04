@@ -38,7 +38,7 @@
 	),
 ));
 	echo $form->hiddenField($model, 'dn');
-	echo $form->hiddenField($model, 'language');
+//	echo $form->hiddenField($model, 'language');
 	?>
 	<p class="note">Fields with <span class="required">*</span> are required.</p>
 	<div id="errormessage" class="errorMessage">
@@ -94,24 +94,20 @@
 			<?php echo $form->radioButtonList($model,'gender', LdapUser::getGender(), array('separator' => '', 'style' => 'clear: none; float: left; margin-right: 6px; margin-top: 8px; margin-bottom: 6px;' , 'labelOptions' => array('style' => 'float: left; margin: 8px 20px 6px 0;'))); ?>
 			<?php echo $form->error($model,'gender', array('style' => 'clear: both;')); ?>
 		</div>
-<!--
 		<div class="row">
 			<?php echo $form->labelEx($model,'language'); ?>
 <?php
-/*
 	$options = array();
 	$languages = array();
 	foreach(LdapUser::getLanguages() as $key => $name) {
 		$languages[$key] = $name;
-		$options[$key] = array('style' => 'background: url(' . Yii::app()->baseUrl . '/images/lang/' . $key . '.png) no-repeat scroll 1px 2px transparent; padding-left: 20px;');
+		$options[$key] = array(); //array('style' => 'background: url(' . Yii::app()->baseUrl . '/images/lang/' . $key . '.png) no-repeat scroll 1px 2px transparent; padding-left: 20px;');
 	}
-*/
 	//print_r($languages);
 ?>
-			<?php //echo $form->dropDownList($model,'language', $languages, array('prompt' => '', 'options' => $options, 'encode' => false, /*'style' => 'background: url(' . Yii::app()->baseUrl . '/images/lang/' . $key . '.png) no-repeat scroll 1px 2px transparent; padding-left: 20px;'*/)); ?>
-			<?php //echo $form->error($model,'language'); ?>
+			<?php echo $form->dropDownList($model,'language', $languages, array('prompt' => '', 'options' => $options, 'encode' => false, /*'style' => 'background: url(' . Yii::app()->baseUrl . '/images/lang/' . $key . '.png) no-repeat scroll 1px 2px transparent; padding-left: 20px;'*/)); ?>
+			<?php echo $form->error($model,'language'); ?>
 		</div>
- -->
 		<div class="row">
 			<?php echo $form->labelEx($model,'userrole'); ?>
 			<?php echo $form->radioButtonList($model,'userrole', LdapUser::getRoleNames(), array('separator' => '', 'style' => 'clear: none; float: left; margin-right: 6px; margin-top: 8px; margin-bottom: 6px;' , 'labelOptions' => array('style' => 'float: left; margin: 8px 20px 6px 0;'))); ?>

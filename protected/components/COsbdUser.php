@@ -68,36 +68,36 @@ class COsbdUser extends CWebUser {
 	 * @return boolean has this user the 'Admin' role
 	 */
 	public function getIsAdmin() {
-		return $this->getState('__admin', false);
+		return $this->getState('admin', false);
 	}
 	/**
 	 * @return boolean is this user from external LDAP
 	 */
 	public function getIsForeign() {
-		return $this->getState('__foreign', false);
+		return $this->getState('foreign', false);
 	}
 	/**
 	 * @return string the uid
 	 */
 	public function getUID() {
-		return $this->getState('__uid');
+		return $this->getState('uid');
 	}
 	/**
 	 * @return string the uid of the realm the user belongs to
 	 */
 	public function getRealm() {
-		return $this->getState('__realm');
+		return $this->getState('realm');
 	}
 	/**
 	 * @return string the uid of the customer the user belongs to
 	 */
 	public function getCustomerUID() {
-		return $this->getState('__customeruid');
+		return $this->getState('customeruid');
 	}
 	/**
 	 * @return string the uid of the reseller the user belongs to
 	 */
 	public function getResellerUID() {
-		return $this->getState('__reselleruid');
+		return $this->getState('reselleruid');
 	}
 }

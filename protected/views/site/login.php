@@ -41,7 +41,7 @@ $this->title = (isset($title) ? $title : 'Login');
 <div class="form">
 <?php $form=$this->beginWidget('CActiveForm', array(
 	'id'=>'login-form',
-	'enableAjaxValidation'=>true,
+	//'enableAjaxValidation'=>true,
 )); ?>
 
 	<p class="note">Fields with <span class="required">*</span> are required.</p>

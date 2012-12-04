@@ -40,6 +40,7 @@
 		'enctype' => 'multipart/form-data',
 	)
 ));
+$subnetcreate = $this->createUrl('subnet/index');
 
 echo CHtml::hiddenField('VmTemplateForm[path]', '');
 
@@ -306,8 +307,8 @@ EOS
 ?>
 			<div id="sstMemory_display" style="float: right;"><?= (null != $defaults ? $this->getHumanSize($model->sstMemory) : '&nbsp;');?></div>
 			<div class="<?=(is_null($profiles) ? 'span-16' : 'span-9')?>" style="clear: both; float: left; font-size: 80%;">
-				<div id="sstMemoryMin_display" style="float: left;"><?=$this->getHumanSize($defaults->sstMemoryMin);?></div>
-				<div id="sstMemoryMax_display" style="float: right; margin-right: 20px;"><?=$this->getHumanSize($defaults->sstMemoryMax);?></div>
+				<div id="sstMemoryMin_display" style="float: left;"><?=$this->getHumanSize(null != $defaults ? $defaults->sstMemoryMin : 1);?></div>
+				<div id="sstMemoryMax_display" style="float: right; margin-right: 20px;"><?=$this->getHumanSize(null != $defaults ? $defaults->sstMemoryMax : 1);?></div>
 			</div>
 			<?php echo $form->error($model,'sstMemory'); ?>
 		</div>
@@ -368,8 +369,8 @@ EOS
 ?>
 			<div id="sstVolumeCapacity_display" style="float: right;">&nbsp;</div>
 			<div class="<?=(is_null($profiles) ? 'span-16' : 'span-9')?>" style="clear: both; float: left; font-size: 80%;">
-				<div id="sstVolumeCapacityMin_display" style="float: left;"><?=$this->getHumanSize($defaults->VolumeCapacityMin);?></div>
-				<div id="sstVolumeCapacityMax_display" style="float: right; margin-right: 20px;"><?=$this->getHumanSize($defaults->VolumeCapacityMax);?></div>
+				<div id="sstVolumeCapacityMin_display" style="float: left;"><?=$this->getHumanSize(null != $defaults ? $defaults->VolumeCapacityMin : 1);?></div>
+				<div id="sstVolumeCapacityMax_display" style="float: right; margin-right: 20px;"><?=$this->getHumanSize(null != $defaults ? $defaults->VolumeCapacityMax : 1);?></div>
 			</div>
 			<?php echo $form->error($model,'sstVolumeCapacity'); ?>
 		</div>

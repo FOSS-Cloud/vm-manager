@@ -64,7 +64,7 @@ foreach($objclasses as $class) {
 	echo '<br/>';
 	$attrs = 'MUST:<br/><ul>';
 	foreach($class->getAttributes() as $name => $attribute) {
-		if ($attribute['mandatory']) {
+		if (isset($attribute['mandatory']) && $attribute['mandatory']) {
 			$attrs .= "<li>$name</li>";
 		}
 	}
@@ -73,7 +73,7 @@ foreach($objclasses as $class) {
 	}
 	$attrs = 'MAY:<br/><ul>';
 	foreach($class->getAttributes() as $name => $attribute) {
-		if (!$attribute['mandatory']) {
+		if (!isset($attribute['mandatory']) || !$attribute['mandatory']) {
 			$attrs .=  "<li>$name</li>";
 		}
 	}

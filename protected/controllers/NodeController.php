@@ -529,6 +529,7 @@ class NodeController extends WizardController
 						$ssh['host'] = $this->getParameter($ssh['host'], $steps);
 						$ssh['username'] = $this->getParameter($ssh['username'], $steps);
 						$ssh['password'] = $this->getParameter($ssh['password'], $steps);
+						// echo '<pre>ssh ' . print_r($ssh, true) . '</pre>';
 						try {
 							$data = Utils::executeScriptASyncSsh($ssh['host'], $ssh['username'], $ssh['password'], $call, $params);
 							$action = array('idx' => $idx, 'title' => $wizardAction['title'], 'pid' => $data['pid'], 'outputfile' => $data['outputfile'], 'retvalfile' => $data['retvalfile'],

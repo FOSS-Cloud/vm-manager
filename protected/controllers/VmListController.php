@@ -94,7 +94,7 @@ class VmListController extends Controller
 
 	public function actionIndex() {
 		$user = CLdapRecord::model('LdapUser')->findByDn('uid=' . Yii::app()->user->uid . ',ou=people');
-		$usergroups = Yii::app()->user->getState('__groupuids', array());
+		$usergroups = Yii::app()->user->getState('groupuids', array());
 		//echo 'User: ' . $user->uid . '; <pre>Usergroups: ' . print_r($usergroups, true) . '</pre>';
 		$data = array('vms'=>array(), 'vmpools'=>array());
 

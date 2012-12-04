@@ -64,6 +64,14 @@ class CPhpLibvirtDummy extends CPhpLibvirt {
 		return 2701;
 	}
 
+	public function defineVm($data) {
+		return true;
+	}
+
+	public function undefineVm($data) {
+		return true;
+	}
+		
 	public function rebootVm($data) {
 		return true;
 	}
@@ -102,7 +110,7 @@ class CPhpLibvirtDummy extends CPhpLibvirt {
 		return $retval;
 	}
 
-	public function createVolumeFile($host, $capacity) {
+	public function createVolumeFile($templatesdir, $pooluuid, $host, $capacity) {
 		$templatesdir = LdapStoragePoolDefinition::getPathByType('vm-templates');
 		$volumename = $this->generateUUID();
 

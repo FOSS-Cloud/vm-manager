@@ -243,6 +243,9 @@ class CLdapServer {
 		else if (isset($criteria['filter'])) {
 			$filter = $criteria['filter'];
 		}
+		else if (isset($criteria['filterName'])) {
+			$filter = $model->getFilter($criteria['filterName']);
+		}
 		else {
 			throw new CLdapException(Yii::t('LdapComponent.server', 'findAll: neither attr nor filter set in criteria!'));
 		}
@@ -254,15 +257,28 @@ class CLdapServer {
 		}
 		Yii::log("findAll: branchDn: $branchDn", 'profile', 'ext.ldaprecord.CLdapServer');
 		Yii::log("findAll: filter: $filter", 'profile', 'ext.ldaprecord.CLdapServer');
+		if (!is_null($model) && !$model instanceof LdapNameless) {
+			Yii::log("findAll: attrs: " . print_r($model->attributeNames(), true), 'profile', 'ext.ldaprecord.CLdapServer');
+		}
 		if (isset($criteria['depth']) && $criteria['depth']) {
-			$result = @ldap_search($this->_connection, $branchDn, $filter);
+			if (!is_null($model) && !$model instanceof LdapNameless) {
+				$result = @ldap_search($this->_connection, $branchDn, $filter, $model->attributeNames());
+			}
+			else {
+				$result = @ldap_search($this->_connection, $branchDn, $filter);
+			}
 			if ($result === false) {
 				throw new CLdapException(Yii::t('LdapComponent.server', 'ldap_search failt ({errno}): {message}',
 					array('{errno}'=>ldap_errno($this->_connection), '{message}'=>ldap_error($this->_connection))), ldap_errno($this->_connection));
 			}
 		}
 		else {
-			$result = @ldap_list($this->_connection, $branchDn, $filter);
+			if (!is_null($model) && !$model instanceof LdapNameless) {
+				$result = @ldap_list($this->_connection, $branchDn, $filter, $model->attributeNames());
+			}
+			else {
+				$result = @ldap_list($this->_connection, $branchDn, $filter);
+			}
 			if ($result === false) {
 				throw new CLdapException(Yii::t('LdapComponent.server', 'ldap_list failt ({errno}): {message}',
 					array('{errno}'=>ldap_errno($this->_connection), '{message}'=>ldap_error($this->_connection))), ldap_errno($this->_connection));
@@ -359,15 +375,21 @@ class CLdapServer {
 	 * Find one ldap record satisfying the Dn.
 	 *
 	 * @param string $dn
+	 * @param CLdapRecord $model
 	 * @return array a complete result information in a multi-dimensional array on success and false on error.
 	 * @throws CLdapException if the LDAP server generates an error.
 	 */
-	public function findByDn($dn) {
+	public function findByDn($dn, $model=null) {
 		if (strpos($dn, $this->_config['base_dn']) === false) {
 			$dn = $dn . ',' . $this->_config['base_dn'];
 		}
 		Yii::log("findByDn: $dn", 'profile', 'ext.ldaprecord.CLdapServer');
-		$result = @ldap_read($this->_connection, $dn, '(objectclass=*)');
+		if (is_null($model)) {
+			$result = @ldap_read($this->_connection, $dn, '(objectclass=*)');
+		}
+		else {
+			$result = @ldap_read($this->_connection, $dn, '(objectclass=*)', $model->attributeNames());
+		}
 		if ($result === false) {
 			return null;
 //			throw new CLdapException(Yii::t('LdapComponent.server', 'ldap_read failt ({errno}): {message}',

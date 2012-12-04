@@ -715,7 +715,7 @@ class VmPoolController extends Controller
 		foreach($subnets as $subnet) {
 			$ranges = array();
 			foreach($subnet->ranges as $range) {
-				if ($range->sstNetworkType == $type && (!$range->isUsed() || $ownRanges[0]->ou == $range->cn)) {
+				if ($range->sstNetworkType == $type && (!$range->isUsed() || (0 < count($ownRanges) && $ownRanges[0]->ou == $range->cn))) {
 					$ranges[$range->cn] = $range->getRangeAsString();
 				}
 			}

@@ -34,12 +34,6 @@ class LdapGroup extends CLdapRecord {
 	protected $_dnAttributes = array('uid');
 	protected $_objectClasses = array('sstGroupObjectClass', 'sstRelationship', 'labeledURIObject', 'top');
 
-	public function relations()
-	{
-		return array(
-		);
-	}
-
 	/**
 	 * Returns the static model of the specified LDAP class.
 	 * @return CLdapRecord the static model class

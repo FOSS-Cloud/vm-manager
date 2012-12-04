@@ -39,19 +39,19 @@ class UserForm extends CFormModel {
 	public $telephone;
 	public $mobile;
 	public $userrole = 'user';
-	public $language = 'en-GB';
+	public $language = 'en';
 	public $usergroups = array();
 
 	public function rules()
 	{
 		return array(
-			array('dn, surname, givenname, username, mail, gender, telephone, userrole, language', 'required', 'on' => 'update'),
-			array('password, passwordcheck, usergroups', 'safe', 'on' => 'update'),
-			array('surname, givenname, username, mail, password, passwordcheck, gender, telephone, userrole, language', 'required', 'on' => 'create'),
-			array('usergroups', 'safe', 'on' => 'create'),
-			array('username', 'match', 'pattern' => '/^[a-z0-9_]*$/', 'message' => Yii::t('user', 'Please use only a-z, 0-9 and the _ character.')),
+			array('dn, surname, givenname, username, mail, gender, telephone, userrole', 'required', 'on' => 'update'),
+			array('password, passwordcheck, language, usergroups', 'safe', 'on' => 'update'),
+			array('surname, givenname, username, mail, password, passwordcheck, gender, telephone, userrole', 'required', 'on' => 'create'),
+			array('dn, language, usergroups', 'safe', 'on' => 'create'),
+			array('username', 'match', 'pattern' => '/^[a-z0-9_]*$/', 'message' => Yii::t('user', 'Please use only<br/>a-z, 0-9 and the _ character.')),
 			array('mail', 'email'),
-			array('telephone, mobile', 'match', 'pattern' => '/^[0-9\s\+\/\(\)]*$/', 'message' => Yii::t('user', '{attribute} is invalid. Please use only<br/>"0-9+/()" characters and blank.')),
+			array('telephone, mobile', 'match', 'pattern' => '/^[0-9\s\+\/\(\)]*$/', 'message' => Yii::t('user', 'Please use only<br/>"0-9+()" characters and blank.')),
 			array('passwordcheck', 'compare', 'compareAttribute' => 'password', 'allowEmpty' => true, 'on' => 'update'),
 			array('passwordcheck', 'compare', 'compareAttribute' => 'password', 'allowEmpty' => false,'on' => 'create'),
 			array('mail', 'uniqueEmail', 'filter'=>'(mail={mail})'),
@@ -61,13 +61,13 @@ class UserForm extends CFormModel {
 
 	public function uniqueEmail($attribute, $params) {
 		$check = true;
-		if (!is_null($this->dn)) {
+		if (!is_null($this->dn) && '' != $this->dn) {
 			$user = CLdapRecord::model('LdapUser')->findByDn($this->dn);
 			if ($user->mail == $this->$attribute) {
 				$check = false;
 			}
 		}
-		if ($check) {
+		if ($check && '' !== $this->$attribute) {
 			$server = CLdapServer::getInstance();
 			$criteria = array();
 			$count = 0;
@@ -83,7 +83,7 @@ class UserForm extends CFormModel {
 
 	public function uniqueUsername($attribute, $params) {
 		$check = true;
-		if (!is_null($this->dn)) {
+		if (!is_null($this->dn) && '' != $this->dn) {
 			$user = CLdapRecord::model('LdapUser')->findByDn($this->dn);
 			if ($user->cn == $this->$attribute) {
 				$check = false;
@@ -118,8 +118,8 @@ class UserForm extends CFormModel {
 			'gender' => Yii::t('user', 'gender'),
 			'telephone' => Yii::t('user', 'telephone'),
 			'mobile' => Yii::t('user', 'mobile'),
-			'userrole' => Yii::T('user', 'userrole'),
-			'language' => Yii::T('user', 'language'),
+			'userrole' => Yii::t('user', 'userrole'),
+			'language' => Yii::t('user', 'language'),
 		);
 	}
 

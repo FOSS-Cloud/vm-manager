@@ -117,11 +117,39 @@ class LdapVmPool extends CLdapRecord {
 		$vmcopy = new LdapVm();
 		/* Don't change the labeledURI; must refer to a default Profile */
 		$vmcopy->attributes = $golden->attributes;
-
 		$vmcopy->setOverwrite(true);
+
 		$vmcopy->sstVirtualMachine = CPhpLibvirt::getInstance()->generateUUID();
 		$vmcopy->sstVirtualMachineType = 'dynamic';
 		$vmcopy->sstVirtualMachineSubType = 'Desktop';
+
+		// find best Node to start on */
+		$vmcount = 12345678;
+		$nodename = '';
+		//echo 'find Node for dyn. VM from Pool: ' . $this->sstVirtualMachinePool . '<br/>';
+		foreach($this->nodes as $node) {
+			//echo 'checking node: ' . $node->ou;
+			$name = $node->ou;
+			$node = LdapNode::model()->findByDn('sstNode=' . $node->ou . ',ou=nodes,ou=virtualization,ou=services');
+			if (!is_null($node)) {
+				//echo '; found';
+				$nodecount = 0;
+				foreach($node->vms as $vm) {
+					if ($vm->sstVirtualMachinePool === $this->sstVirtualMachinePool) {
+						$nodecount++;
+					}
+				}
+				//echo '; vms: ' . $nodecount;
+				if ($nodecount < $vmcout) {
+					$vmcount = $nodecount;
+					$nodename = $node->getName();
+					//echo '; node set!<br/>';
+				}
+			}
+		}
+		if ('' !== $nodename) {
+			$vmcopy->sstNode = $nodename;
+		}
 
 		Yii::log('Try to create \'' . $vmcopy->sstVirtualMachine . '\' from \'' . $golden->sstVirtualMachine, 'profile', 'ext.ldaprecord.CLdapRecord');
 

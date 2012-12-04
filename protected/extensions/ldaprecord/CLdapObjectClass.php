@@ -134,12 +134,12 @@ class CLdapObjectClass {
 			$attrs = explode(' $ ', $matches['must']);
 			foreach ($attrs as $attr) {
 				$name = strtolower(trim($attr));
-				$this->_attributes[$name] = array('mandatory' => true, 'type' => '');
+				$this->_attributes[$name] = array('mandatory' => true, 'type' => '', 'value' => null);
 				$attrtype = $schema->getAttributeType($name);
 				if (!is_null($attrtype)) {
 					foreach($attrtype->getNames() as $n) {
 						if ($name == $n) continue;
-						$this->_attributes[$n] = array('alias' => $name);
+						$this->_attributes[$n] = array('alias' => $name, 'value' => null);
 					}
 				}
 				// ToDo: handle attrtype is null
@@ -150,12 +150,12 @@ class CLdapObjectClass {
 			$attrs = explode(' $ ', $matches['may']);
 			foreach ($attrs as $attr) {
 				$name = strtolower(trim($attr));
-				$this->_attributes[$name] = array('mandatory' => false, 'type' => '');
+				$this->_attributes[$name] = array('mandatory' => false, 'type' => '', 'value' => null);
 				$attrtype = $schema->getAttributeType($name);
 				if (!is_null($attrtype)) {
 					foreach($attrtype->getNames() as $n) {
 						if ($name == $n) continue;
-						$this->_attributes[$n] = array('alias' => $name);
+						$this->_attributes[$n] = array('alias' => $name, 'value' => null);
 					}
 				}
 				// ToDo: handle attrtype is null

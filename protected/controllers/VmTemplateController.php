@@ -107,7 +107,7 @@ class VmTemplateController extends Controller
 		);
 	}
 	public function actionIndex() {
-		$this->render('index', array('copyaction' => $_GET['copyaction']));
+		$this->render('index', array('copyaction' => isset($_GET['copyaction']) ? $_GET['copyaction'] : null));
 	}
 
 	public function actionView() {
@@ -205,6 +205,9 @@ class VmTemplateController extends Controller
 					$result->sstVirtualMachinePool = $vmpool->sstVirtualMachinePool;
 				}
 
+				$nodes = CLdapRecord::model('LdapNode')->findAll(array('attr'=>array('sstNode' => $model->node)));
+				$node = $nodes[0];
+				
 				// 'save' devices before
 				$rdevices = $result->devices;
 				/* Create a copy to be sure that we will write a new record */
@@ -213,11 +216,14 @@ class VmTemplateController extends Controller
 				$templatevm->attributes = $result->attributes;
 				/* Delete all objectclasses and let the LdapVMFromProfile set them */
 				$templatevm->removeAttribute(array('objectClass', 'member'));
-				$templatevm->setBranchDn('ou=virtual machine templates,ou=virtualization,ou=services');
+				$templatevm->setBranchDn('ou=virtual machines,ou=virtualization,ou=services');
 
-				$templatevm->sstSpicePort = CPhpLibvirt::getInstance()->nextSpicePort($model->node);
+				$templatevm->sstSpicePort = CPhpLibvirt::getInstance()->nextSpicePort($node->sstNode);
 				$templatevm->sstSpicePassword = CPhpLibvirt::getInstance()->generateSpicePassword();
 				$templatevm->save();
+
+				// Workaround to get Node
+				$templatevm = CLdapRecord::model('LdapVmFromTemplate')->findByDn($templatevm->getDn());
 
 				$devices = new LdapVmDevice();
 				//echo '<pre>' . print_r($result->devices, true) . '</pre>';
@@ -225,9 +231,7 @@ class VmTemplateController extends Controller
 				$devices->setBranchDn($templatevm->dn);
 				//echo '<pre>' . print_r($devices, true) . '</pre>';
 				$devices->save();
-
-				$nodes = CLdapRecord::model('LdapNode')->findAll(array('attr'=>array('sstNode' => $model->node)));
-				$node = $nodes[0];
+				
 				foreach($rdevices->disks as $rdisk) {
 					$disk = new LdapVmDeviceDisk();
 					//$rdisk->removeAttributesByObjectClass('sstVirtualizationVirtualMachineDiskDefaults');
@@ -277,6 +281,8 @@ class VmTemplateController extends Controller
 					$dhcpvm->dhcpStatements = 'fixed-address ' . $range->getFreeIp();
 					$dhcpvm->save();
 
+					$ret = CPhpLibvirt::getInstance()->defineVm($templatevm->getStartParams());
+						
 					$this->redirect(array('index'));
 				}
 			}
@@ -286,11 +292,11 @@ class VmTemplateController extends Controller
 			$criteria = array('attr'=>array('sstVirtualMachinePoolType'=>'template'));
 			//$criteria = array('filter'=>'(|(sstVirtualMachinePoolType=template)(sstVirtualMachinePoolType=static)(sstVirtualMachinePoolType=dynamic))');
 			$vmpools = CLdapRecord::model('LdapVmPool')->findAll($criteria);
-
+/*
 			$nodes = array();
 			$criteria = array('attr'=>array());
 			$nodes = CLdapRecord::model('LdapNode')->findAll($criteria);
-
+*/
 			$profiles = array();
 			$subtree = CLdapRecord::model('LdapSubTree');
 			$subtree->setBranchDn('ou=virtual machine profiles,ou=virtualization,ou=services');
@@ -300,7 +306,7 @@ class VmTemplateController extends Controller
 			$this->render('create',array(
 				'model' => $model,
 				'vmpools' => $this->createDropdownFromLdapRecords($vmpools, 'sstVirtualMachinePool', 'sstDisplayName'),
-				'nodes' => $this->createDropdownFromLdapRecords($nodes, 'sstNode', 'sstNode'),
+				'nodes' => array(), //$this->createDropdownFromLdapRecords($nodes, 'sstNode', 'sstNode'),
 				'profiles' => $this->getProfilesFromSubTree($profiles),
 				'defaults' => null,
 			));
@@ -445,6 +451,9 @@ class VmTemplateController extends Controller
 							$userAssign->removeVmAssignment($vm->sstVirtualMachine);
 						}
 */
+						
+						$libvirt->undefineVm(array('libvirt' => $vm->node->getLibvirtUri(), 'name' => $vm->sstVirtualMachine));
+
 						// delete VM Template
 						$vm->delete(true);
 					}
@@ -523,8 +532,10 @@ class VmTemplateController extends Controller
 				if ('disk' == $disk->sstDevice) {
 					$persistentdir = substr($storagepool->sstStoragePoolURI, 7);
 					$copydata = CPhpLibvirt::getInstance()->copyVolumeFile($persistentdir, $disk);
+					$copydata['Dn'] = $vm->getDn();
 					$disk->sstVolumeName = $copydata['VolumeName'];
 					$disk->sstSourceFile = $copydata['SourceFile'];
+					$_SESSION['copyVolumeFile'] = $copydata;
 				}
 				$disk->setBranchDn($devices->dn);
 				$disk->save();
@@ -787,6 +798,7 @@ class VmTemplateController extends Controller
 		$sord = $_GET['sord'];
 
 		$criteria = array('attr'=>array());
+		$criteria['attr']['sstVirtualMachineType'] = 'template';
 		if (isset($_GET['sstDisplayName'])) {
 			$criteria['attr']['sstDisplayName'] = '*' . $_GET['sstDisplayName'] . '*';
 		}
@@ -1026,6 +1038,15 @@ class VmTemplateController extends Controller
 			$json = array('err' => true, 'msg' => Yii::t('vmtemplate', 'Still copying!'));
 		}
 		else {
+			if (isset($_SESSION['copyVolumeFile'])) {
+				chmod($_SESSION['copyVolumeFile']['SourceFile'], 660);
+				unset($_SESSION['copyVolumeFile']);
+			}
+			$vm = CLdapRecord::model('LdapVm')->findByDn($_SESSION['copyVolumeFile']['Dn']);
+			if (!is_null($vm)) {
+				$ret = CPhpLibvirt::getInstance()->defineVm($vm->getStartParams());
+			}
+							
 			$json = array('err' => false, 'msg' => Yii::t('vmtemplate', 'Finished!'));
 		}
 		$this->sendJsonAnswer($json);

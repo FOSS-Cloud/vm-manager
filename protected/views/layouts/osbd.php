@@ -48,10 +48,10 @@
 </head>
 <body>
 <?php
-	$lang = Yii::app()->getSession()->get('lang', 'en');
+	$lang = Yii::app()->user->getState('lang', 'en');
 	$version = Yii::app()->getSession()->get('version', null);
 	if (is_null($version)) {
-		$filename = '/etc/os-release';
+		$filename = 'C:/Develop/cvsHome/web/osbd/etc/os-release';
 		if (is_file($filename)) {
 			$params = parse_ini_file($filename);
 			$version = $params['VERSION'];
@@ -88,10 +88,12 @@
 				array('label'=>'Home', 'url'=>array('/site/login')),
 				array('label'=>'About', 'url'=>array('/site/page', 'view'=>'about')),
 				array('label'=>'Contact', 'url'=>array('/site/page', 'view'=>'contact')),
+/*
 				array('label'=>'Admin', 'url'=>array('/site/admin'),
 					'visible'=>Yii::app()->user->isGuest,
 					'itemOptions' => array('style' => 'float: right')
 				),
+*/
 				array('label'=>'Logout ('.Yii::app()->user->name.')', 'url'=>array('/site/logout'),
 					'visible'=>!Yii::app()->user->isGuest,
 					'itemOptions' => array('style' => 'float: right')

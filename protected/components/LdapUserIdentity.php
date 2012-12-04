@@ -202,13 +202,20 @@ class LdapUserIdentity extends CUserIdentity
 						}
 
 						$this->errorCode = self::ERROR_NONE;
-						Yii::app()->user->setState('__uid', $user->uid);
-						Yii::app()->user->setState('__groupuids', $groups);
-						Yii::app()->user->setState('__realm', $this->realm);
-						Yii::app()->user->setState('__admin', false);
-						Yii::app()->user->setState('__customeruid', $realm->sstBelongsToCustomerUID);
-						Yii::app()->user->setState('__reselleruid', $realm->sstBelongsToResellerUID);
+// 						Yii::app()->user->setState('__uid', $user->uid);
+// 						Yii::app()->user->setState('__groupuids', $groups);
+// 						Yii::app()->user->setState('__realm', $this->realm);
+// 						Yii::app()->user->setState('__admin', false);
+// 						Yii::app()->user->setState('__customeruid', $realm->sstBelongsToCustomerUID);
+// 						Yii::app()->user->setState('__reselleruid', $realm->sstBelongsToResellerUID);
 
+						$this->setState('uid', $user->uid);
+						$this->setState('groupuids', $groups);
+						$this->setState('realm', $this->realm);
+						$this->setState('admin', false);
+						$this->setState('customeruid', $realm->sstBelongsToCustomerUID);
+						$this->setState('reselleruid', $realm->sstBelongsToResellerUID);
+						
 						ldap_unbind($connection);
 					}
 				}
@@ -217,10 +224,7 @@ class LdapUserIdentity extends CUserIdentity
 					$usersearch = LdapNameless::model()->findByDn('ou=User Search,ou=internal searches,ou=configuration,ou=virtualization,ou=services');
 					$userauth = LdapNameless::model()->findByDn('ou=User Authentication,ou=internal searches,ou=configuration,ou=virtualization,ou=services');
 					$usergroupsearch = LdapNameless::model()->findByDn('ou=User Group Search,ou=internal searches,ou=configuration,ou=virtualization,ou=services');
-//					$criteria = array(
-//						'branchDn' => 'ou=people',
-//						'filter' => '(&(objectClass=sstPerson)(cn=' . $this->username . ')(!(sstLDAPForeignStaticAttribute=*)))',
-//					);
+
 					$this->authenticateIntern($realm, $usersearch, $userauth, $usergroupsearch);
 				}
 			}
@@ -252,7 +256,6 @@ class LdapUserIdentity extends CUserIdentity
 				$this->errorCode = self::ERROR_PASSWORD_INVALID;
 			}
 			else {
-				//$usergroupsearch = $realm->usergroupsearch;
 				$criteria = array(
 					'branchDn' => $usergroupsearch->sstLDAPBaseDn,
 					'filter' => sprintf($usergroupsearch->sstLDAPFilter, $staticAttr)
@@ -278,13 +281,24 @@ class LdapUserIdentity extends CUserIdentity
 					// User is OK; Let's check if the user is assigned to the realm
 					if ($model->sstBelongsToCustomerUID == $realm->sstBelongsToCustomerUID) {
 						$this->errorCode = self::ERROR_NONE;
-						Yii::app()->user->setState('__uid', $model->uid);
-						Yii::app()->user->setState('__groupuids', $groups);
-						Yii::app()->user->setState('__realm', $this->realm);
-						Yii::app()->user->setState('__admin', $model->isAdmin());
-						Yii::app()->user->setState('__foreign', $model->isForeign());
-						Yii::app()->user->setState('__customeruid', $model->sstBelongsToCustomerUID);
-						Yii::app()->user->setState('__reselleruid', $model->sstBelongsToResellerUID);
+
+// 						Yii::app()->user->setState('__uid', $model->uid);
+// 						Yii::app()->user->setState('__groupuids', $groups);
+// 						Yii::app()->user->setState('__realm', $this->realm);
+// 						Yii::app()->user->setState('__admin', $model->isAdmin());
+// 						Yii::app()->user->setState('__foreign', $model->isForeign());
+// 						Yii::app()->user->setState('__customeruid', $model->sstBelongsToCustomerUID);
+// 						Yii::app()->user->setState('__reselleruid', $model->sstBelongsToResellerUID);
+						//Yii::app()->user->setState('__states', array('lang' => $model->preferredLanguage));
+
+						$this->setState('uid', $model->uid);
+						$this->setState('groupuids', $groups);
+						$this->setState('realm', $this->realm);
+						$this->setState('admin', $model->isAdmin());
+						$this->setState('foreign', $model->isForeign());
+						$this->setState('customeruid', $model->sstBelongsToCustomerUID);
+						$this->setState('reselleruid', $model->sstBelongsToResellerUID);
+						$this->setState('lang', $model->preferredLanguage);
 					}
 					else {
 						$this->errorCode = self::ERROR_REALM_INVALID;
@@ -331,59 +345,10 @@ class LdapUserIdentity extends CUserIdentity
 		return $groupuids;
 	}
 
-	/**
-	 * Authenticates a user.
-	 * @return boolean whether authentication succeeds.
-	 */
-	public function authenticateOld()
-	{
-		$server = CLdapServer::getInstance();
-		$realm = CLdapRecord::model('LdapRealm')->findByAttributes(array('attr'=>array('ou'=>$this->realm)));
-		if (!is_null($realm)) {
-			$username = $realm->sstLDAPAuthUserNameAttribute;
-			$criteria['attr'][$username] = $this->username;
-			$model = CLdapRecord::model('LdapUser')->findByAttributes($criteria);
-			if (is_null($model)) {
-				$this->errorCode = self::ERROR_USERNAME_INVALID;
-			}
-			else {
-				$authOk = false;
-				if ('false' == strtolower($realm->sstLDAPAuthUserBind)) {
-					$authOk = $model->checkPassword($realm->sstLDAPAuthUserPasswordAttribute, $this->password);
-				}
-				else {
-					$uid = $realm->sstLDAPStaticAttribute;
-					$authOk = $server->authorizeUser($model->$uid, $this->password);
-				}
-				if (!$authOk) {
-					$this->errorCode = self::ERROR_PASSWORD_INVALID;
-				}
-				else {
-					// User is OK; Let's check if the user is assigned to the realm
-					if ($model->sstBelongsToCustomerUID == $realm->sstBelongsToCustomerUID) {
-						$this->errorCode = self::ERROR_NONE;
-						Yii::app()->user->setState('__uid', $model->uid);
-						Yii::app()->user->setState('__realm', $this->realm);
-						Yii::app()->user->setState('__admin', $model->isAdmin());
-						Yii::app()->user->setState('__foreign', $model->isForeign());
-						Yii::app()->user->setState('__customeruid', $model->sstBelongsToCustomerUID);
-						Yii::app()->user->setState('__reselleruid', $model->sstBelongsToResellerUID);
-					}
-					else {
-						$this->errorCode = self::ERROR_REALM_INVALID;
-					}
-				}
-			}
-		}
-		else {
-			$this->errorCode = self::ERROR_REALM_INVALID;
-		}
-		return !$this->errorCode;
-	}
 
 	public static function checkRealm($realm)
 	{
-		Yii::log("checkRealm: $realm", 'profile', 'ext.ldaprecord.CLdapServer');
+		Yii::log("checkRealm: $realm", 'profile', 'ext.ldaprecord.UserIdentity');
 
 		$server = CLdapServer::getInstance();
 		$realm = CLdapRecord::model('LdapRealm')->findByAttributes(array('attr'=>array('ou'=>$realm)));
@@ -392,7 +357,7 @@ class LdapUserIdentity extends CUserIdentity
 
 	public static function checkUser($username, $realm)
 	{
-		Yii::log("checkUser: $username, $realm", 'profile', 'ext.ldaprecord.CLdapServer');
+		Yii::log("checkUser: $username, $realm", 'profile', 'ext.ldaprecord.UserIdentity');
 
 		$server = CLdapServer::getInstance();
 		$realm = CLdapRecord::model('LdapRealm')->findByAttributes(array('attr'=>array('ou'=>$realm)));

@@ -88,6 +88,20 @@ class CPhpLibvirt {
 		return libvirt_domain_create_xml($con, $this->getXML($data));
 	}
 
+	public function defineVm($data) {
+		$con = $this->getConnection($data['libvirt']);
+		Yii::log('defineVm: libvirt_domain_define_xml(' . $data['libvirt'] . ', ' . $this->getXML($data) . ')', 'profile', 'phplibvirt');
+		return libvirt_domain_define_xml($con, $this->getXML($data));
+	}
+
+	public function undefineVm($data) {
+		$con = $this->getConnection($data['libvirt']);
+		Yii::log('undefineVm: libvirt_domain_lookup_by_name(' . $data['libvirt'] . ', ' . $data['name'] . ')', 'profile', 'phplibvirt');
+		$domain = libvirt_domain_lookup_by_name($con, $data['name']);
+		Yii::log('undefineVm: libvirt_domain_undefine(' . $data['name'] . ')', 'profile', 'phplibvirt');
+		return libvirt_domain_undefine($domain);
+	}
+
 	public function rebootVm($data) {
 		$con = $this->getConnection($data['libvirt']);
 		Yii::log('rebootVm: libvirt_domain_lookup_by_name(' . $data['libvirt'] . ', ' . $data['name'] . ')', 'profile', 'phplibvirt');
@@ -235,6 +249,7 @@ class CPhpLibvirt {
 			$devices .= '			<model type="' . $interface['sstModelType'] . '"/>' . "\n";
 			$devices .= '		</interface>' . "\n";
 		}
+		$spiceparams = '';
 		if ($data['devices']['graphics']['spiceacceleration']) {
 			$spiceparams = '			<image compression="off"/><jpeg compression="never"/><zlib compression="never"/><streaming mode="off"/>' . "\n";
 		}
@@ -247,13 +262,18 @@ class CPhpLibvirt {
 	}
 
 	public function generateUUID() {
-		return sprintf('%08x-%04x-4%03x-%04x-%04x%04x%04x',
-			0xFFFFFFFF & time(),
-			mt_rand(0, 0xFFFF),
-			mt_rand(0, 0x0FFF),
-			mt_rand(0, 0xFFFF) & 0xBFFF,
-			mt_rand(0, 0xFFFF), mt_rand(0, 0xFFFF), mt_rand(0, 0xFFFF)
-		);
+		if(extension_loaded('uuid')) {
+			return uuid_create();
+		}
+		else {
+			return sprintf('%08x-%04x-4%03x-%04x-%04x%04x%04x',
+				0xFFFFFFFF & time(),
+				mt_rand(0, 0xFFFF),
+				mt_rand(0, 0x0FFF),
+				mt_rand(0, 0xFFFF) & 0xBFFF,
+				mt_rand(0, 0xFFFF), mt_rand(0, 0xFFFF), mt_rand(0, 0xFFFF)
+			);
+		}
 	}
 
 	public function generateMacAddress() {
@@ -349,7 +369,7 @@ class CPhpLibvirt {
 		if (!is_null($pool)) {
 			if (0 == libvirt_storagepool_set_autostart($pool, 0)) { // make sure the pool is not autostarted again, just in case we get interrupted
 				if (libvirt_storagepool_destroy($pool)) { // stops the pool (but it is still defined)
-					$this->rmdir($basepath . '/' . $data['uuid']);
+					$this->rmdir($basepath . '/' . $uuid);
 					if (0 == libvirt_storagepool_undefine($pool)) {
 						$retval = true;
 						Yii::log('deleteStoragePool: pool created', 'profile', 'phplibvirt');

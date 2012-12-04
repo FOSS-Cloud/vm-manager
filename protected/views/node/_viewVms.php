@@ -31,7 +31,7 @@
 $gridid = 'vms';
 $baseurl = Yii::app()->baseUrl;
 $imagesurl = $baseurl . '/images';
-//$imgcontroller = $this->createUrl('img/percent');
+$imgcontroller = $this->createUrl('img/percent');
 $actrefreshtime = Yii::app()->getSession()->get('vm_refreshtime', 10000);
 
 Yii::app()->clientScript->registerScript('refresh', <<<EOS

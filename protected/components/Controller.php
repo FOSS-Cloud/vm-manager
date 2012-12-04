@@ -298,7 +298,9 @@ class Controller extends CController
 	protected function beforeAction($action) {
 		$retval = parent::beforeAction($action);
 		if ($retval) {
-			Yii::app()->setLanguage(Yii::app()->getSession()->get('lang', 'en'));
+			//Yii::app()->setLanguage(Yii::app()->getSession()->get('lang', 'en'));
+			$lang = Yii::app()->user->getState('lang', 'en');
+			Yii::app()->setLanguage($lang);
 			$this->createMenu();
 		}
 		return $retval;
@@ -337,14 +339,13 @@ class Controller extends CController
 	 *
 	 * @return string HTML Code
 	 */
-	public function getLanguageSelector($lang) {
-		$retval = '<select name="lang" id="lang" onchange="this.form.submit();" style="background: transparent url(' . $this->imageBase . '/lang/' . $lang . '.png) no-repeat 1px 4px; padding-left: 20px;">';
-		$messagesDir = Yii::app()->getBasePath() . '/messages';
-		$files = scandir ($messagesDir);
-		foreach ($files as $file) {
-        	if (false === strpos($file, '.') && is_dir($messagesDir . '/' . $file)) {
-        		$retval .= '<option value="' . $file . '"' . ($file == $lang ? 'selected="selected"' : '') . ' style="background: transparent url(' . $this->imageBase . '/lang/' . $file . '.png) no-repeat 1px 2px; padding-left: 20px;">' . strtoupper($file) . '</option>';
-			}
+	public function getLanguageSelector($actlang) {
+		//$retval = '<select name="lang" id="lang" onchange="this.form.submit();" style="background: transparent url(' . $this->imageBase . '/lang/' . $lang . '.png) no-repeat 1px 4px; padding-left: 20px;">';
+		$retval = '<select name="lang" id="lang" onchange="this.form.submit();">';
+		$langs = LdapUser::getLanguages();
+		foreach ($langs as $key => $lang) {
+       			//$retval .= '<option value="' . $file . '"' . ($file == $lang ? 'selected="selected"' : '') . ' style="background: transparent url(' . $this->imageBase . '/lang/' . $lang . '.png) no-repeat 1px 2px; padding-left: 20px;">' . strtoupper($lang) . '</option>';
+       			$retval .= '<option value="' . $key . '"' . ($lang == $actlang ? 'selected="selected"' : '') . '>' . $lang . '</option>';
 		}
 
 		$retval .= '</select>';

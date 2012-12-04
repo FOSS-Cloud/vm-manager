@@ -63,6 +63,7 @@ class LdapVm extends CLdapRecord {
 			'vmpool' => array(self::HAS_ONE, 'sstVirtualMachinePool', 'LdapVmPool', 'sstVirtualMachinePool'),
 			'groups' => array(self::HAS_MANY, 'dn', 'LdapNameless', '\'ou=groups,\' . $model->getDn()'),
 			'people' => array(self::HAS_MANY, 'dn', 'LdapNameless', '\'ou=people,\' . $model->getDn()'),
+			'backup' => array(self::HAS_ONE, 'dn', 'LdapVmBackupRoot', '$model->getDn()', array('ou' => 'backup')),
 		);
 	}
 
