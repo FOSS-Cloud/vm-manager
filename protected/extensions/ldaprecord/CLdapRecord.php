@@ -924,7 +924,7 @@ abstract class CLdapRecord extends CModel {
 		$entry = array();
 		foreach($this->_attributes as $key => $value) {
 			if ('member' == $key) continue;
-			if ('dn' !== $key && isset($value['value']) && '' !== $value['value'] && (!isset($value['readonly']) || !$value['readonly'])) {
+			if ('dn' !== $key && isset($value['value']) && '' !== $value['value'] && (!isset($value['readOnly']) || !$value['readOnly'])) {
 				if (is_array($value['value'])) {
 					if ('assozarray' == $value['type']) {
 						$retval = array();
