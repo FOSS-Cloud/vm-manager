@@ -165,7 +165,7 @@ class SiteController extends Controller
 	{
 		if (isset($_POST['lang'])) {
 			$lang = $_POST['lang'];
-			if (!file_exists(Yii::app()->getBasePath() . '/messages/' . $lang)) {
+			if (!is_dir(Yii::app()->getBasePath() . '/messages/' . $lang)) {
 				$lang = 'en';
 			}
 			Yii::app()->user->setState('lang', $lang);

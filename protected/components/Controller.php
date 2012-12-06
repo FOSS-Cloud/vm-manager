@@ -345,7 +345,7 @@ class Controller extends CController
 		$langs = LdapUser::getLanguages();
 		foreach ($langs as $key => $lang) {
        			//$retval .= '<option value="' . $file . '"' . ($file == $lang ? 'selected="selected"' : '') . ' style="background: transparent url(' . $this->imageBase . '/lang/' . $lang . '.png) no-repeat 1px 2px; padding-left: 20px;">' . strtoupper($lang) . '</option>';
-       			$retval .= '<option value="' . $key . '"' . ($lang == $actlang ? 'selected="selected"' : '') . '>' . $lang . '</option>';
+       			$retval .= '<option value="' . $key . '"' . ($actlang === $key ? 'selected="selected"' : '') . '>' . $lang . '</option>';
 		}
 
 		$retval .= '</select>';
