@@ -450,6 +450,7 @@ class CPhpLibvirt {
 		//$cmd = sprintf("cp %s %s > /dev/null 2>&1 & echo $! >> %s", $disk->sstSourceFile, $sourcefile, $sourcefile, $pidfile);
 		//$cmd = sprintf('{ echo $$ > "%s" ; cp "%s" "%s" > /dev/null 2>&1 && chmod 660 "%s" ; echo $? > "%s" ; } &', $pidfile, $disk->sstSourceFile, $sourcefile, $sourcefile, $returnvaluefile);
 		$cmd = sprintf('{ echo $$ > "%s" ; cp "%s" "%s" > /dev/null 2>&1 && chmod 660 "%s" ; } &', $pidfile, $disk->sstSourceFile, $sourcefile, $sourcefile);
+		Yii::log('copyVolumeFile: ' . $cmd, 'profile', 'phplibvirt');
 		//$cmd = escapeshellcmd($cmd);
 		error_log($cmd);
 		exec($cmd);

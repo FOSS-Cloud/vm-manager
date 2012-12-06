@@ -1040,11 +1040,12 @@ class VmTemplateController extends Controller
 		else {
 			if (isset($_SESSION['copyVolumeFile'])) {
 				chmod($_SESSION['copyVolumeFile']['SourceFile'], 660);
+
+				$vm = CLdapRecord::model('LdapVm')->findByDn($_SESSION['copyVolumeFile']['Dn']);
+				if (!is_null($vm)) {
+					$ret = CPhpLibvirt::getInstance()->defineVm($vm->getStartParams());
+				}
 				unset($_SESSION['copyVolumeFile']);
-			}
-			$vm = CLdapRecord::model('LdapVm')->findByDn($_SESSION['copyVolumeFile']['Dn']);
-			if (!is_null($vm)) {
-				$ret = CPhpLibvirt::getInstance()->defineVm($vm->getStartParams());
 			}
 							
 			$json = array('err' => false, 'msg' => Yii::t('vmtemplate', 'Finished!'));
