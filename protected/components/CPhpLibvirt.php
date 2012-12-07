@@ -83,6 +83,18 @@ class CPhpLibvirt {
 	 * @return boolean
 	 */
 	public function startVm($data) {
+// 		$con = $this->getConnection($data['libvirt']);
+// 		Yii::log('startVm: libvirt_domain_create_xml(' . $data['libvirt'] . ', ' . $this->getXML($data) . ')', 'profile', 'phplibvirt');
+// 		return libvirt_domain_create_xml($con, $this->getXML($data));
+
+		$con = $this->getConnection($data['libvirt']);
+		Yii::log('startVm: libvirt_domain_lookup_by_name(' . $data['libvirt'] . ', ' . $data['sstName'] . ')', 'profile', 'phplibvirt');
+		$domain = libvirt_domain_lookup_by_name($con, $data['sstName']);
+		Yii::log('startVm: libvirt_domain_create(' . $data['sstName'] . ')', 'profile', 'phplibvirt');
+		return libvirt_domain_create($domain);
+	}
+
+	public function startDynVm($data) {
 		$con = $this->getConnection($data['libvirt']);
 		Yii::log('startVm: libvirt_domain_create_xml(' . $data['libvirt'] . ', ' . $this->getXML($data) . ')', 'profile', 'phplibvirt');
 		return libvirt_domain_create_xml($con, $this->getXML($data));
@@ -297,14 +309,35 @@ class CPhpLibvirt {
 	}
 
 	public function nextSpicePort($node) {
-		$port = 5899;
+		$ort = 0;
+		$portMin = 5900; //Config::getInstance()->getSpicePortMin();
+		$portMax = 5999; // Config::getInstance()->getSpicePortMax();
+		$size = portMax - portMin + 1;
+		$portsUsed = array();
+		for ($i = 0; $i < $size; $i++) {
+			$portsUsed[$i] = false;
+		}
+		
 		$server = CLdapServer::getInstance();
-		$result = $server->search('ou=virtualization,ou=services', '(&(objectClass=sstSpice)(sstNode=' . $node . '))', array('sstSpicePort'));
+		/*
+		 * Use this filter for node-wide unique spice ports
+		 * '(&(objectClass=sstSpice)(sstNode=' . $node . '))'
+		 */
+		$result = $server->search('ou=virtualization,ou=services', '(&(objectClass=sstSpice)(sstNode=' . $node . '))', array('sstSpicePort', 'sstMigrationSpicePort'));
 		for($i=0; $i<$result['count']; $i++) {
-			$port = max($port, $result[$i]['sstspiceport'][0]);
+			$port = $result[$i];
+			$portsUsed[$port - $portMin] = true;
 		}
 
-		return $port + 1;
+		$port = 0;
+		for ($i = 0; $i < $size; $i++) {
+			if (!$portsUsed[$i]) {
+				$port = $portMin + $i;
+				break;
+			}
+		}
+
+		return $port;
 	}
 
 	private static $xmlPoolTemplate = '
@@ -449,7 +482,7 @@ class CPhpLibvirt {
 		//exec(sprintf("cp %s %s > /dev/null 2>&1 & echo $! >> %s", $disk->sstSourceFile, $sourcefile, $pidfile));
 		//$cmd = sprintf("cp %s %s > /dev/null 2>&1 & echo $! >> %s", $disk->sstSourceFile, $sourcefile, $sourcefile, $pidfile);
 		//$cmd = sprintf('{ echo $$ > "%s" ; cp "%s" "%s" > /dev/null 2>&1 && chmod 660 "%s" ; echo $? > "%s" ; } &', $pidfile, $disk->sstSourceFile, $sourcefile, $sourcefile, $returnvaluefile);
-		$cmd = sprintf('{ echo $$ > "%s" ; cp "%s" "%s" > /dev/null 2>&1 && chmod 660 "%s" ; } &', $pidfile, $disk->sstSourceFile, $sourcefile, $sourcefile);
+		$cmd = sprintf('{ echo $$ > "%s" ; cp "%s" "%s" > /dev/null 2>&1 ; } &', $pidfile, $disk->sstSourceFile, $sourcefile);
 		Yii::log('copyVolumeFile: ' . $cmd, 'profile', 'phplibvirt');
 		//$cmd = escapeshellcmd($cmd);
 		error_log($cmd);

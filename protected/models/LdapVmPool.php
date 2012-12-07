@@ -262,7 +262,7 @@ class LdapVmPool extends CLdapRecord {
 			$server->add($dn, $data);
 		}
 
-		$resource = CPhpLibvirt::getInstance()->startVm($vmcopy->getStartParams());
+		$resource = CPhpLibvirt::getInstance()->startDynVm($vmcopy->getStartParams());
 		if (is_null($resource)) {
 			$vmcopy->delete(true);
 			return null;
