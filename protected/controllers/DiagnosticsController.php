@@ -86,9 +86,9 @@ class DiagnosticsController extends Controller
 	public function actionVMInfos()
 	{
 		$vms = array();
-		$result = CLdapRecord::model('LdapVm')->findAll(array('attr'=>array()));
+		$result = CLdapRecord::model('LdapVm')->findAll(array('filter'=>'(!(sstVirtualMachineType=template))'));
 		foreach($result as $vm) {
-			$vms[$vm->dn] = array('name' => $vm->sstDisplayName, 'selected' => (isset($_GET['dn']) && $_GET['dn'] == $vm->dn ? true : false));
+			$vms[$vm->dn] = array('name' => $vm->sstDisplayName . ' (' . $vm->sstVirtualMachineType . ')', 'selected' => (isset($_GET['dn']) && $_GET['dn'] == $vm->dn ? true : false));
 		}
 		$startxml = null;
 		$libvirturi = null;
@@ -108,7 +108,7 @@ class DiagnosticsController extends Controller
 	public function actionVMTemplateInfos()
 	{
 		$vms = array();
-		$result = CLdapRecord::model('LdapVmFromTemplate')->findAll(array('attr'=>array()));
+		$result = CLdapRecord::model('LdapVmFromTemplate')->findAll(array('filter'=>'(&(sstVirtualMachineType=template))'));
 		foreach($result as $vm) {
 			$vms[$vm->dn] = array('name' => $vm->sstDisplayName, 'selected' => (isset($_GET['dn']) && $_GET['dn'] == $vm->dn ? true : false));
 		}
