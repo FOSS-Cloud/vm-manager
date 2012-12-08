@@ -229,7 +229,37 @@ class CPhpLibvirt {
 		</video>
 		<input type=\"tablet\" bus=\"usb\"/>
 		<sound model=\"ac97\"/>
-{$devices}
+		<controller type=\"usb\" index=\"0\" model=\"ich9-ehci1\">
+			<address type=\"pci\" domain=\"0x0000\" bus=\"0x00\" slot=\"0x04\" function=\"0x7\"/>
+		</controller>
+		<controller type=\"usb\" index=\"0\" model=\"ich9-uhci1\">
+			<master startport=\"0\"/>
+			<address type=\"pci\" domain=\"0x0000\" bus=\"0x00\" slot=\"0x04\" function=\"0x0\" multifunction=\"on\"/>
+		</controller>
+		<controller type=\"usb\" index=\"0\" model=\"ich9-uhci2\">
+			<master startport=\"2\"/>
+			<address type=\"pci\" domain=\"0x0000\" bus=\"0x00\" slot=\"0x04\" function=\"0x1\"/>
+		</controller>
+		<controller type=\"usb\" index=\"0\" model=\"ich9-uhci3\">
+			<master startport=\"4\"/>
+			<address type=\"pci\" domain=\"0x0000\" bus=\"0x00\" slot=\"0x04\" function=\"0x2\"/>
+		</controller>
+		<redirdev bus=\"usb\" type=\"spicevmc\">
+			<address type=\"usb\" bus=\"0\" port=\"4\"/>
+		</redirdev>
+		<redirdev bus=\"usb\" type=\"spicevmc\">
+			<address type=\"usb\" bus=\"0\" port=\"5\"/>
+		</redirdev>
+		<redirdev bus=\"usb\" type=\"spicevmc\">
+			<address type=\"usb\" bus=\"0\" port=\"6\"/>
+		</redirdev>
+		<redirdev bus=\"usb\" type=\"spicevmc\">
+			<address type=\"usb\" bus=\"0\" port=\"7\"/>
+		</redirdev>
+		<redirfilter>
+			<usbdev allow=\"{$data[\'devices\'][\'usb\']}\"/>
+		</redirfilter>
+		{$devices}
 	</devices>
 </domain>
 ';
