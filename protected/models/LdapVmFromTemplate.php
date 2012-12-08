@@ -57,6 +57,8 @@ class LdapVmFromTemplate extends LdapVm {
 			'defaults' => array(self::HAS_ONE_DN, 'dn', 'LdapVmDefaults', '$model->labeledURI', array()),
 			'dhcp' => array(self::HAS_ONE_DEPTH, 'sstVirtualMachine', 'LdapDhcpVm', 'cn', array('objectclass' => 'dhcpHost')),
 			'vmpool' => array(self::HAS_ONE, 'sstVirtualMachinePool', 'LdapVmPool', 'sstVirtualMachinePool'),
+			'backup' => array(self::HAS_ONE, 'dn', 'LdapVmBackup', '$model->getDn()', array('ou' => 'backup')),
+			'settings' => array(self::HAS_ONE, 'dn', 'LdapVmConfigurationSettings', '$model->getDn()', array('ou' => 'settings')),
 		);
 	}
 

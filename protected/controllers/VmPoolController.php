@@ -439,6 +439,11 @@ class VmPoolController extends Controller
 			$pool->sstBelongsToResellerUID = Yii::app()->user->resellerUID;
 			$pool->save();
 
+			$settings = new LdapVmPoolConfigurationSettings();
+			$settings->setBranchDn($pool->dn);
+			$settings->ou = "settings";
+			$settings->save();
+				
 			$server = CLdapServer::getInstance();
 			$data = array();
 			$data['objectClass'] = array('top', 'organizationalUnit', 'sstRelationship');

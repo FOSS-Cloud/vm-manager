@@ -225,6 +225,11 @@ class VmTemplateController extends Controller
 				// Workaround to get Node
 				$templatevm = CLdapRecord::model('LdapVmFromTemplate')->findByDn($templatevm->getDn());
 
+				$settings = new LdapVmConfigurationSettings();
+				$settings->setBranchDn($templatevm->dn);
+				$settings->ou = "settings";
+				$settings->save();
+				
 				$devices = new LdapVmDevice();
 				//echo '<pre>' . print_r($result->devices, true) . '</pre>';
 				$devices->attributes = $rdevices->attributes;
@@ -517,6 +522,11 @@ class VmTemplateController extends Controller
 			$vm->sstSpicePassword = CPhpLibvirt::getInstance()->generateSpicePassword();
 			$vm->save();
 
+			$settings = new LdapVmConfigurationSettings();
+			$settings->setBranchDn($vm->dn);
+			$settings->ou = "settings";
+			$settings->save();
+				
 			$devices = new LdapVmDevice();
 			$devices->setOverwrite(true);
 			$devices->attributes = $rdevices->attributes;
@@ -643,6 +653,11 @@ class VmTemplateController extends Controller
 			$vm->sstSpicePassword = CPhpLibvirt::getInstance()->generateSpicePassword();
 			$vm->save();
 
+			$settings = new LdapVmPoolConfigurationSettings();
+			$settings->setBranchDn($vm->dn);
+			$settings->ou = "settings";
+			$settings->save();
+				
 			$devices = new LdapVmDevice();
 			$devices->setOverwrite(true);
 			$devices->attributes = $rdevices->attributes;
