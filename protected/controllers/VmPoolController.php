@@ -478,7 +478,7 @@ class VmPoolController extends Controller
 			$data = array();
 			$data['objectClass'] = array('top', 'organizationalUnit', 'labeledURIObject', 'sstRelationship');
 			$data['ou'] = $model->range;
-			$range = CLdapRecord::model('LdapDhcpRange')->findByAttributes(array('attr'=>array('cn'=>$model->range)));
+			$range = CLdapRecord::model('LdapDhcpRange')->findByAttributes(array('attr'=>array('cn'=>$model->range), 'depth'=>true));
 
 			$data['description'] = array('This entry links to the range ' . $model->range . '.');
 			$data['labeledURI'] = array('ldap:///' . $range->dn);
