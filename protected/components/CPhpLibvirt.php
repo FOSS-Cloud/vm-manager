@@ -309,10 +309,10 @@ class CPhpLibvirt {
 	}
 
 	public function nextSpicePort($node) {
-		$ort = 0;
+		$port = 0;
 		$portMin = 5900; //Config::getInstance()->getSpicePortMin();
 		$portMax = 5999; // Config::getInstance()->getSpicePortMax();
-		$size = portMax - portMin + 1;
+		$size = $portMax - $portMin + 1;
 		$portsUsed = array();
 		for ($i = 0; $i < $size; $i++) {
 			$portsUsed[$i] = false;
@@ -325,8 +325,12 @@ class CPhpLibvirt {
 		 */
 		$result = $server->search('ou=virtualization,ou=services', '(&(objectClass=sstSpice)(sstNode=' . $node . '))', array('sstSpicePort', 'sstMigrationSpicePort'));
 		for($i=0; $i<$result['count']; $i++) {
-			$port = $result[$i];
+			$port = $result[$i]['sstspiceport'][0];
 			$portsUsed[$port - $portMin] = true;
+			if (isset($result[$i]['sstMigrationSpicePort'])) {
+				$port = $result[$i]['sstMigrationSpicePort'][0];
+				$portsUsed[$port - $portMin] = true;
+			}
 		}
 
 		$port = 0;
