@@ -1220,17 +1220,17 @@ class VmTemplateController extends Controller
 				$vm = CLdapRecord::model('LdapVmFromTemplate')->findByDn($dn);
 				//echo '<pre>' . print_r($vm, true) . '</pre>';
 				if (!is_null($vm)) {
+					$answer = array('node' => $vm->sstNode, 'statustxt' => '');
 					$libvirt = CPhpLibvirt::getInstance();
 					$status = $libvirt->getVmStatus(array('libvirt' => $vm->node->getLibvirtUri(), 'name' => $vm->sstVirtualMachine));
-					if (!isset($status['error'])) {
+					if ($status['active']) {
 						$memory = $this->getHumanSize($status['memory'] * 1024);
 						$maxmemory = $this->getHumanSize($status['maxMem'] * 1024);
 						//$data[$vm->sstVirtualMachine] = array('status' => ($status['active'] ? 'running' : 'stopped'), 'mem' => $memory . ' / ' . $maxmemory, 'node' => $vm->sstNode);
 						$data[$vm->sstVirtualMachine] = array('status' => ($status['active'] ? 'running' : 'stopped'), 'mem' => $memory . ' / ' . $maxmemory, 'node' => $vm->sstNode, 'spice' => $vm->getSpiceUri());
 					}
-					else if (1 == $status['error']) {
-						$data['error'] = 1;
-						$data['message'] = $status['message'];
+					else {
+						$data[$vm->sstVirtualMachine] = array_merge($answer, array('status' => 'stopped'));
 					}
 				}
 				else {
@@ -1271,7 +1271,7 @@ class VmTemplateController extends Controller
 				$params['sstVCPU'] = $vm->sstVCPU;
 				$params['sstFeature'] = $vm->sstFeature;
 				$params['devices'] = array();
-				$params['devices']['usb'] = ($vm->settings->isUsbAllowed() ? 'yes' : 'no')
+				$params['devices']['usb'] = ($vm->settings->isUsbAllowed() ? 'yes' : 'no');
 				$params['devices']['sstEmulator'] = $vm->devices->sstEmulator;
 				$params['devices']['sstMemBalloon'] = $vm->devices->sstMemBalloon;
 				$params['devices']['graphics'] = array();
