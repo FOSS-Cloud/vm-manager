@@ -149,6 +149,14 @@ class CPhpLibvirt {
 		return libvirt_domain_migrate_to_uri($domain, $data['newlibvirt'], $flags, $data['name'], 0);
 	}
 
+	public function changeVmBootDevice($data) {
+		$con = $this->getConnection($data['libvirt']);
+		Yii::log('changeVmBootDevice: libvirt_domain_lookup_by_name(' . $data['libvirt'] . ', ' . $data['name'] . ')', 'profile', 'phplibvirt');
+		$domain = libvirt_domain_lookup_by_name($con, $data['name']);
+		Yii::log('changeVmBootDevice: libvirt_domain_change_boot_devices(' . $data['libvirt'] . ', ' . $data['device1'] . ', ' . $data['device2'] . ')', 'profile', 'phplibvirt');
+		return libvirt_domain_change_boot_devices($domain, $data['device1'], $data['device2']);
+	}
+
 	public function getVmStatus($data) {
 		$retval = array('active' => false);
 		try {
