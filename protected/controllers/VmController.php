@@ -53,7 +53,7 @@ class VmController extends Controller
 		}
 		if ('update' == $action) {
 			$submenu = '';
-			if ('static' == $_GET['vmtype']) {
+			if ('persistent' == $_GET['vmtype']) {
 				$submenu = 'vm';
 			}
 			else {
@@ -114,9 +114,9 @@ class VmController extends Controller
 		);
 	}
 	public function actionIndex() {
-		$vmtype = (isset($_GET['vmtype']) ? $_GET['vmtype'] : 'static');
-		if ('static' != $vmtype && 'dynamic' != $vmtype) {
-			$vmtype = 'static';
+		$vmtype = (isset($_GET['vmtype']) ? $_GET['vmtype'] : 'persistent');
+		if ('persistent' != $vmtype && 'dynamic' != $vmtype) {
+			$vmtype = 'persistent';
 		}
 		$criteria = array('attr'=>array('sstVirtualMachinePoolType' => $vmtype));
 		$vmpools = CLdapRecord::model('LdapVmPool')->findAll($criteria);
@@ -219,7 +219,7 @@ class VmController extends Controller
 			foreach($subnets as $subnet) {
 				$ranges = array();
 				foreach($subnet->ranges as $range) {
-					if ($range->sstNetworkType == 'static') {
+					if ($range->sstNetworkType == 'persistent') {
 						$ranges[$range->cn] = $range->getRangeAsString();
 					}
 				}
@@ -813,7 +813,7 @@ EOS;
 				$retval = false;
 				$answer = array();
 				$libvirt = CPhpLibvirt::getInstance();
-				if ('static' == $vm->sstVirtualMachineType) {
+				if ('persistent' == $vm->sstVirtualMachineType) {
 					$retval = $libvirt->startVm($vm->getStartParams());
 				}
 				else {
@@ -994,7 +994,7 @@ EOS;
 			$vm = CLdapRecord::model('LdapVm')->findByDn($_GET['dn']);
 			if (!is_null($vm)) {
 				$libvirt = CPhpLibvirt::getInstance();
-				if ('static' == $vm->sstVirtualMachineType) {
+				if ('persistent' == $vm->sstVirtualMachineType) {
 					if ($libvirt->destroyVm(array('libvirt' => $vm->node->getLibvirtUri(), 'name' => $vm->sstVirtualMachine))) {
 						$this->sendAjaxAnswer(array('error' => 0));
 					}

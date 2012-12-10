@@ -163,7 +163,7 @@ class VmListController extends Controller
 		}
 
 		// Let's check the static VM Pools
-		$vmpools = LdapVmPool::model()->findAll(array('attr'=>array('sstVirtualMachinePoolType'=>'static')));
+		$vmpools = LdapVmPool::model()->findAll(array('attr'=>array('sstVirtualMachinePoolType'=>'persistent')));
 		foreach($vmpools as $vmpool) {
 			$poolAssigned = false;
 			$poolgroups = $vmpool->groups;
@@ -222,7 +222,7 @@ class VmListController extends Controller
 				}
 				if ($vmAssigned) {
 					$data['vms'][$vm->sstDisplayName] = array(
-						'description' => $vm->description . ' (static)',
+						'description' => $vm->description . ' (persistent)',
 						'spiceuri' => $vm->getSpiceUri(),
 					);
 				}

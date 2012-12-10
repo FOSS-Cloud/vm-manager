@@ -245,7 +245,7 @@ $this->widget('ext.zii.CJqGrid', array(
 				else {
 					act += '<img src="{$imagesUrl}/vmpool_del.png" style="cursor: pointer;" alt="" title="delete VM Pool" class="action" onclick="deleteRow(\'' + ids[i] + '\');" />';
 				}
-				if ('dynamic' == row['type'] || 'static' == row['type']) {
+				if ('dynamic' == row['type'] || 'persistent' == row['type']) {
 					act += '<img src="{$imagesUrl}/vmuser_add.png" style="cursor: pointer;" alt="" title="Assign user to this VM" class="action" onclick="assignUser(\'' + row['dn'] + '\');" />';
 					act += '<img src="{$imagesUrl}/vmgroup_add.png" style="cursor: pointer;" alt="" title="Assign groups to this VM" class="action" onclick="assignGroup(\'' + row['dn'] + '\');" />';
 				}

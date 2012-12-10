@@ -388,7 +388,7 @@ class VmTemplateController extends Controller
 			foreach($subnets as $subnet) {
 				$ranges = array();
 				foreach($subnet->ranges as $range) {
-					if ($range->sstNetworkType == 'static') {
+					if ($range->sstNetworkType == 'persistent') {
 						$ranges[$range->cn] = $range->getRangeAsString();
 					}
 				}
@@ -508,7 +508,7 @@ class VmTemplateController extends Controller
 			if (isset($_GET['name']) && '' != $_GET['name']) {
 				$vm->sstDisplayName = $_GET['name'];
 			}
-			$vm->sstVirtualMachineType = 'static';
+			$vm->sstVirtualMachineType = 'persistent';
 			$vm->sstVirtualMachineSubType = $_GET['subtype'];
 			$vm->sstVirtualMachinePool = $vmpool->sstVirtualMachinePool;
 			/* Delete all objectclasses and let the LdapVM set them */
@@ -959,12 +959,12 @@ class VmTemplateController extends Controller
 	public function actionGetStaticPoolGui() {
 		$this->disableWebLogRoutes();
 		$parray = array();
-		$pools = CLdapRecord::model('LdapVmPool')->findAll(array('attr'=>array('sstVirtualMachinePoolType'=>'static')));
+		$pools = CLdapRecord::model('LdapVmPool')->findAll(array('attr'=>array('sstVirtualMachinePoolType'=>'persistent')));
 		foreach ($pools as $pool) {
 			$parray[$pool->dn] = array('name' => $pool->sstDisplayName);
 		}
 		ob_start();
-		echo '<div class="ui-widget-header ui-corner-all" style="padding: 0.4em 1em; margin-bottom: 0.7em;"><span class="">' . Yii::t('vm', 'Create static VM') . '</span></div>';
+		echo '<div class="ui-widget-header ui-corner-all" style="padding: 0.4em 1em; margin-bottom: 0.7em;"><span class="">' . Yii::t('vm', 'Create persistent VM') . '</span></div>';
 		$dual = $this->createWidget('ext.zii.CJqSingleselect', array(
 			'id' => 'staticpoolSelection',
 			'values' => $parray,
@@ -972,7 +972,7 @@ class VmTemplateController extends Controller
 			'size' => 4,
 			'options' => array(
 				'sorted' => true,
-				'header' => Yii::t('vm', 'static VM Pools'),
+				'header' => Yii::t('vm', 'persistent VM Pools'),
 			),
 			'theme' => 'osbd',
 			'themeUrl' => $this->cssBase . '/jquery',

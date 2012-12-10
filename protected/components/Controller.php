@@ -103,10 +103,10 @@ class Controller extends CController
 					'label' => Yii::t('menu', 'Virtual Machine'),
 					'items' => array(
 						'vm' => array(
-							'label' => Yii::t('menu', 'Static Virtual Machines'),
-							'url' => array('/vm/index', 'vmtype' => 'static'),
-							'itemOptions' => array('title' => Yii::t('menu', 'static Virtual Machines Tooltip')),
-							'active' => ($this->id == 'vm' && $action == 'index' && isset($_GET['vmtype']) && 'static' == $_GET['vmtype'])
+							'label' => Yii::t('menu', 'Persistent Virtual Machines'),
+							'url' => array('/vm/index', 'vmtype' => 'persistent'),
+							'itemOptions' => array('title' => Yii::t('menu', 'persistent Virtual Machines Tooltip')),
+							'active' => ($this->id == 'vm' && $action == 'index' && isset($_GET['vmtype']) && 'persistent' == $_GET['vmtype'])
 						),
 						'vmdyn' => array(
 							'label' => Yii::t('menu', 'Dynamic Virtual Machines'),

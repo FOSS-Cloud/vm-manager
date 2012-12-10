@@ -380,7 +380,7 @@ class UserController extends Controller
 		$user = CLdapRecord::model('LdapUser')->findByDn($_GET['dn']);
 		$vms = CLdapRecord::model('LdapVm')->findAll(array('attr'=>array()));
 		foreach ($vms as $vm) {
-			if ('static' != $vm->sstVirtualMachineType) {
+			if ('persistent' != $vm->sstVirtualMachineType) {
 				continue;
 			}
 			$varray[$vm->sstVirtualMachine] = array('name' => $vm->sstDisplayName);

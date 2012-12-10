@@ -563,7 +563,7 @@ class VmPoolController extends Controller
 				'storagepools' => array(),
 				'nodes' => $nodes,
 				'ranges' => array(),
-				'types' => array('dynamic'=>'dynamic', 'static'=>'static', 'template'=>'template')
+				'types' => array('dynamic'=>'dynamic', 'persistent'=>'persistent', 'template'=>'template')
 			));
 		}
 	}
@@ -708,7 +708,7 @@ class VmPoolController extends Controller
 				'storagepools' => $storagepools,
 				'nodes' => $nodes,
 				'ranges' => $allRanges,
-				'types' => array('dynamic'=>'dynamic', 'static'=>'static', 'template'=>'template'),
+				'types' => array('dynamic'=>'dynamic', 'persistent'=>'persistent', 'template'=>'template'),
 				'vmcount' => count($pool->vms)
 			));
 		}

@@ -893,7 +893,7 @@ EOS
 				var row = $('#{$gridid}_grid').getRowData(ids[i]);
 				name = row['name'];
 				var statusact = '';
-				if ('static' == row['type']) {
+				if ('persistent' == row['type']) {
 					statusact += '<img id="vm_start_' + ids[i] + '" src="{$imagesurl}/vm_start_n.png" alt="" title="start VM" class="action" />';
 					statusact += '<img id="vm_shutdown_' + ids[i] + '" src="{$imagesurl}/vm_shutdown_n.png" alt="" title="shutdown VM" class="action" />';
 					statusact += '<img id="vm_destroy_' + ids[i] + '" src="{$imagesurl}/vm_destroy_n.png" alt="" title="destroy VM" class="action" />';
@@ -912,7 +912,7 @@ EOS
 					statusact += '<img id="vm_destroy_' + ids[i] + '" src="{$imagesurl}/vm_destroy_n.png" alt="" title="destroy VM" class="action" />';
 				}
 				var act = '';
-				if ('static' == row['type']) {
+				if ('persistent' == row['type']) {
 					act += '<img id="vm_edit_' + ids[i] + '" src="{$imagesurl}/vm_edit_n.png" alt="" title="edit VM" class="action" />';
 					act += '<img id="vm_del_' + ids[i] + '" src="{$imagesurl}/vm_del_n.png" alt="" title="delete VM" class="action" />';
 					act += '<img id="vm_login_' + ids[i] + '" src="{$imagesurl}/vm_login_n.png" alt="" title="use VM" class="action" />';

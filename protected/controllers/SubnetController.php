@@ -193,7 +193,7 @@ class SubnetController extends Controller
 			$data = array();
 			$data['objectClass'] = array('top', 'organizationalUnit');
 			$data['ou'] = 'ranges';
-			$data['description'] = array('This subtree holds all defined sub-network ranges (dynamic and static).');
+			$data['description'] = array('This subtree holds all defined sub-network ranges (dynamic and persistent).');
 			$dn = 'ou=ranges,' . $subnet->dn;
 			$server->add($dn, $data);
 
@@ -257,7 +257,7 @@ class SubnetController extends Controller
 			$this->render('updateRange',array(
 				'model' => $model,
 				'netmasks' => $this->netmasks,
-				'types' => array('dynamic'=>'dynamic', 'static'=>'static', 'template'=>'template'),
+				'types' => array('dynamic'=>'dynamic', 'persistent'=>'persistent', 'template'=>'template'),
 				'subnet' => $subnet->cn . '/' . $subnet->dhcpNetMask
 			));
 		}
@@ -298,7 +298,7 @@ class SubnetController extends Controller
 			$this->render('createRange',array(
 				'model' => $model,
 				'netmasks' => $this->netmasks,
-				'types' => array(''=>'', 'dynamic'=>'dynamic', 'static'=>'static', 'template'=>'template'),
+				'types' => array(''=>'', 'dynamic'=>'dynamic', 'persistent'=>'persistent', 'template'=>'template'),
 				'subnet' => $subnet->cn . '/' . $subnet->dhcpNetMask
 			));
 		}

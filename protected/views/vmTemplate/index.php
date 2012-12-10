@@ -489,7 +489,7 @@ EOS
 , CClientScript::POS_END);
 
 $selectStaticGuiUrl = $this->createUrl('vmTemplate/getStaticPoolGui');
-$selectStaticTxt = Yii::t('vm', 'Create static VM');
+$selectStaticTxt = Yii::t('vm', 'Create persistent VM');
 
 Yii::app()->clientScript->registerScript('finish', <<<EOS
 function finish(id, pooldn, name, subtype)
@@ -503,7 +503,7 @@ function finish(id, pooldn, name, subtype)
 	$('#{$gridid}_grid').setCell(id, 'status', 'migrating', {'padding-left': '20px', background: 'url({$imagesurl}/loading.gif) no-repeat 3px 3px transparent'});
 	$('#errorSelectStatic').css('display', 'none');
 	$('#infoSelectStatic').css('display', 'block');
-	$('#infoSelectStaticMsg').html('<img src="{$imagesurl}/loading.gif" alt=""/> Create static VM');
+	$('#infoSelectStaticMsg').html('<img src="{$imagesurl}/loading.gif" alt=""/> Create persistent VM');
 	$.ajax({
 		url: "{$baseurl}/vmTemplate/finish",
 		cache: false,
@@ -738,7 +738,7 @@ $this->widget('ext.zii.CJqGrid', array(
 				act += '<img src="{$imagesurl}/vmtemplate_' + row['boot'] + '.png" alt="" title="toogle bootdevice to ' + bootdevice + '" class="action" style="cursor: pointer;" onclick="toogleBoot(\'' + ids[i] + '\', \'' + bootdevice + '\');" />';
 //				act += '<a id="spice' + i + '" href="' + row['spice'] + '"><img id="vm_login_' + ids[i] + '" src="{$imagesurl}/vm_login_n.png" alt="" title="use VM Template" class="action" /></a>';
 				act += '<img id="vm_login_' + ids[i] + '" src="{$imagesurl}/vm_login_n.png" alt="" title="use VM Template" class="action" />';
-				act += '<img id="vmtemplate_finish_' + ids[i] + '" src="{$imagesurl}/vmtemplate_finish_n.png" alt="" title="VM Template =&gt; static VM" class="superaction"/>';
+				act += '<img id="vmtemplate_finish_' + ids[i] + '" src="{$imagesurl}/vmtemplate_finish_n.png" alt="" title="VM Template =&gt; persistent VM" class="superaction"/>';
 				act += '<img id="vmtemplate_finishdyn_' + ids[i] + '" src="{$imagesurl}/vmtemplate_finishdyn_n.png" alt="" title="VM Template =&gt; dynamic VM" class="superaction"/>';
 				//act += '<img src="{$imagesurl}/vm_del.png" alt="" title="delete VM" class="action" onclick="deleteRow(\'' + ids[i] + '\');" />';
 				var node = '<a href="${nodeurl}?node=' + row['node'] + '">' + row['node'] + '</a>';
@@ -856,7 +856,7 @@ EOS
 		'multiselect' => false,
 		'options' => array(
 			'sorted' => true,
-			'header' => Yii::t('vm', 'static VM Pools'),
+			'header' => Yii::t('vm', 'persistent VM Pools'),
 		),
 		'theme' => 'osbd',
 		'themeUrl' => $this->cssBase . '/jquery',

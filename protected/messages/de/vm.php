@@ -16,7 +16,7 @@
  */
 return array (
   'Create dynamic VM' => 'Erzeuge eine dynamische VM',
-  'Create static VM' => 'Erzeuge eine statische VM',
+  'Create persistent VM' => 'Erzeuge eine persistente VM',
   'Edit VM "{name}" ({type})' => 'VM "{name}" bearbeiten ({type})',
   'Golden Image activated!' => 'Golden Image aktiviert!',
   'Golden Image already activated!' => 'Golden Image ist bereits aktiviert!',
@@ -26,7 +26,7 @@ return array (
   'VM Details "{name}"' => '',
   'VM with dn=\'{dn}\' not found!' => 'VM mit dn=\'{dn}\' nicht gefunden!',
   'dynamic VM Pools' => 'Dynamische VM Pools',
-  'static VM Pools' => 'Statische VM Pools',
+  'persistent VM Pools' => 'Persistente VM Pools',
   'Assign users to VM' => 'Benutzer mit einer VM verknüpfen',
   'Assigned users' => 'verknüpfte Benutzer',
   'Assignment saved!' => 'Verknüpfung(en) gespeichert!',
