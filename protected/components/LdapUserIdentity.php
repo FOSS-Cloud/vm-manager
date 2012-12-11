@@ -298,7 +298,11 @@ class LdapUserIdentity extends CUserIdentity
 						$this->setState('foreign', $model->isForeign());
 						$this->setState('customeruid', $model->sstBelongsToCustomerUID);
 						$this->setState('reselleruid', $model->sstBelongsToResellerUID);
-						$this->setState('lang', $model->preferredLanguage);
+						$lang = $model->preferredLanguage;
+						if (2 < strlen($lang)) {
+							$lang = substr($lang, 0, 2);
+						}
+						$this->setState('lang', $lang);
 					}
 					else {
 						$this->errorCode = self::ERROR_REALM_INVALID;
