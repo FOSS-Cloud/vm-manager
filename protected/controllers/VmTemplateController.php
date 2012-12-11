@@ -1411,9 +1411,14 @@ class VmTemplateController extends Controller
 						$move = true;
 					}
 					if ($move) {
+						$libvirt->undefineVm(array('libvirt' => $vm->node->getLibvirtUri(), 'name' => $vm->sstVirtualMachine));
 						$vm->setOverwrite(true);
 						$vm->sstNode = $newnode->sstNode;
+						$vm->sstSpicePort = $libvirt->nextSpicePort($newnode->sstNode);
 						$vm->save();
+						
+						$vm = CLdapRecord::model('LdapVm')->findByDn($_GET['dn']);
+						$libvirt->defineVm($vm->getStartParams());
 						$this->sendAjaxAnswer(array('error' => 0, 'message' => Yii::t('vm', 'Migration finished'), 'refresh' => 1));
 					}
 				}

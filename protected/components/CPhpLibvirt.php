@@ -59,14 +59,16 @@ class CPhpLibvirt {
 	public static $VIR_DOMAIN_SHUTOFF	= 	5; // the domain is shut off
 	public static $VIR_DOMAIN_CRASHED	= 	6; // the domain is crashed
 
-	public static $VIR_MIGRATE_LIVE            =   1; // live migration
-	public static $VIR_MIGRATE_PEER2PEER       =   2; // direct source -> dest host control channel Note the less-common spelling that we're stuck with: VIR_MIGRATE_TUNNELLED should be VIR_MIGRATE_TUNNELED
-	public static $VIR_MIGRATE_TUNNELLED       =   4; // tunnel migration data over libvirtd connection
-	public static $VIR_MIGRATE_PERSIST_DEST    =   8; // persist the VM on the destination
-	public static $VIR_MIGRATE_UNDEFINE_SOURCE =  16; // undefine the VM on the source
-	public static $VIR_MIGRATE_PAUSED          =  32; // pause on remote side
-	public static $VIR_MIGRATE_NON_SHARED_DISK =  64; // migration with non-shared storage with full disk copy
-	public static $VIR_MIGRATE_NON_SHARED_INC  = 128; // migration with non-shared storage with incremental copy (same base image shared between source and destination)
+	public static $VIR_MIGRATE_LIVE              =   1; // live migration
+	public static $VIR_MIGRATE_PEER2PEER         =   2; // direct source -> dest host control channel Note the less-common spelling that we're stuck with: VIR_MIGRATE_TUNNELLED should be VIR_MIGRATE_TUNNELED
+	public static $VIR_MIGRATE_TUNNELLED         =   4; // tunnel migration data over libvirtd connection
+	public static $VIR_MIGRATE_PERSIST_DEST      =   8; // persist the VM on the destination
+	public static $VIR_MIGRATE_UNDEFINE_SOURCE   =  16; // undefine the VM on the source
+	public static $VIR_MIGRATE_PAUSED            =  32; // pause on remote side
+	public static $VIR_MIGRATE_NON_SHARED_DISK   =  64; // migration with non-shared storage with full disk copy
+	public static $VIR_MIGRATE_NON_SHARED_INC    = 128; // migration with non-shared storage with incremental copy (same base image shared between source and destination)
+	public static $VIR_MIGRATE_CHANGE_PROTECTION = 256; //protect for changing domain configuration through the whole migration process; this will be used automatically when supported
+	public static $VIR_MIGRATE_UNSAFE            = 512; // force migration even if it is considered unsafe
 
 	private $connections = array();
 
@@ -109,9 +111,12 @@ class CPhpLibvirt {
 	public function undefineVm($data) {
 		$con = $this->getConnection($data['libvirt']);
 		Yii::log('undefineVm: libvirt_domain_lookup_by_name(' . $data['libvirt'] . ', ' . $data['name'] . ')', 'profile', 'phplibvirt');
-		$domain = libvirt_domain_lookup_by_name($con, $data['name']);
-		Yii::log('undefineVm: libvirt_domain_undefine(' . $data['name'] . ')', 'profile', 'phplibvirt');
-		return libvirt_domain_undefine($domain);
+		$domain = @libvirt_domain_lookup_by_name($con, $data['name']);
+		if (false !== $domain) {
+			Yii::log('undefineVm: libvirt_domain_undefine(' . $data['name'] . ')', 'profile', 'phplibvirt');
+			return libvirt_domain_undefine($domain);
+		}
+		return true;
 	}
 
 	public function rebootVm($data) {
@@ -144,7 +149,7 @@ class CPhpLibvirt {
 		$con = $this->getConnection($data['libvirt']);
 		Yii::log('migrateVm: libvirt_domain_lookup_by_name(' . $data['libvirt'] . ', ' . $data['name'] . ')', 'profile', 'phplibvirt');
 		$domain = libvirt_domain_lookup_by_name($con, $data['name']);
-		$flags = self::$VIR_MIGRATE_LIVE | self::$VIR_MIGRATE_UNDEFINE_SOURCE | self::$VIR_MIGRATE_PEER2PEER | self::$VIR_MIGRATE_TUNNELLED | self::$VIR_MIGRATE_PERSIST_DEST;
+		$flags = self::$VIR_MIGRATE_LIVE | self::$VIR_MIGRATE_UNDEFINE_SOURCE | self::$VIR_MIGRATE_PEER2PEER | self::$VIR_MIGRATE_TUNNELLED | self::$VIR_MIGRATE_PERSIST_DEST | self::$VIR_MIGRATE_UNSAFE;
 		Yii::log('migrateVm: libvirt_domain_migrate_to_uri(' . $data['libvirt'] . ', ' . $data['newlibvirt'] . ', ' . $flags . ', ' . $data['name'] . ',0)', 'profile', 'phplibvirt');
 		return libvirt_domain_migrate_to_uri($domain, $data['newlibvirt'], $flags, $data['name'], 0);
 	}
@@ -167,7 +172,7 @@ class CPhpLibvirt {
 				//Yii::log('getVmStatus: libvirt_node_get_info (' . $data['libvirt']  . ')', 'profile', 'phplibvirt');
 				//$nodeinfo = libvirt_node_get_info($con);
 				Yii::log('getVmStatus: libvirt_domain_is_active (' . $data['name']  . ')', 'profile', 'phplibvirt');
-				$retval['active'] = libvirt_domain_is_active($domain);
+				$retval['active'] = 1 === libvirt_domain_is_active($domain);
 				Yii::log('getVmStatus: libvirt_domain_get_info (' . $data['name'] . ')', 'profile', 'phplibvirt');
 				$domaininfo = libvirt_domain_get_info($domain);
 				$retval = array_merge($retval, $domaininfo);
@@ -331,14 +336,15 @@ class CPhpLibvirt {
 		 * Use this filter for node-wide unique spice ports
 		 * '(&(objectClass=sstSpice)(sstNode=' . $node . '))'
 		 */
-		$result = $server->search('ou=virtualization,ou=services', '(&(objectClass=sstSpice)(sstNode=' . $node . '))', array('sstSpicePort', 'sstMigrationSpicePort'));
+		$result = $server->search('ou=virtualization,ou=services', '(&(objectClass=sstSpice)(sstNode=' . $node . '))', array('sstSpicePort'));
 		for($i=0; $i<$result['count']; $i++) {
 			$port = $result[$i]['sstspiceport'][0];
 			$portsUsed[$port - $portMin] = true;
-			if (isset($result[$i]['sstMigrationSpicePort'])) {
-				$port = $result[$i]['sstMigrationSpicePort'][0];
-				$portsUsed[$port - $portMin] = true;
-			}
+		}
+		$result = $server->search('ou=virtualization,ou=services', '(&(objectClass=sstSpice)(sstMigrationNode=' . $node . '))', array('sstMigrationSpicePort'));
+		for($i=0; $i<$result['count']; $i++) {
+			$port = $result[$i]['sstmigrationspiceport'][0];
+			$portsUsed[$port - $portMin] = true;
 		}
 
 		$port = 0;
