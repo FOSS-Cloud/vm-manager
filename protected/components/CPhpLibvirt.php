@@ -341,7 +341,7 @@ class CPhpLibvirt {
 			$port = $result[$i]['sstspiceport'][0];
 			$portsUsed[$port - $portMin] = true;
 		}
-		$result = $server->search('ou=virtualization,ou=services', '(&(objectClass=sstSpice)(sstMigrationNode=' . $node . '))', array('sstMigrationSpicePort'));
+		$result = $server->search('ou=virtualization,ou=services', '(&(objectClass=sstVirtualizationVirtualMachine)(sstMigrationNode=' . $node . '))', array('sstMigrationSpicePort'));
 		for($i=0; $i<$result['count']; $i++) {
 			$port = $result[$i]['sstmigrationspiceport'][0];
 			$portsUsed[$port - $portMin] = true;
