@@ -750,6 +750,11 @@ EOS;
 								if (0 == count($vm->people)) {
 									$answer['statustxt'] = ', free';
 								}
+								else {
+									$uid = $vm->people[0]->ou;
+									$user = LdapUser::model()->findByAttributes(array('attr'=>array('uid' => $uid)));
+									$answer['statustxt'] = ', ' . $user->cn;
+								}
 								break;
 						}
 						$data[$vm->sstVirtualMachine] = $answer;
