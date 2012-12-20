@@ -51,7 +51,7 @@
 	$lang = Yii::app()->user->getState('lang', 'en');
 	$version = Yii::app()->getSession()->get('version', null);
 	if (is_null($version)) {
-		$filename = 'C:/Develop/cvsHome/web/osbd/etc/os-release';
+		$filename = '/etc/os-release';
 		if (is_file($filename)) {
 			$params = parse_ini_file($filename);
 			$version = $params['VERSION'];
