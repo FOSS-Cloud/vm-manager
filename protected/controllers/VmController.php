@@ -860,6 +860,11 @@ EOS;
 						$vmcopy->sstSpicePassword = CPhpLibvirt::getInstance()->generateSpicePassword();
 						$vmcopy->save();
 
+						$settings = new LdapVmPoolConfigurationSettings();
+						$settings->setBranchDn($vmcopy->dn);
+						$settings->ou = "settings";
+						$settings->save();
+				
 						$devices = new LdapVmDevice();
 						$devices->setOverwrite(true);
 						$devices->attributes = $rdevices->attributes;
