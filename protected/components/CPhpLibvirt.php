@@ -242,6 +242,24 @@ class CPhpLibvirt {
 		</video>
 		<input type=\"tablet\" bus=\"usb\"/>
 		<sound model=\"ac97\"/>
+		<controller type=\"usb\" index=\"0\" model=\"ich9-ehci1\">
+			<address type=\"pci\" slot=\"0x08\" function=\"0x7\"/>
+		</controller>
+		<controller type=\"usb\" index=\"0\" model=\"ich9-uhci1\">
+			<address type=\"pci\" slot=\"0x08\" function=\"0x0\" multifunction=\"on\"/>
+		</controller>
+		<controller type=\"usb\" index=\"0\" model=\"ich9-uhci2\">
+			<address type=\"pci\" slot=\"0x08\" function=\"0x1\"/>
+		</controller>
+		<controller type=\"usb\" index=\"0\" model=\"ich9-uhci3\">
+			<address type=\"pci\" slot=\"0x08\" function=\"0x2\"/>
+		</controller>	
+		<redirdev bus=\"usb\" type=\"spicevmc\"></redirdev>
+		<redirdev bus=\"usb\" type=\"spicevmc\"></redirdev>
+		<redirdev bus=\"usb\" type=\"spicevmc\"></redirdev>
+   		<redirfilter>
+			<usbdev allow=\"{$data[\'devices\'][\'usb\']}\"/>
+		</redirfilter>
 		{$devices}
 	</devices>
 </domain>
