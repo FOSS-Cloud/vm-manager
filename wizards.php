@@ -48,7 +48,7 @@ return array(
 						2 => Yii::t('node', 'wizard.test1.2'),
 					),
 					'outputtype' => 'JSON',
-					'outputvars' => array('adminip' => 'admin[ip]', 'dataip' => 'data[ip]', 'pubip' => 'pub[ip]', 'intip' => 'int[ip]', 'nodename' => 'Node Name'),
+					'outputvars' => array('adminip' => 'admin[ip]', 'dataip' => 'data[ip]', 'pubip' => 'pub[ip]', 'intip' => 'int[ip]', 'nodename' => 'Node Name', 'domain' => 'pub[domain]'),
 				),
 			)
 		),

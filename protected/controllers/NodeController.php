@@ -613,7 +613,7 @@ class NodeController extends WizardController
 			if (0 == count($nodes)) {
 				$server = CLdapServer::getInstance();
 				$node = new LdapNode();
-				$node->sstNode = $event->data['wizardNodeTest']['nodename'];
+				$node->sstNode = $event->data['wizardNodeTest']['nodename'] . '.' . $event->data['wizardNodeTest']['domain'];
 				$node->description = 'The node ' . $node->sstNode . '.';
 				$node->labeledURI = 'ldap:///ou=virtual machines,ou=virtualization,ou=services,' . $server->getBaseDn() . '??sub?(sstNode=' . $node->sstNode . ')';
 				$node->sstBelongsToCustomerUID = Yii::app()->user->customerUID;
