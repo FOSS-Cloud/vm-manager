@@ -405,7 +405,7 @@ class VmProfileController extends Controller
 		}
 	}
 
-	public function actionUploadIsoOld() {
+	public function actionUploadIso() {
 		$model = new VmIsoUploadForm();
 
 		if(isset($_POST['ajax']) && $_POST['ajax']==='isoupload-form')
@@ -479,14 +479,14 @@ class VmProfileController extends Controller
 			 * Uploadable Version END
 			 */
 
-			$this->render('uploadIsoOld',array(
+			$this->render('uploadIso',array(
 				'model' => $model,
 				'upstatus' => $upstatus,
 			));
 		}
 	}
 
-	public function actionUploadIso()
+	public function actionUploadIsoText()
 	{
 		$this->render('uploadIso', array(
 		));
@@ -704,7 +704,7 @@ class VmProfileController extends Controller
 		$percent = (!isset($info['bytes_total']) ? 0 : floor($info['bytes_uploaded'] / $info['bytes_total'] * 100));
 		$estimated = (!isset($info['est_sec']) ? '???' : $info['est_sec']);
 //		echo "<html><head><title></title><script type=\"text/javascript\">parent.update('$total','$uploaded',$percent,'$estimated');</script></head><body></body></html>";
-		Yii::log('UploadProgress: ' . print_r($info, true), CLogger::LEVEL_WARNING);
+		Yii::log('UploadProgress: ' . print_r($info, true), CLogger::LEVEL_WARNING, 'uploadprogress');
 		$answer = array(
 			'total' => $total,
 			'uploaded' => $uploaded,

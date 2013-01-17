@@ -35,29 +35,153 @@ $this->breadcrumbs=array(
 $this->title = Yii::t('vmprofile', 'Upload Iso File');
 //$this->helpurl = Yii::t('help', 'uploadIso');
 
-$this->widget('application.extensions.plupload.PluploadWidget',
-	array(
-		'config' => array(
-			//'runtimes' => 'gears,flash,silverlight,browserplus,html5',
-			'runtimes' => 'flash,html5',
-			'url' => $this->createUrl('vmProfile/uploadIsoPart'),
-			//'max_file_size' => str_replace("M", "mb", ini_get('upload_max_filesize')),
-			//'max_file_size' => Yii::app()->params['maxFileSize'],
-			'max_file_size' => '6000mb',
-			'chunk_size' => '10mb',
-			'unique_names' => true,
-			'filters' => array(
-				array('title' => Yii::t('app', 'ISO files'), 'extensions' => 'iso'),
+?>
+<div class="form">
+<?php $form=$this->beginWidget('CActiveForm', array(
+	'id'=>'isoupload-form',
+	'enableAjaxValidation'=>true,
+	'method' => 'post',
+	'clientOptions' => ($upstatus ? array(
+		'validateOnSubmit' => true,
+		'afterValidate' => 'js:' . <<<EOS
+function(form, data, hasError) {
+	if (!hasError) {
+		$('#errormessage').html('');
+		$('#uploadinfo').slideDown(400);
+    	startTime = new Date();
+		stopTime = null;
+		infoUpdated = 0;
+		requestInfo();
+		return true;
+	}
+	return false;
+}
+EOS
+	) : array(
+		'validateOnSubmit' => true,
+	)),
+	'htmlOptions' => ($upstatus ? array(
+		'target' => 'formsubmit',
+		'enctype' => 'multipart/form-data',
+	) : array()),
+));
+if ($upstatus) {
+	$uploadId = /*Yii::app()->getSession()->getSessionID()*/ 'osbd_' . md5(microtime() . rand());
+	echo CHtml::hiddenField('UPLOAD_IDENTIFIER', $uploadId);
+}
+echo $form->hiddenField($model, 'upstatus');
+
+?>
+	<p class="note">Fields with <span class="required">*</span> are required.</p>
+	<div id="errormessage" class="errorMessage">
+		<?php echo $form->errorSummary($model); ?>
+	</div>
+	<div class="row">
+		<?php echo $form->labelEx($model,'isofile');?>
+<?php
+if ($upstatus) {
+	//echo $form->fileField($model,'isofile',array('size'=>40));
+?>
+			<input size="40" name="VmIsoUploadForm[isofile]" id="VmIsoUploadForm_isofile" type="file" />
+			<div id="uploadinfo" style="display: none;">
+<?php
+		$this->widget('zii.widgets.jui.CJuiProgressBar', array(
+			'id'=>'isoprogress',
+		    'value'=>0,
+		//	'options' => array(
+		//		'disabled' => true,
+		//	),
+			'options'=>array(
+				'create' => 'js:function(event, ui) {$("#isoprogress .ui-progressbar-value").css(\'text-align\', \'center\'); }',
+				'change' => 'js:function(event, ui) {$("#isoprogress .ui-progressbar-value").html($("#isoprogress").progressbar( "option", "value" ) + "%");}',
 			),
-			'language' => Yii::app()->language,
-			'max_file_number' => 1,
-			'autostart' => true,
-			'jquery_ui' => false,
-			'reset_after_upload' => true,
-		),
-		'callbacks' => array(
-			'FileUploaded' => 'function(up,file,response){console.log(response.response);}',
-		),
-		'id' => 'uploader'
-	)
-);
+		    'htmlOptions'=>array(
+		        'style'=>'height:16px; width: 400px; margin-top: 7px; display: block;'
+		    ),
+			'themeUrl' => $this->cssBase . '/jquery',
+			'theme' => 'osbd',
+		    'cssFile' => 'jquery-ui.custom.css',
+		));
+
+	$requestInfoUrl = $this->createUrl('vmProfile/requestInfo', array('upid'=>$uploadId));
+	$sizestr = Yii::t('vmprofile', 'Uploading... ({uploaded} of {total})');
+	$finishedstr = Yii::t('vmprofile', 'Upload finished ({total})');
+
+	Yii::app()->clientScript->registerScript('upload', <<<EOS
+    var startTime = null;
+    var stopTime = null;
+    var upload_max_filesize = 1073741824;
+    var infoUpdated = 0;
+    var cylceid;
+    function requestInfo() {
+		infoUpdated++;
+		//$('#refresh').attr("src", "{$requestInfoUrl}&"+(new Date()).getTime());
+		$.ajax({
+			url: "{$requestInfoUrl}",
+			success: function(data) {
+				if (1 == infoUpdated) {
+					$('#submit').attr('disabled', 'disabled');
+				}
+				update(data['total'], data['uploaded'], data['percent'], data['estimated']);
+			},
+			dataType: 'json'
+		});
+	}
+	function update(total, uploaded, percent, estimated) {
+		if (stopTime == null) {
+			$('#isoprogress').progressbar("option", "value", percent);
+			size = '{$sizestr}';
+			size = size.replace('{uploaded}', uploaded);
+			size = size.replace('{total}', total);
+			$('#isosize').html(size);
+			$('#isoestimated').html(estimated + " seconds");
+			cycleid = setTimeout(requestInfo, 10000);
+		}
+	}
+	function finished(total) {
+		stopTime = new Date();
+		$('#isoprogress').progressbar( "option", "value", 100 );
+		size = '{$finishedstr}';
+		size = size.replace('{total}', total);
+		$('#isosize').html(size);
+		$('#isoestimated').html("took " + round((stopTime.getTime() - startTime.getTime()) / 1000) + " seconds");
+		clearTimeout(cycleid);
+		$('#submit').removeAttr('disabled');
+	}
+	function error(message) {
+		$('#errormessage').html(message);
+		clearTimeout(cycleid);
+		$('#submit').removeAttr('disabled');
+	}
+EOS
+	, CClientScript::POS_END);
+
+?>
+				<div id="isosize" style="float: left;">Uploading... (??? MB of ??? MB)</div>
+				<div id="isoestimated" style="float: right;">??? sec.</div>
+				<br class="clear" />
+			</div>
+<?php
+}
+?>
+		<?php echo $form->error($model,'isofile'); ?>
+	</div>
+	<br/>
+	<div class="row">
+		<?php echo $form->labelEx($model,'name'); ?>
+		<?php echo $form->textField($model,'name', array('size'=>40)); ?>
+		<?php echo $form->error($model,'name'); ?>
+	</div>
+	<br class="clear"/>
+	<div class="row buttons">
+		<?php echo CHtml::submitButton(Yii::t('vmprofile','Upload'),($upstatus ? array('id' => 'submit') : array('id' => 'submit'))); ?>
+	</div>
+	<br class="clear"/>
+<?php
+	if ($upstatus) {
+?>
+	<iframe name="formsubmit" id="formsubmit" style="float: right; width: 500px; height: 300px; border: 1px solid green; display: none;"></iframe>
+<?php } ?>
+<?php $this->endWidget(); ?>
+
+</div><!-- form -->
