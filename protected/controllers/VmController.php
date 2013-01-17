@@ -1059,22 +1059,30 @@ EOS;
 				$libvirt = CPhpLibvirt::getInstance();
 				if ($status = $libvirt->getVmStatus(array('libvirt' => $vm->node->getLibvirtUri(), 'name' => $vm->sstVirtualMachine))) {
 					$move = false;
+					$spiceport = $libvirt->nextSpicePort($newnode->sstNode);
 					if ($status['active']) {
-						if ($libvirt->migrateVm(array('libvirt' => $vm->node->getLibvirtUri(), 'newlibvirt' => $newnode->getLibvirtUri(), 'name' => $vm->sstVirtualMachine))) {
-							$move = true;
+						$vm->setOverwrite(true);
+						$vm->sstMigrationNode = $newnode->sstNode;
+						$vm->sstMigrationSpicePort = $spiceport;
+						$vm->save();
+						if ($libvirt->migrateVm(array('libvirt' => $vm->node->getLibvirtUri(), 'newlibvirt' => $newnode->getLibvirtUri(), 'name' => $vm->sstVirtualMachine, 'spiceport' => $spiceport))) {
+							$vm->sstNode = $newnode->sstNode;
+							$vm->sstSpicePort = $spiceport;
+							$vm->save();
+							$entries = array('sstMigrationNode' => array(), 'sstMigrationSpicePort' => array());
+							CLdapServer::getInstance()->modify_del($vm->dn, $entries);
+								
+							$this->sendAjaxAnswer(array('error' => 0, 'message' => Yii::t('vm', 'Migration finished'), 'refresh' => 1));
 						}
 						else {
 							$this->sendAjaxAnswer(array('error' => 1, 'message' => 'CPhpLibvirt migrateVm failed (' . $libvirt->getLastError() . ')!'));
 						}
 					}
 					else {
-						$move = true;
-					}
-					if ($move) {
 						$libvirt->undefineVm(array('libvirt' => $vm->node->getLibvirtUri(), 'name' => $vm->sstVirtualMachine));
 						$vm->setOverwrite(true);
 						$vm->sstNode = $newnode->sstNode;
-						$vm->sstSpicePort = $libvirt->nextSpicePort($newnode->sstNode);
+						$vm->sstSpicePort = $spiceport;
 						$vm->save();
 						
 						$vm = CLdapRecord::model('LdapVm')->findByDn($_GET['dn']);

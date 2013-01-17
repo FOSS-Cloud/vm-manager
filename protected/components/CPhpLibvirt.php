@@ -149,9 +149,32 @@ class CPhpLibvirt {
 		$con = $this->getConnection($data['libvirt']);
 		Yii::log('migrateVm: libvirt_domain_lookup_by_name(' . $data['libvirt'] . ', ' . $data['name'] . ')', 'profile', 'phplibvirt');
 		$domain = libvirt_domain_lookup_by_name($con, $data['name']);
+		Yii::log('migrateVm: libvirt_domain_get_xml_desc(' . $data['libvirt'] . ',NULL)', 'profile', 'phplibvirt');
+		$xmllibvirt = libvirt_domain_get_xml_desc($domain, NULL);
+		Yii::log('migrateVm: orig XML: ' . $xmllibvirt, 'profile', 'phplibvirt');
+		$spicePort = $data['spiceport'];
+		$xml = '';
+		$pos1 = strpos($xmllibvirt, '<graphics');
+		if (false !== $pos1) {
+			$pos2 = strpos($xmllibvirt, "</graphics>", $pos1 + 1);
+			if (false !== $pos2)  {
+				$pos3 = strpos($xmllibvirt, "port='", $pos1 + 1);
+				if (false !== $pos3 && $pos3 < $pos2) {
+					$start = $pos3 + 6;
+					$end = strpos($xmllibvirt, "'", $start);
+					if (false !== $end) {
+						$xml = substr_replace($xmllibvirt, $spicePort, $start, $end - $start);
+					}
+				}
+			}
+		}
+		Yii::log('migrateVm:  new XML: ' . $xml, 'profile', 'phplibvirt');
+				
 		$flags = self::$VIR_MIGRATE_LIVE | self::$VIR_MIGRATE_UNDEFINE_SOURCE | self::$VIR_MIGRATE_PEER2PEER | self::$VIR_MIGRATE_TUNNELLED | self::$VIR_MIGRATE_PERSIST_DEST | self::$VIR_MIGRATE_UNSAFE;
-		Yii::log('migrateVm: libvirt_domain_migrate_to_uri(' . $data['libvirt'] . ', ' . $data['newlibvirt'] . ', ' . $flags . ', ' . $data['name'] . ',0)', 'profile', 'phplibvirt');
-		return libvirt_domain_migrate_to_uri($domain, $data['newlibvirt'], $flags, $data['name'], 0);
+// 		Yii::log('migrateVm: libvirt_domain_migrate_to_uri(' . $data['libvirt'] . ', ' . $data['newlibvirt'] . ', ' . $flags . ', ' . $data['name'] . ',0)', 'profile', 'phplibvirt');
+// 		return libvirt_domain_migrate_to_uri($domain, $data['newlibvirt'], $flags, $data['name'], 0);
+		Yii::log('migrateVm: libvirt_domain_migrate_to_uri2(' . $data['libvirt'] . ', ' . $data['newlibvirt'] . ', null, <XML>, ' . $flags . ', ' . $data['name'] . ',0)', 'profile', 'phplibvirt');
+		return libvirt_domain_migrate_to_uri2($domain, $data['newlibvirt'], null, $xml, $flags, $data['name'], 0);
 	}
 
 	public function changeVmBootDevice($data) {
