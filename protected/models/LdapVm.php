@@ -118,6 +118,7 @@ class LdapVm extends CLdapRecord {
 		$params['sstFeature'] = $this->sstFeature;
 		$params['devices'] = array();
 		$params['devices']['usb'] = ($this->settings->isUsbAllowed() ? 'yes' : 'no');
+		$params['devices']['sound'] = $this->settings->isSoundAllowed();
 		$params['devices']['sstEmulator'] = $this->devices->sstEmulator;
 		$params['devices']['sstMemBalloon'] = $this->devices->sstMemBalloon;
 		$params['devices']['graphics'] = array();

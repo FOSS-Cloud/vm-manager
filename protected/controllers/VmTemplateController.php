@@ -1272,6 +1272,7 @@ class VmTemplateController extends Controller
 				$params['sstFeature'] = $vm->sstFeature;
 				$params['devices'] = array();
 				$params['devices']['usb'] = ($vm->settings->isUsbAllowed() ? 'yes' : 'no');
+				$params['devices']['sound'] = $vm->settings->isSoundAllowed();
 				$params['devices']['sstEmulator'] = $vm->devices->sstEmulator;
 				$params['devices']['sstMemBalloon'] = $vm->devices->sstMemBalloon;
 				$params['devices']['graphics'] = array();

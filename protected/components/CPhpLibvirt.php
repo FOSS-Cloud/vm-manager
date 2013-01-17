@@ -241,7 +241,6 @@ class CPhpLibvirt {
 			<model type=\"qxl\" vram=\"65536\" heads=\"1\"/>
 		</video>
 		<input type=\"tablet\" bus=\"usb\"/>
-		<sound model=\"ac97\"/>
 		<controller type=\"usb\" index=\"0\" model=\"ich9-ehci1\">
 			<address type=\"pci\" slot=\"0x08\" function=\"0x7\"/>
 		</controller>
@@ -272,6 +271,10 @@ class CPhpLibvirt {
 			$features .= "<$feature/>";
 		}
 		$devices = '';
+		if ($data['devices']['sound']) {
+			$devices .= '		<sound model=\"ac97\"/>' . "\n";
+		}
+				
 		foreach($data['devices']['disks'] as $disk) {
 			$devices .= '		<disk type="' . $disk['sstType'] . '" device="' . $disk['sstDevice'] . '">' . "\n";
 			if (isset($disk['sstDriverName']) && isset($disk['sstDriverType'])) {
