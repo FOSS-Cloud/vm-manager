@@ -295,7 +295,7 @@ class CPhpLibvirt {
 		}
 		$devices = '';
 		if ($data['devices']['sound']) {
-			$devices .= '		<sound model=\"ac97\"/>' . "\n";
+			$devices .= '		<sound model="ac97"/>' . "\n";
 		}
 				
 		foreach($data['devices']['disks'] as $disk) {
