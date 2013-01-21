@@ -33,7 +33,8 @@ return array (
   'Username already in use!' => '',
   'VM User' => '',
   'VMs' => '',
-  '{attribute} is invalid. Please use only<br/>"0-9+()" characters and blank.' => '',
+  'Please use only<br/>a-z, 0-9 and the _ character.' => '',
+  'Please use only<br/>"0-9+()" characters and blank.' => '',
   'gender' => 'Gender',
   'givenname' => 'Given name',
   'mail' => 'Email',
@@ -44,4 +45,5 @@ return array (
   'telephone' => 'Telephone',
   'username' => 'Username',
   'userrole' => 'Userrole',
+  'language' => 'Language'
 );
