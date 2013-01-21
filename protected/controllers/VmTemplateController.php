@@ -286,6 +286,9 @@ class VmTemplateController extends Controller
 					$dhcpvm->dhcpStatements = 'fixed-address ' . $range->getFreeIp();
 					$dhcpvm->save();
 
+					// Workaround to get Node
+					$templatevm = CLdapRecord::model('LdapVm')->findByDn($templatevm->getDn());
+
 					$ret = CPhpLibvirt::getInstance()->defineVm($templatevm->getStartParams());
 						
 					$this->redirect(array('index'));
