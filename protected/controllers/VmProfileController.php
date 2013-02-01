@@ -431,7 +431,16 @@ class VmProfileController extends Controller
 			if (!is_null($ufile)) {
 				if (0 == $ufile->error) {
 					$isodir = LdapStoragePoolDefinition::getPathByType('iso-choosable');
-					$isosourcefile = $isodir . ('' == $model->name ? $ufile->getName() : $model->name . '.iso');
+					if ('' !== $model->name) {
+						$name = $model->name;
+					}
+					else {
+						$name = $ufile->getName();
+					}
+					if (substr($name, -4) !== '.iso') {
+						$name .= '.iso';
+					}
+					$isosourcefile = $isodir . $name;
 					$ufile->saveAs($isosourcefile);
 					//echo '<pre>' . print_r($ufile, true) . "\n"  .'</pre>';
 				}
