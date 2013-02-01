@@ -50,4 +50,5 @@ return array (
   'step2text' => 'Wenn notwenig bitte die vordefinierten Werte überschreiben!',
   'title' => 'Titel',
   'Please use only a-z, A-Z, 0-9, the space and the _ character.' => 'Bitte nur die Zeichen a-z, A-Z, 0-9, _ und das Leerzeichen benutzen.',
+  'Upload finished' => 'Die Datei ist hochgeladen!',
 );

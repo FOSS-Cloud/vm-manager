@@ -144,9 +144,10 @@ if ($upstatus) {
 		size = '{$finishedstr}';
 		size = size.replace('{total}', total);
 		$('#isosize').html(size);
-		$('#isoestimated').html("took " + round((stopTime.getTime() - startTime.getTime()) / 1000) + " seconds");
+		$('#isoestimated').html("took " + Math.round((stopTime.getTime() - startTime.getTime()) / 1000) + " seconds");
 		clearTimeout(cycleid);
 		$('#submit').removeAttr('disabled');
+		$('#finished').dialog();
 	}
 	function error(message) {
 		$('#errormessage').html(message);
@@ -177,6 +178,9 @@ EOS
 		<?php echo CHtml::submitButton(Yii::t('vmprofile','Upload'),($upstatus ? array('id' => 'submit') : array('id' => 'submit'))); ?>
 	</div>
 	<br class="clear"/>
+	<div id="finished" title="Finished" style="display: none;">
+		<p><?php echo Yii::t('vmprofile','Upload finished');?></p>
+	</div>
 <?php
 	if ($upstatus) {
 ?>

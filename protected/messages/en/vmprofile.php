@@ -50,4 +50,5 @@ return array (
   'step2text' => 'Overwrite the default values if necessary!',
   'title' => 'Title',
   'Please use only a-z, A-Z, 0-9, the space and the _ character.' => '',
+  'Upload finished' => 'Upload finished!',
 );
