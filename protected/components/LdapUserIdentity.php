@@ -122,13 +122,15 @@ class LdapUserIdentity extends CUserIdentity
 					}
 					//echo $staticAttr . '<br/>';
 					$mapping = array();
-					foreach($usersearch->sstLDAPInternalForeignMapping as $intext) {
-						list($intern, $foreign) = split(':', $intext);
-						if ('' == $foreign) {
-							$mapping[$intern] = '';
-						}
-						else {
-							$mapping[$intern] = $entries[0][strtolower($foreign)][0];
+					if (isset($usersearch->sstLDAPInternalForeignMapping)) {
+						foreach($usersearch->sstLDAPInternalForeignMapping as $intext) {
+							list($intern, $foreign) = split(':', $intext);
+							if ('' == $foreign) {
+								$mapping[$intern] = '';
+							}
+							else {
+								$mapping[$intern] = $entries[0][strtolower($foreign)][0];
+							}
 						}
 					}
 //echo '<pre>' . print_r($mapping, true) . '</pre>';
@@ -232,7 +234,7 @@ class LdapUserIdentity extends CUserIdentity
 		else {
 			$this->errorCode = self::ERROR_REALM_INVALID;
 		}
-		return !$this->errorCode;
+		return self::ERROR_NONE === $this->errorCode;
 	}
 
 	private function authenticateIntern($realm, $usersearch, $userauth, $usergroupsearch)
@@ -363,19 +365,11 @@ class LdapUserIdentity extends CUserIdentity
 	{
 		Yii::log("checkUser: $username, $realm", 'profile', 'ext.ldaprecord.UserIdentity');
 
+		$checkIntern = false;
 		$server = CLdapServer::getInstance();
 		$realm = CLdapRecord::model('LdapRealm')->findByAttributes(array('attr'=>array('ou'=>$realm)));
 		if (!is_null($realm)) {
-			if ('TRUE' != $realm->sstLDAPExternalDirectory) {
-				$usersearch = $realm->usersearch;
-				$criteria = array(
-					'branchDn' => $usersearch->sstLDAPBaseDn,
-					'filter' => sprintf($usersearch->sstLDAPFilter, $username)
-				);
-				$result = LdapNameless::model()->findByAttributes($criteria);
-				return !is_null($result);
-			}
-			else {
+			if ('TRUE' === $realm->sstLDAPExternalDirectory) {
 				// We use an external directory
 				$parts = explode(':', $realm->labeledURI);
 				$hostname = $parts[0] . ':' . $parts[1];
@@ -409,8 +403,19 @@ class LdapUserIdentity extends CUserIdentity
 //echo '<pre>' . print_r($entries, true) . '</pre>';
 				ldap_unbind($connection);
 
-				return 1 == $entries['count'];
+				$checkIntern = 1 != $entries['count'];
 			}
+			if ('TRUE' !== $realm->sstLDAPExternalDirectory || $checkIntern) {
+				$usersearch = $realm->usersearch;
+				$usersearch = LdapNameless::model()->findByDn('ou=User Search,ou=internal searches,ou=configuration,ou=virtualization,ou=services');
+				$criteria = array(
+						'branchDn' => $usersearch->sstLDAPBaseDn,
+						'filter' => sprintf($usersearch->sstLDAPFilter, $username)
+				);
+				$result = LdapNameless::model()->findByAttributes($criteria);
+				return !is_null($result);
+			}
+			return false;	
 		}
 	}
 }

@@ -98,18 +98,17 @@ class LoginForm extends CFormModel
 	public function authenticate($attribute, $params)
 	{
 		$this->_identity = new LdapUserIdentity($this->username, $this->password, $this->realm);
-		if(!$this->_identity->authenticate()) {
-			switch($this->_identity->errorCode) {
-				case LdapUserIdentity::ERROR_USERNAME_INVALID:
-					$this->addError('username',Yii::t('site', 'Incorrect username.'));
-					break;
-				case LdapUserIdentity::ERROR_PASSWORD_INVALID:
-					$this->addError('password',Yii::t('site', 'Incorrect password.'));
-					break;
-				case LdapUserIdentity::ERROR_REALM_INVALID:
-					$this->addError('realm',Yii::t('site', 'User not assigned to realm.'));
-					break;
-			}
+		$this->_identity->authenticate();
+		switch($this->_identity->errorCode) {
+			case LdapUserIdentity::ERROR_USERNAME_INVALID:
+				$this->addError('username',Yii::t('site', 'Incorrect username.'));
+				break;
+			case LdapUserIdentity::ERROR_PASSWORD_INVALID:
+				$this->addError('password',Yii::t('site', 'Incorrect password.'));
+				break;
+			case LdapUserIdentity::ERROR_REALM_INVALID:
+				$this->addError('realm',Yii::t('site', 'User not assigned to realm.'));
+				break;
 		}
 	}
 
