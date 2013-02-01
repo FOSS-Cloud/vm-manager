@@ -140,10 +140,10 @@ class SiteController extends Controller
 
 		$realms = array();
 		$server = CLdapServer::getInstance();
-		$result = $server->search('ou=authentication,ou=virtualization,ou=services', '(&(objectClass=sstLDAPAuthenticationProvider))', array('ou'));
+		$result = $server->search('ou=authentication,ou=virtualization,ou=services', '(&(objectClass=sstLDAPAuthenticationProvider))', array('ou', 'sstDisplayName'));
 		//echo '<pre>' . print_r($result, true) . '</pre>';
 		for($i=0; $i<$result['count']; $i++) {
-			$realms[$result[$i]['ou'][0]] = $result[$i]['ou'][0];
+			$realms[$result[$i]['ou'][0]] = $result[$i]['ou'][0] . ' (' . $result[$i]['sstdisplayname'][0] . ')';
 		}
 		// display the login form
 		$this->render('login',array('model'=>$model, 'realms' => $realms));
