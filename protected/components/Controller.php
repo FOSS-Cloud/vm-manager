@@ -144,7 +144,6 @@ class Controller extends CController
 									'label' => Yii::t('menu', 'Upload Iso File'),
 									'url' => array('/vmProfile/uploadIso'), // 'http://www.foss-cloud.org/en/index.php/Upload_ISO-Files', 
 									'itemOptions' => array('title' => Yii::t('menu', 'Virtual Machine Profile UploadIso Tooltip')),
-									'linkOptions' => array('target'=>'_blank'),
 									'active' => ($this->id == 'vmProfile' && $action == 'uploadIso'),
 								),
 							),
