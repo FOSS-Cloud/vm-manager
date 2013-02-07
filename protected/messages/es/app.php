@@ -20,4 +20,5 @@ return array (
   'Can\'t open output stream.' => 'Imposible abrir el flujo de salida',
   'Can\'t open temporary directory.' => 'Imposible abrir el directorio temporal',
   'ISO files' => 'Archivos ISO',
+  'locale' => 'es_ES',
 );

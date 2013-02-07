@@ -449,6 +449,30 @@ function toogleBoot(id, device)
   		}
 	});
 }
+function restoreVm(evt)
+{
+	$.ajax({
+		url: "{$restoreurl}",
+		data: 'dn=' + evt.data.backupDn,
+		success: function(data) {
+			if (data['err']) {
+				$("#vmdialogtext").html(data['msg']);
+				$("#vmdialog").dialog({
+					title: 'Error restoring Vm',
+					resizable: true,
+					modal: true,
+					buttons: {
+						schließen: function() {
+							$(this).dialog('close');
+						}
+					}
+				});
+			}
+			$('#{$gridid}_grid').trigger('reloadGrid');
+		},
+		dataType: 'json'
+	});
+}
 EOS
 , CClientScript::POS_END);
 
@@ -709,9 +733,29 @@ $this->widget('ext.zii.CJqGrid', array(
 		'autowidth'=>true,
 		'rowNum'=>10,
 		'rowList'=> array(10,20,30),
-		'height'=>230,
-		'altRows'=>true,
+		'height'=>300,
+		'altRows'=>false,
 		'editurl'=>$deleteurl,
+		'subGrid' => true,
+//		'subGridUrl' =>$baseurl . '/vmtemplate/getVmInfo',
+      		'subGridRowExpanded' => 'js:' . <<<EOS
+      	function(pID, id) {
+      		$('#{$gridid}_grid_' + id).html('<img src="{$imagesurl}/loading.gif"/>');
+      		var row = $('#{$gridid}_grid').getRowData(id);
+			$.ajax({
+				url: "{$baseurl}/vmtemplate/getVmInfo",
+				cache: false,
+				data: "dn=" + row['dn'] + "&rowid=" + id,
+				success: function(html){
+					$('#{$gridid}_grid_' + id).html(html);
+					$("img[alt=restore]").each(function() {
+						$(this).click({backupDn: $(this).attr("backupDn")}, restoreVm);
+					});
+				}
+			});
+      	}
+EOS
+,
 		'gridComplete' =>  'js:' . <<<EOS
 		function()
 		{

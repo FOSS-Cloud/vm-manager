@@ -543,6 +543,30 @@ function activateGoldenImage(id)
 		dataType: 'json'
 	});
 }
+function restoreVm(evt)
+{
+	$.ajax({
+		url: "{$restoreurl}",
+		data: 'dn=' + evt.data.backupDn,
+		success: function(data) {
+			if (data['err']) {
+				$("#vmdialogtext").html(data['msg']);
+				$("#vmdialog").dialog({
+					title: 'Error restoring Vm',
+					resizable: true,
+					modal: true,
+					buttons: {
+						schließen: function() {
+							$(this).dialog('close');
+						}
+					}
+				});
+			}
+			$('#{$gridid}_grid').trigger('reloadGrid');
+		},
+		dataType: 'json'
+	});
+}
 EOS;
 Yii::app()->clientScript->registerScript('refresh', $refreshjs, CClientScript::POS_END);
 
@@ -702,8 +726,10 @@ EOS
 $vmpooljs = <<<EOS
 $('#vmpool').change(function() {
 	var vmpool = this.value;
-	$('#{$gridid}_grid').setGridParam({url: '{$getvmsurl}?vmtype={$vmtype}&vmpool=' + vmpool});
-	reloadVms();
+	if ('' != vmpool) {
+		$('#{$gridid}_grid').setGridParam({url: '{$getvmsurl}?vmtype={$vmtype}&vmpool=' + vmpool});
+		reloadVms();
+ 	}
 });
 EOS;
 /*
@@ -763,8 +789,10 @@ $vmpooljs = <<<EOS
 								}
 							}
 							var vmpool = ui.item.option.value;
-							$('#{$gridid}_grid').setGridParam({url: '{$getvmsurl}?vmtype={$vmtype}&vmpool=' + vmpool});
-							reloadVms();
+							if ('' != vmpool) {
+								$('#{$gridid}_grid').setGridParam({url: '{$getvmsurl}?vmtype={$vmtype}&vmpool=' + vmpool});
+								reloadVms();
+							}
 							//alert(ui.item.value);
 						}
 					})
@@ -868,7 +896,7 @@ $this->widget('ext.zii.CJqGrid', array(
 		'altRows'=>false,
 		'editurl'=>$deleteurl,
 		'subGrid' => true,
-		'subGridUrl' =>$baseurl . '/vm/getVmInfo',
+//		'subGridUrl' =>$baseurl . '/vm/getVmInfo',
       	'subGridRowExpanded' => 'js:' . <<<EOS
       	function(pID, id) {
       		$('#{$gridid}_grid_' + id).html('<img src="{$imagesurl}/loading.gif"/>');
@@ -879,7 +907,10 @@ $this->widget('ext.zii.CJqGrid', array(
 				data: "dn=" + row['dn'] + "&rowid=" + id,
 				success: function(html){
 					$('#{$gridid}_grid_' + id).html(html);
-  				}
+					$("img[alt=restore]").each(function() {
+						$(this).click({backupDn: $(this).attr("backupDn")}, restoreVm);
+					});
+				}
 			});
       	}
 EOS

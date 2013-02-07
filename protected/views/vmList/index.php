@@ -143,8 +143,8 @@ EOS
 			'type'			: 'inline',
 			'autoDimensions': false,
 			'width'			: 450,
-			'height'		: 120,
-			'scrolling'		: 'no',
+			'height'		: 150,
+			'scrolling'		: 'yes',
 			'hideOnOverlayClick' : false,
 			'onComplete'	: function() {
 				$.ajax({

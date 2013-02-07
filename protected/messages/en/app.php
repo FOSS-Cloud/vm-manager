@@ -20,4 +20,5 @@ return array (
   'Can\'t open output stream.' => '',
   'Can\'t open temporary directory.' => '',
   'ISO files' => '',
+  'locale' => 'en_US',
 );

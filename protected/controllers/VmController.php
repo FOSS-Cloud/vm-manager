@@ -104,7 +104,7 @@ class VmController extends Controller
 				'actions'=>array('index', 'view', 'update', 'delete', 'template', 'profile',
 					'getPoolInfo', 'getVms', 'getVmInfo', 'refreshTimeout', 'refreshVms', 'getUserGui', 'saveUserAssign', 'getGroupGui', 'saveGroupAssign', 'getNodeGui',
 					'saveVm', 'startVm', 'shutdownVm', 'rebootVm', 'destroyVm', 'migrateVm',
-					'makeGolden', 'activateGolden'),
+					'makeGolden', 'activateGolden', 'restoreVm'),
 				'users'=>array('@'),
 				'expression'=>'Yii::app()->user->isAdmin'
 			),
@@ -485,10 +485,10 @@ class VmController extends Controller
       <td>{$vm->sstVirtualMachine}</td>
     </tr>
     <tr>
-      <td style="text-align: right"><b>Memory:</b></td>
-      <td>$memory</td>
-      <td style="text-align: right"><b>VM Pool:</b></td>
-      <td>{$vm->sstVirtualMachinePool}</td>
+      <td style="text-align: right; vertical-align: top;"><b>Memory:</b></td>
+      <td style="vertical-align: top;">$memory</td>
+      <td style="text-align: right;vertical-align: top;"><b>VM Pool:</b></td>
+      <td>{$vm->vmpool->sstDisplayName}<br/>{$vm->sstVirtualMachinePool}</td>
     </tr>
     <tr>
       <td style="text-align: right"><b>CPUs:</b></td>
@@ -506,18 +506,87 @@ EOS;
 		echo '</tbody></table>';
 		if (!is_null($vm->backup)) {
 			echo <<< EOS
+	<br />
 	<h3>Backups</h3>
-	<table style="margin-bottom: 0px; width: auto;"><tbody>
+	<table style="margin-bottom: 0px; width: 100%;"><tbody>
     <tr>
-      <th style="text-align: center"><b>Date</b></th>
-      <th style="text-align: center"><b>State</b></th>
-      <th style="text-align: center"><b>Action</b></th>
-					</tr>
+		<th style="text-align: center; width: 16px;">&nbsp;</th>
+		<th style="text-align: center; width: 120px;"><b>Date</b></th>
+		<th style="text-align: center; width: 120px;"><b>State</b></th>
+		<th style="text-align: center;"><b>Message</b></th>
+		<th style="text-align: center; width: 60px;"><b>Action</b></th>
+	</tr>
 			
 EOS;
+			$formatter = new CDateFormatter(CLocale::getInstance(Yii::t('app', 'locale')));
+			$restoring = false;
 			foreach($vm->backup->backups as $backup) {
-				echo '<tr><td>' . $backup->ou . '</td><td>' . $backup->sstProvisioningMode . '</td>';
-				echo '<td>&nbsp;</td></tr>';
+				if (0 === strpos($backup->sstProvisioningMode, 'unretain') || 0 === strpos($backup->sstProvisioningMode, 'restor')) {
+					$restoring = true;
+					break;
+				}
+			}
+			foreach($vm->backup->backups as $backup) {
+				echo '<tr><td>';
+				if ('finished' === $backup->sstProvisioningMode) {
+					echo '<img alt="" src="' . Yii::app()->baseUrl . '/images/backup_finished.png" />';
+				}
+				else if (0 != $backup->sstProvisioningReturnValue) {
+					echo '<img alt="" src="' . Yii::app()->baseUrl . '/images/backup_error.png" />';
+				}
+				else {
+					echo '<img alt="" src="' . Yii::app()->baseUrl . '/images/backup_running.png" />';
+				}
+				echo '</td>';
+				$date = $formatter->formatDateTime($backup->ou);
+				echo '<td style="white-space: nowrap;">' . $date . '</td><td style="text-align: center;">' . $backup->sstProvisioningMode . '</td><td>';
+				if (0 != $backup->sstProvisioningReturnValue) {
+					echo $backup->sstProvisioningReturnValue . ' (';	
+				
+					switch($backup->sstProvisioningReturnValue) {
+						case  1: echo Yii::t('backup', 'UNDEFINED_ERROR'); break;
+						case  2: echo Yii::t('backup', 'MISSING_PARAMETER_IN_CONFIG_FILE'); break;
+						case  3: echo Yii::t('backup', 'CONFIGURED_RAM_DISK_IS_NOT_VALUD'); break;
+						case  4: echo Yii::t('backup', 'NOT_ENOUGH_SPACE_ON_RAM_DISK'); break;
+						case  5: echo Yii::t('backup', 'CANNOT_SAVE_MACHINE_STATE'); break;
+						case  6: echo Yii::t('backup', 'CANNOT_WRITE_TO_BACKUP_LOCATION'); break;
+						case  7: echo Yii::t('backup', 'CANNOT_COPY_STATE_TO_BACKUP_LOCATION'); break;
+						case  8: echo Yii::t('backup', 'CANNOT_COPY_IMAGE_TO_BACKUP_LOCATION'); break;
+						case  9: echo Yii::t('backup', 'CANNOT_MERGE_DISK_IMAGES'); break;
+						case 10: echo Yii::t('backup', 'CANNOT_REMOVE_OLD_DISK_IMAGE'); break;
+						case 11: echo Yii::t('backup', 'CANNOT_REMOVE_STATE_FILE'); break;
+						case 12: echo Yii::t('backup', 'CANNOT_CREATE_EMPTY_DISK_IMAGE'); break;
+						case 13: echo Yii::t('backup', 'CANNOT_RENAME_DISK_IMAGE'); break;
+						case 14: echo Yii::t('backup', 'CANNOT_CONNECT_TO_BACKEND'); break;
+						case 15: echo Yii::t('backup', 'WRONG_STATE_INFORMATION'); break;
+						case 16: echo Yii::t('backup', 'CANNOT_SET_DISK_IMAGE_OWNERSHIP'); break;
+						case 17: echo Yii::t('backup', 'CANNOT_SET_DISK_IMAGE_PERMISSION'); break;
+						case 18: echo Yii::t('backup', 'CANNOT_RESTORE_MACHINE'); break;
+						case 19: echo Yii::t('backup', 'CANNOT_LOCK_MACHINE'); break;
+						case 20: echo Yii::t('backup', 'CANNOT_FIND_MACHINE'); break;
+						case 21: echo Yii::t('backup', 'CANNOT_COPY_STATE_FILE_TO_RETAIN'); break;
+						case 22: echo Yii::t('backup', 'RETAIN_ROOT_DIRECTORY_DOES_NOT_EXIST'); break;
+						case 23: echo Yii::t('backup', 'BACKUP_ROOT_DIRECTORY_DOES_NOT_EXIST'); break;
+						case 24: echo Yii::t('backup', 'CANNOT_CREATE_DIRECTORY'); break;
+						case 25: echo Yii::t('backup', 'CANNOT_SAVE_XML'); break;
+						case 26: echo Yii::t('backup', 'CANNOT_SAVE_BACKEND_ENTRY'); break;
+						case 27: echo Yii::t('backup', 'CANNOT_SET_DIRECTORY_OWNERSHIP'); break;
+						case 28: echo Yii::t('backup', 'CANNOT_SET_DIRECTORY_PERMISSION'); break;
+						default: echo Yii::t('backup', 'UNKNOWN_ERROR'); break;
+					}
+					echo ')';
+				}
+				else {
+					echo '&nbsp;';
+				}
+				echo '</td><td>';
+				if ('finished' === $backup->sstProvisioningMode && !$restoring) {
+					echo '<img class="action" title="restore VM backup" alt="restore" src="' . Yii::app()->baseUrl . '/images/vm_restore.png" backupDn="' . $backup->Dn . '" style="cursor: pointer;">';
+				}
+				else {
+					echo '&nbsp;';
+				}
+				echo '</td></tr>';
 			}
 			echo '</tbody></table>';
 		}
@@ -1140,6 +1209,27 @@ EOS;
 			}
 			else {
 				$json = array('err' => true, 'msg' => Yii::t('vm', 'VM with dn=\'{dn}\' not found!', array('{dn}' => $_GET['dn'])));
+			}
+		}
+		else {
+			$json = array('err' => true, 'msg' => Yii::t('vm', 'Parameter dn not found!'));
+		}
+		$this->sendJsonAnswer($json);
+	}
+	
+	public function actionRestoreVm() {
+		$this->disableWebLogRoutes();
+		if (isset($_GET['dn'])) {
+			$backup = CLdapRecord::model('LdapVmSingleBackup')->findByDn($_GET['dn']);
+			if (!is_null($backup)) {
+				$backup->setOverwrite(true);
+				$backup->sstProvisioningMode = 'unretain';
+				$backup->sstProvisioningState = '0';
+				$backup->save(true, array('sstProvisioningMode', 'sstProvisioningState'));
+				$json = array('err' => false, 'msg' => Yii::t('vm', 'Restore Vm started!'));
+			}
+			else {
+				$json = array('err' => true, 'msg' => Yii::t('vm', 'Backup with dn=\'{dn}\' not found!', array('{dn}' => $_GET['dn'])));
 			}
 		}
 		else {

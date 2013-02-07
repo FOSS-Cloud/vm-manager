@@ -20,4 +20,5 @@ return array (
   'Can\'t open output stream.' => 'Impossible d’ouvrir le flux de sortie.',
   'Can\'t open temporary directory.' => 'Impossible d’ouvrir le répertoire temporaire',
   'ISO files' => 'Fichiers ISO',
+  'locale' => 'fr_FR',
 );
