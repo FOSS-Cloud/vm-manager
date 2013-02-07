@@ -635,7 +635,7 @@ EOS;
 		$garray = array();
 		$groups = LdapGroup::model()->findAll(array('attr'=>array()));
 		foreach ($groups as $group) {
-			$garray[$group->uid] = array('name' => $group->sstGroupName);
+			$garray[$group->uid] = array('name' => $group->sstDisplayName);
 			if ($group->isAssignedToVm($_GET['dn'])) {
 				$garray[$group->uid]['selected'] = true;
 			}
@@ -683,7 +683,7 @@ EOS;
 				$data = array();
 				$data['objectClass'] = array('top', 'organizationalUnit', 'labeledURIObject', 'sstRelationship');
 				$data['ou'] = $uid;
-				$data['description'] = array('This entry links to the group ' . $group->sstGroupName . '.');
+				$data['description'] = array('This entry links to the group ' . $group->sstDisplayName . '.');
 				$data['labeledURI'] = array('ldap:///' . $group->dn);
 				$data['sstBelongsToCustomerUID'] = array(Yii::app()->user->customerUID);
 				$data['sstBelongsToResellerUID'] = array(Yii::app()->user->resellerUID);

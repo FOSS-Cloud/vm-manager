@@ -77,7 +77,7 @@ class LdapUserIdentity extends CUserIdentity
 				$parts = explode(':', $realm->labeledURI);
 				$hostname = $parts[0] . ':' . $parts[1];
 				$port = $parts[2];
-				$connection = @ldap_connect($hostname, $port) or die('LDAP connect failed!');
+				$connection = @ldap_connect($hostname, $port);
 				if ($connection === false) {
 					throw new CLdapException(Yii::t('LdapComponent.server', 'ldap_connect to {server} failt ({errno}): {message}',
 						array('{errno}'=>ldap_errno($connection), '{message}'=>ldap_error($connection),'{server}'=>$realm->labeledURI)), ldap_errno($connection));
@@ -296,6 +296,7 @@ class LdapUserIdentity extends CUserIdentity
 						$this->setState('uid', $model->uid);
 						$this->setState('groupuids', $groups);
 						$this->setState('realm', $this->realm);
+						$this->setState('externalLDAP', isset($realm->sstLDAPExternalDirectory) &&  'TRUE' === $realm->sstLDAPExternalDirectory);
 						$this->setState('admin', $model->isAdmin());
 						$this->setState('foreign', $model->isForeign());
 						$this->setState('customeruid', $model->sstBelongsToCustomerUID);
@@ -403,7 +404,12 @@ class LdapUserIdentity extends CUserIdentity
 //echo '<pre>' . print_r($entries, true) . '</pre>';
 				ldap_unbind($connection);
 
-				$checkIntern = 1 != $entries['count'];
+				if (1 === $entries['count']) {
+					return true;
+				}
+				else {
+					$checkIntern = true;
+				}
 			}
 			if ('TRUE' !== $realm->sstLDAPExternalDirectory || $checkIntern) {
 				$usersearch = $realm->usersearch;

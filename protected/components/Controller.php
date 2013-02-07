@@ -105,13 +105,13 @@ class Controller extends CController
 						'vm' => array(
 							'label' => Yii::t('menu', 'Persistent Virtual Machines'),
 							'url' => array('/vm/index', 'vmtype' => 'persistent'),
-							'itemOptions' => array('title' => Yii::t('menu', 'persistent Virtual Machines Tooltip')),
+							'itemOptions' => array('title' => Yii::t('menu', 'Persistent Virtual Machines Tooltip')),
 							'active' => ($this->id == 'vm' && $action == 'index' && isset($_GET['vmtype']) && 'persistent' == $_GET['vmtype'])
 						),
 						'vmdyn' => array(
 							'label' => Yii::t('menu', 'Dynamic Virtual Machines'),
 							'url' => array('/vm/index', 'vmtype' => 'dynamic'),
-							'itemOptions' => array('title' => Yii::t('menu', 'dynamic Virtual Machines Tooltip')),
+							'itemOptions' => array('title' => Yii::t('menu', 'Dynamic Virtual Machines Tooltip')),
 							'active' => ($this->id == 'vm' && $action == 'index' && isset($_GET['vmtype']) && 'dynamic' == $_GET['vmtype'])
 						),
 						'vmtemplate' => array(
@@ -240,6 +240,27 @@ class Controller extends CController
 									'url' => array('/user/create'),
 									'itemOptions' => array('title' => Yii::t('menu', 'User Create Tooltip')),
 									'active' => ($this->id == 'user' && $action == 'create'),
+								),
+							),
+						),
+						'group' => array(
+							'label' => Yii::t('menu', 'Group'),
+							'url' => array('/group/index'),
+							'itemOptions' => array('title' => Yii::t('menu', 'Group Tooltip')),
+							'active' => ($this->id == 'group' && $action == 'index'),
+							'items' => array(
+								array(
+									'label' => Yii::t('menu', 'Create'),
+									'url' => array('/group/create'),
+									'itemOptions' => array('title' => Yii::t('menu', 'Group Create Tooltip')),
+									'active' => ($this->id == 'group' && $action == 'create'),
+								),
+								array(
+									'label' => Yii::t('menu', 'Import'),
+									'url' => array('/group/import'),
+									'itemOptions' => array('title' => Yii::t('menu', 'Group Import Tooltip')),
+									'active' => ($this->id == 'group' && $action == 'import'),
+									'visible' => Yii::app()->user->getState('externalLDAP', false)
 								),
 							),
 						),

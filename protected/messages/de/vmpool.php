@@ -15,6 +15,10 @@
  *
  */
 return array (
+  'Assign groups to VM' => 'Benutzergruppen mit einer VM verknüpfen',
+  'Assign groups to VM Pool' => 'Benutzergruppen mit einem VM Pool verknüpfen',
+  'Assigned groups' => 'verknüpfte Benutzergruppen',
+  'Groups' => 'Benutzergruppen',
   'Assign users to VM Pool' => 'Benutzer mit einem VM Pool verknüpfen',
   'Assigned users' => 'verknüpfte Benutzer',
   'Assignment saved!' => 'Verknüpfung(en) gespeichert!',

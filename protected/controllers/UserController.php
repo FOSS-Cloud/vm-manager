@@ -158,7 +158,7 @@ class UserController extends Controller
 
 			$this->render('create', array(
 				'model' => $model,
-				'usergroups' => $this->createDropdownFromLdapRecords($usergroups, 'uid', 'sstGroupName'),
+				'usergroups' => $this->createDropdownFromLdapRecords($usergroups, 'uid', 'sstDisplayName'),
 			));
 		}
 	}
@@ -246,7 +246,7 @@ class UserController extends Controller
 
 			$this->render('update', array(
 				'model' => $model,
-				'usergroups' => $this->createDropdownFromLdapRecords($usergroups, 'uid', 'sstGroupName'),
+				'usergroups' => $this->createDropdownFromLdapRecords($usergroups, 'uid', 'sstDisplayName'),
 			));
 		}
 	}

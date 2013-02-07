@@ -63,4 +63,10 @@ return array (
   'VM Pools Tooltip' => '',
   'VM Pool Create Tooltip' => '',
   'VM Pool View Tooltip' => '',
+  'Group' => '',
+  'Group Create Tooltip' => '',
+  'Group Import Tooltip' => '',
+  'Group Tooltip' => '',
+  'Group Update Tooltip' => '',
+  'Import' => '',
 );

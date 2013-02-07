@@ -15,6 +15,10 @@
  *
  */
 return array (
+  'Assign groups to VM' => '',
+  'Assign groups to VM Pool' => '',
+  'Assigned groups' => '',
+  'Groups' => '',
   'Assign users to VM Pool' => '',
   'Assigned users' => '',
   'Assignment saved!' => '',
