@@ -998,7 +998,7 @@ EOS;
 							$dhcpvm->dhcpStatements = 'fixed-address ' . $range->getFreeIp();
 							$dhcpvm->save();
 
-							$retval = $libvirt->startVm($vmcopy->getStartParams());
+							$retval = $libvirt->startDynVm($vmcopy->getStartParams());
 							$answer['refresh'] = 1;
 						}
 					}
