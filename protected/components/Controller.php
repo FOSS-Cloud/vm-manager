@@ -266,6 +266,21 @@ class Controller extends CController
 						),
 					),
 				),
+				'config' => array(
+					'label' => Yii::t('menu', 'Configuration'),
+					'items' => array(
+						'global' => array(
+							'label' => Yii::t('menu', 'Global'),
+							'url' => array('/configuration/global'),
+							'active' => ($this->id == 'configuration' && $action == 'global'),
+						),
+						'backup' => array(
+							'label' => Yii::t('menu', 'Backup'),
+							'url' => array('/configuration/backup'),
+							'active' => ($this->id == 'configuration' && $action == 'backup'),
+						),
+					),
+				),
 				'diag' => array(
 					'label' => 'Diagnostics',
 					'items' => array(

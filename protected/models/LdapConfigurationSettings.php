@@ -98,6 +98,26 @@ class LdapConfigurationSettings extends CLdapRecord {
 		return $retval;
 	}
 	
+	public function getSoundLocation() {
+		return $this->location['sound'];
+	}
+	public function getUsbLocation() {
+		return $this->location['usb'];
+	}
+	public function getSpiceLocation() {
+		return $this->location['spice'];
+	}
+	
+	public function getSoundSetting() {
+		return $this->getSetting('sound');
+	}
+	public function getUsbSetting() {
+		return $this->getSetting('usb');
+	}
+	public function getSpiceSetting() {
+		return $this->getSetting('spice');
+	}
+	
 	protected function getSetting($name) {
 		$settings = $this->settings;
 		if (!is_array($settings)) {
