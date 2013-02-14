@@ -43,7 +43,7 @@ div.form textarea,
 div.form select
 /*, div.form ul*/
 {
-	margin: 0.2em 0 0.5em 0;
+	/*margin: 0.2em 0 0.5em 0;*/
 }
 /*
 div.form input[type=checkbox], div.form input[type=radio]
@@ -70,8 +70,9 @@ div.form fieldset
 div.form label
 {
 	font-weight: bold;
-	font-size: 0.9em;
+	font-size: 1.1em; /*0.9em;*/
 	display: block;
+	margin-bottom: 0.2em;
 }
 
 div.form .column
@@ -81,7 +82,7 @@ div.form .column
 
 div.form .row
 {
-	margin: 5px 0;
+	margin: 5px 0 0.5em;
 	overflow: auto;
 }
 

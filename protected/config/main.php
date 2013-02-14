@@ -93,7 +93,10 @@ return CMap::mergeArray(
 		),
 		'clientScript' => array(
 			'scriptMap' => array(
-				'jquery.js' => '/vm-manager/js/jquery-1.7.1.min.js',
+				'jquery.js' => '/vm-manager/js/jquery-1.8.3.js',
+				'jqueryui.js' => '/vm-manager/js/jquery-ui-1.9.2.custom.min.js',
+				'globalize.js' => '/vm-manager/js/globalize.js',
+				'globalizecultures.js' => '/vm-manager/js/cultures/globalize.cultures.js',
 			)
 		),
 	),
