@@ -66,7 +66,7 @@ class ConfigurationController extends Controller
 	{
 		return array(
 			array('allow', // allow authenticated user to perform 'create' and 'update' actions
-		        'actions'=>array('general', 'backup'),
+		        'actions'=>array('global', 'backup'),
 				'users'=>array('@'),
 				'expression'=>'Yii::app()->user->isAdmin'
 			),
@@ -80,15 +80,15 @@ class ConfigurationController extends Controller
 	}
 
 
-	public function actionGeneral() {
-		$model = new ConfigurationGeneralForm('update');
+	public function actionGlobal() {
+		$model = new ConfigurationGlobalForm('update');
 
-		$this->performAjaxValidationGeneral($model);
+		$this->performAjaxValidationGlobal($model);
 
 		$globalConfig = LdapConfigurationSettings::model()->findByDn('ou=settings,ou=configuration,ou=virtualization,ou=services');
-		if(isset($_POST['ConfigurationGeneralForm'])) {
+		if(isset($_POST['ConfigurationGlobalForm'])) {
 			//echo '<pre>' . print_r($_POST, true) . '</pre>';
-			$model->attributes = $_POST['ConfigurationGeneralForm'];
+			$model->attributes = $_POST['ConfigurationGlobalForm'];
 			//echo '<pre>' . print_r($model, true) . '</pre>';
 			$setting = $globalConfig->getSoundSetting();
 			$setting->setOverwrite(true);
@@ -102,7 +102,10 @@ class ConfigurationController extends Controller
 		{
 			$model->allowSound = $globalConfig->isSoundAllowed();
 			$model->allowUsb = $globalConfig->isUsbAllowed();
-			$this->render('general', array(
+			$spiceSetting = $globalConfig->getSpiceSetting();
+			$model->minSpicePort = $spiceSetting->sstSpicePortMin;
+			$model->maxSpicePort = $spiceSetting->sstSpicePortMax;
+			$this->render('global', array(
 				'model' => $model,
 				'submittext'=>Yii::t('configuration','Save')
 			));
@@ -121,57 +124,26 @@ class ConfigurationController extends Controller
 			//echo '<pre>' . print_r($model, true) . '</pre>';
 			$globalBackup->setOverwrite(true);
 			$globalBackup->sstBackupNumberOfIterations = $model->sstBackupNumberOfIterations;
-			$globalBackup->sstBackupRootDirectory = $model->sstBackupRootDirectory;
-			$globalBackup->sstBackupRetainDirectory = $model->sstBackupRetainDirectory;
 			$globalBackup->sstVirtualizationVirtualMachineForceStart = $model->sstVirtualizationVirtualMachineForceStart;
-			$globalBackup->sstVirtualizationBandwidthMerge = $model->sstVirtualizationBandwidthMerge;
-			$globalBackup->sstRestoreVMWithoutState = $model->sstRestoreVMWithoutState;
-			$globalBackup->sstBackupExcludeFromBackup = $model->sstBackupExcludeFromBackup;
-			$globalBackup->sstBackupRamDiskLocation = $model->sstBackupRamDiskLocation;
-			$globalBackup->sstVirtualizationVirtualMachineSequenceStop = $model->sstVirtualizationVirtualMachineSequenceStop;
-			$globalBackup->sstVirtualizationVirtualMachineSequenceStart = $model->sstVirtualizationVirtualMachineSequenceStart;
-			$globalBackup->sstVirtualizationDiskImageFormat = $model->sstVirtualizationDiskImageFormat;
-			$globalBackup->sstVirtualizationDiskImageOwner = $model->sstVirtualizationDiskImageOwner;
-			$globalBackup->sstVirtualizationDiskImageGroup = $model->sstVirtualizationDiskImageGroup;
-			$globalBackup->sstVirtualizationDiskImagePermission = $model->sstVirtualizationDiskImagePermission;
-			$globalBackup->sstVirtualizationDiskImageDirectoryOwner = $model->sstVirtualizationDiskImageDirectoryOwner;
-			$globalBackup->sstVirtualizationDiskImageDirectoryGroup = $model->sstVirtualizationDiskImageDirectoryGroup;
-			$globalBackup->sstVirtualizationDiskImageDirectoryPermission = $model->sstVirtualizationDiskImageDirectoryPermission;
-				
-			$globalBackup->sstCronMinute = $model->sstCronMinute;
-			$globalBackup->sstCronHour = $model->sstCronHour;
-			$globalBackup->sstCronDay = $model->sstCronDay;
-			$globalBackup->sstCronMonth = $model->sstCronMonth;
+			
+			list($hour, $minute) = explode(':', $model->cronTime);
+			$globalBackup->sstCronMinute = (int) $minute;
+			$globalBackup->sstCronHour = (int) $hour;
 			$globalBackup->sstCronDayOfWeek = $model->sstCronDayOfWeek;
 			$globalBackup->sstCronActive = $model->sstCronActive;
-			$globalBackup->save();
+			$globalBackup->save(false, array('sstBackupNumberOfIterations', 'sstVirtualizationVirtualMachineForceStart', 'sstCronMinute', 'sstCronHour', 'sstCronDayOfWeek', 'sstCronActive'));
+			//echo '<pre>' . print_r($globalBackup, true) . '</pre>';
 			Yii::app()->end();
 		}
 		{
 			$model->sstBackupNumberOfIterations = $globalBackup->sstBackupNumberOfIterations;
-			$model->sstBackupRootDirectory = $globalBackup->sstBackupRootDirectory;
-			$model->sstBackupRetainDirectory = $globalBackup->sstBackupRetainDirectory;
 			$model->sstVirtualizationVirtualMachineForceStart = $globalBackup->sstVirtualizationVirtualMachineForceStart;
-			$model->sstVirtualizationBandwidthMerge = $globalBackup->sstVirtualizationBandwidthMerge;
-			$model->sstRestoreVMWithoutState = $globalBackup->sstRestoreVMWithoutState;
-			$model->sstBackupExcludeFromBackup = $globalBackup->sstBackupExcludeFromBackup;
-			$model->sstBackupRamDiskLocation = $globalBackup->sstBackupRamDiskLocation;
-			$model->sstVirtualizationVirtualMachineSequenceStop = $globalBackup->sstVirtualizationVirtualMachineSequenceStop;
-			$model->sstVirtualizationVirtualMachineSequenceStart = $globalBackup->sstVirtualizationVirtualMachineSequenceStart;
-			$model->sstVirtualizationDiskImageFormat = $globalBackup->sstVirtualizationDiskImageFormat;
-			$model->sstVirtualizationDiskImageOwner = $globalBackup->sstVirtualizationDiskImageOwner;
-			$model->sstVirtualizationDiskImageGroup = $globalBackup->sstVirtualizationDiskImageGroup;
-			$model->sstVirtualizationDiskImagePermission = $globalBackup->sstVirtualizationDiskImagePermission;
-			$model->sstVirtualizationDiskImageDirectoryOwner = $globalBackup->sstVirtualizationDiskImageDirectoryOwner;
-			$model->sstVirtualizationDiskImageDirectoryGroup = $globalBackup->sstVirtualizationDiskImageDirectoryGroup;
-			$model->sstVirtualizationDiskImageDirectoryPermission = $globalBackup->sstVirtualizationDiskImageDirectoryPermission;
 				
 			$model->sstCronMinute = $globalBackup->sstCronMinute;
 			$model->sstCronHour = $globalBackup->sstCronHour;
-			$model->sstCronDay = $globalBackup->sstCronDay;
-			$model->sstCronMonth = $globalBackup->sstCronMonth;
 			$model->sstCronDayOfWeek = $globalBackup->sstCronDayOfWeek;
 			$model->sstCronActive = $globalBackup->sstCronActive;
+			$model->cronTime = $model->sstCronHour . ':' . $model->sstCronMinute;
 			
 			$this->render('backup', array(
 				'model' => $model,
@@ -184,9 +156,9 @@ class ConfigurationController extends Controller
 	 * Performs the AJAX validation.
 	 * @param CModel the model to be validated
 	 */
-	protected function performAjaxValidationGeneral($model)
+	protected function performAjaxValidationGlobal($model)
 	{
-		if(isset($_POST['ajax']) && $_POST['ajax']==='configurationgeneral-form')
+		if(isset($_POST['ajax']) && $_POST['ajax']==='configurationglobal-form')
 		{
 			echo CActiveForm::validate($model);
 			Yii::app()->end();

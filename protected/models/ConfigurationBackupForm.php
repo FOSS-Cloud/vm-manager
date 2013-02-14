@@ -30,34 +30,18 @@
 
 class ConfigurationBackupForm extends CFormModel {
 	public $sstBackupNumberOfIterations;
-	public $sstBackupRootDirectory;
-	public $sstBackupRetainDirectory;
 	public $sstVirtualizationVirtualMachineForceStart;
-	public $sstVirtualizationBandwidthMerge;
-	public $sstRestoreVMWithoutState;
-	public $sstBackupExcludeFromBackup;
-	public $sstBackupRamDiskLocation;
-	public $sstVirtualizationVirtualMachineSequenceStop;
-	public $sstVirtualizationVirtualMachineSequenceStart;
-	public $sstVirtualizationDiskImageFormat;
-	public $sstVirtualizationDiskImageOwner;
-	public $sstVirtualizationDiskImageGroup;
-	public $sstVirtualizationDiskImagePermission;
-	public $sstVirtualizationDiskImageDirectoryOwner;
-	public $sstVirtualizationDiskImageDirectoryGroup;
-	public $sstVirtualizationDiskImageDirectoryPermission;
 	
 	public $sstCronMinute;
 	public $sstCronHour;
-	public $sstCronDay;
-	public $sstCronMonth;
 	public $sstCronDayOfWeek;
 	public $sstCronActive;
+	public $cronTime;
 	
 	public function rules()
 	{
 		return array(
-				array('sstBackupNumberOfIterations, sstBackupRootDirectory, sstBackupRetainDirectory, sstVirtualizationVirtualMachineForceStart, sstVirtualizationBandwidthMerge, sstRestoreVMWithoutState, sstBackupExcludeFromBackup, sstBackupRamDiskLocation, sstVirtualizationVirtualMachineSequenceStop, sstVirtualizationVirtualMachineSequenceStart, sstVirtualizationDiskImageFormat, sstVirtualizationDiskImageOwner, sstVirtualizationDiskImageGroup, sstVirtualizationDiskImagePermission, sstVirtualizationDiskImageDirectoryOwner, sstVirtualizationDiskImageDirectoryGroup, sstVirtualizationDiskImageDirectoryPermission, sstCronMinute, sstCronHour, sstCronDay, sstCronMonth, sstCronDayOfWeek, sstCronActive', 'safe')
+			array('sstBackupNumberOfIterations, sstVirtualizationVirtualMachineForceStart, sstCronMinute, sstCronHour, sstCronDayOfWeek, sstCronActive, cronTime', 'safe')
 		);
 	}
 
@@ -67,6 +51,10 @@ class ConfigurationBackupForm extends CFormModel {
 	public function attributeLabels()
 	{
 		return array(
+			'sstBackupNumberOfIterations' => Yii::t('configuration', 'no. of iterations'),
+			'sstVirtualizationVirtualMachineForceStart' => Yii::t('configuration', 'vm force start'),
+			'sstCronActiveFalse' => Yii::t('configuration', 'no schedule'),
+			'sstCronActiveTrue' => Yii::t('configuration', 'at'),
 		);
 	}
 }

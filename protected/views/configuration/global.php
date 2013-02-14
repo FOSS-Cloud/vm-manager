@@ -30,7 +30,7 @@
 ?>
 <div class="form">
 <?php $form=$this->beginWidget('CActiveForm', array(
-	'id'=>'configurationgeneral-form',
+	'id'=>'configurationglobal-form',
 	'enableAjaxValidation'=>true,
 	'method' => 'post',
 	'clientOptions' => array(
@@ -38,14 +38,14 @@
 	),
 ));
 
-$this->title = Yii::t('configuration', 'General');
+$this->title = Yii::t('configuration', 'Global');
 //$this->helpurl = Yii::t('help', 'updateUser');
 ?>
 	<p class="note">Fields with <span class="required">*</span> are required.</p>
 	<div id="errormessage" class="errorMessage">
 		<?php echo $form->errorSummary($model); ?>
 	</div>
-	<div class="column" style="padding: 5px;">
+	<div class="column span-5" style="padding: 5px;">
 		<div class="row">
 			<?php echo $form->labelEx($model,'allowSound'); ?>
 			<?php echo $form->checkBox($model,'allowSound'); ?>
@@ -55,6 +55,16 @@ $this->title = Yii::t('configuration', 'General');
 			<?php echo $form->labelEx($model,'allowUsb'); ?>
 			<?php echo $form->checkBox($model,'allowUsb'); ?>
 			<?php echo $form->error($model,'allowUsb'); ?>
+		</div>
+	</div>
+	<div class="column span-5" style="padding: 5px;">
+		<div class="row">
+			<?php echo $form->labelEx($model,'minSpicePort'); ?>
+			<?php echo $form->textField($model, 'minSpicePort',array('size'=>10, 'disabled'=>"disabled")) . '<span style="font-size: 70%;"> (readonly)</span><br/>'; ?>
+		</div>
+		<div class="row">
+			<?php echo $form->labelEx($model,'maxSpicePort'); ?>
+			<?php echo $form->textField($model, 'maxSpicePort',array('size'=>10, 'disabled'=>"disabled")) . '<span style="font-size: 70%;"> (readonly)</span><br/>'; ?>
 		</div>
 	</div>
 	<div style="clear: both;" class="row buttons">

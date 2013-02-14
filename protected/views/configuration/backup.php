@@ -46,149 +46,75 @@ $this->title = Yii::t('configuration', 'Backup');
 		<?php echo $form->errorSummary($model); ?>
 	</div>
 	<div>
-		<div class="column span-8">
-			<h2>Backup</h2>
-			<div class="row">
-	  			<?php echo $form->labelEx($model,'sstBackupNumberOfIterations'); ?>
-	  			<?php echo $form->textField($model, 'sstBackupNumberOfIterations'); ?>
-	  			<?php echo $form->error($model,'sstBackupNumberOfIterations'); ?>
-	  		</div>
-			<div class="row">
-	  			<?php echo $form->labelEx($model, 'sstBackupRootDirectory'); ?>
-	  			<?php echo $form->textField($model, 'sstBackupRootDirectory'); ?>
-	  			<?php echo $form->error($model,'sstBackupRootDirectory'); ?>
-	  		</div>
-			<div class="row">
-	  			<?php echo $form->labelEx($model, 'sstBackupRetainDirectory'); ?>
-	  			<?php echo $form->textField($model, 'sstBackupRetainDirectory'); ?>
-	  			<?php echo $form->error($model,'sstBackupRetainDirectory'); ?>
-	  		</div>
-			<div class="row">
-	  			<?php echo $form->labelEx($model, 'sstVirtualizationVirtualMachineForceStart'); ?>
-	  			<?php echo $form->textField($model, 'sstVirtualizationVirtualMachineForceStart'); ?>
-	  			<?php echo $form->error($model,'sstVirtualizationVirtualMachineForceStart'); ?>
-	  		</div>
-			<div class="row">
-	  			<?php echo $form->labelEx($model, 'sstVirtualizationBandwidthMerge'); ?>
-	  			<?php echo $form->textField($model, 'sstVirtualizationBandwidthMerge'); ?>
-	  			<?php echo $form->error($model,'sstVirtualizationBandwidthMerge'); ?>
-	  		</div>
-			<div class="row">
-	  			<?php echo $form->labelEx($model, 'sstRestoreVMWithoutState'); ?>
-	  			<?php echo $form->textField($model, 'sstRestoreVMWithoutState'); ?>
-	  			<?php echo $form->error($model,'sstRestoreVMWithoutState'); ?>
-	  		</div>
-			<div class="row">
-	  			<?php echo $form->labelEx($model, 'sstBackupExcludeFromBackup'); ?>
-	  			<?php echo $form->textField($model, 'sstBackupExcludeFromBackup'); ?>
-	  			<?php echo $form->error($model,'sstBackupExcludeFromBackup'); ?>
-	  		</div>
-			<div class="row">
-	  			<?php echo $form->labelEx($model, 'sstBackupRamDiskLocation'); ?>
-	  			<?php echo $form->textField($model, 'sstBackupRamDiskLocation'); ?>
-	  			<?php echo $form->error($model,'sstBackupRamDiskLocation'); ?>
-	  		</div>
-			<div class="row">
-	  			<?php echo $form->labelEx($model, 'sstVirtualizationVirtualMachineSequenceStop'); ?>
-	  			<?php echo $form->textField($model, 'sstVirtualizationVirtualMachineSequenceStop'); ?>
-	  			<?php echo $form->error($model,'sstVirtualizationVirtualMachineSequenceStop'); ?>
-	  		</div>
-			<div class="row">
-	  			<?php echo $form->labelEx($model, 'sstVirtualizationVirtualMachineSequenceStart'); ?>
-	  			<?php echo $form->textField($model, 'sstVirtualizationVirtualMachineSequenceStart'); ?>
-	  			<?php echo $form->error($model,'sstVirtualizationVirtualMachineSequenceStart'); ?>
-	  		</div>
-			<div class="row">
-	  			<?php echo $form->labelEx($model, 'sstVirtualizationDiskImageFormat'); ?>
-	  			<?php echo $form->textField($model, 'sstVirtualizationDiskImageFormat'); ?>
-	  			<?php echo $form->error($model,'sstVirtualizationDiskImageFormat'); ?>
-	  		</div>
-			<div class="row">
-	  			<?php echo $form->labelEx($model, 'sstVirtualizationDiskImageOwner'); ?>
-	  			<?php echo $form->textField($model, 'sstVirtualizationDiskImageOwner'); ?>
-	  			<?php echo $form->error($model,'sstVirtualizationDiskImageOwner'); ?>
-	  		</div>
-			<div class="row">
-	  			<?php echo $form->labelEx($model, 'sstVirtualizationDiskImageGroup'); ?>
-	  			<?php echo $form->textField($model, 'sstVirtualizationDiskImageGroup'); ?>
-	  			<?php echo $form->error($model,'sstVirtualizationDiskImageGroup'); ?>
-	  		</div>
-			<div class="row">
-	  			<?php echo $form->labelEx($model, 'sstVirtualizationDiskImagePermission'); ?>
-	  			<?php echo $form->textField($model, 'sstVirtualizationDiskImagePermission'); ?>
-	  			<?php echo $form->error($model,'sstVirtualizationDiskImagePermission'); ?>
-	  		</div>
-			<div class="row">
-	  			<?php echo $form->labelEx($model, 'sstVirtualizationDiskImageDirectoryOwner'); ?>
-	  			<?php echo $form->textField($model, 'sstVirtualizationDiskImageDirectoryOwner'); ?>
-	  			<?php echo $form->error($model,'sstVirtualizationDiskImageDirectoryOwner'); ?>
-	  		</div>
-			<div class="row">
-	  			<?php echo $form->labelEx($model, 'sstVirtualizationDiskImageDirectoryGroup'); ?>
-	  			<?php echo $form->textField($model, 'sstVirtualizationDiskImageDirectoryGroup'); ?>
-	  			<?php echo $form->error($model,'sstVirtualizationDiskImageDirectoryGroup'); ?>
-	  		</div>
-			<div class="row">
-	  			<?php echo $form->labelEx($model, 'sstVirtualizationDiskImageDirectoryPermission'); ?>
-	  			<?php echo $form->textField($model, 'sstVirtualizationDiskImageDirectoryPermission'); ?>
-	  			<?php echo $form->error($model,'sstVirtualizationDiskImageDirectoryPermission'); ?>
-	  		</div>
-		</div>
-		<div class="column span-8" style="padding-left: 10px; border-left: 1px solid lightgrey;">
-			<h2>Cron</h2>
-			<div class="row">
-	  			<?php echo $form->labelEx($model,'sstCronDayOfWeek'); ?>
-	  			<?php echo $form->dropDownList($model,'sstCronDayOfWeek',array('*'=>'*')+Yii::app()->locale->getWeekDayNames()); ?>
-	  			<?php echo $form->error($model,'sstCronDayOfWeek'); ?>
-	  		</div>
-	  		<div class="row">
-	  			<?php echo $form->labelEx($model,'sstCronMonth'); ?>
-	  			<?php echo $form->dropDownList($model,'sstCronMonth',array('*'=>'*')+Yii::app()->locale->getMonthNames()); ?>
-	  			<?php echo $form->error($model,'sstCronMonth'); ?>
-	  		</div>
-	  	  <div class="row">
-	  			<?php echo $form->labelEx($model,'sstCronDay'); ?>
-<?php 
-$cronDays = array('*'=>'*');
-for ($i = 0; $i <= 31; $i += 1) {
-	$cronDays[$i] = $i;
-}
-?>
-				<?php echo $form->dropDownList($model,'sstCronDay',$cronDays); ?>
-	  			<?php echo $form->error($model,'sstCronDay'); ?>
-	  		</div>
-		    <div class="row">
-	  			<?php echo $form->labelEx($model,'sstCronHour'); ?>
-<?php 
-$cronHours = array('*'=>'*');
-for ($i = 0; $i <= 23; $i += 1) {
-	$cronHours[$i] = $i;
-}
-?>
-				<?php echo $form->dropDownList($model,'sstCronHour',$cronHours); ?>
-	  			<?php echo $form->error($model,'sstCronHour'); ?>
-	  		</div>
-		    <div class="row">
-	  			<?php echo $form->labelEx($model,'sstCronMinute'); ?>
-<?php 
-$cronMinutes = array('*'=>'*');
-for ($i = 0; $i <= 55; $i += 5) {
-	$cronMinutes[$i] = $i;
-}
-?>
-	  			<?php echo $form->dropDownList($model,'sstCronMinute',$cronMinutes); ?>
-	  			<?php echo $form->error($model,'sstCronMinute'); ?>
-	  		</div>
-	  		<div class="row">
-	  			<?php echo $form->labelEx($model,'sstCronActive'); ?>
-	  			<?php echo $form->dropDownList($model,'sstCronActive',array('TRUE'=>'true', 'FALSE'=>'false')); ?>
-	  			<?php echo $form->error($model,'sstCronActive'); ?>
-	  		</div>
-		</div>
+		<div class="row">
+  			<?php echo $form->labelEx($model,'sstBackupNumberOfIterations'); ?>
+  			<?php echo $form->textField($model, 'sstBackupNumberOfIterations', array('size' => 3)); ?>
+  			<?php echo $form->error($model,'sstBackupNumberOfIterations'); ?>
+  		</div>
+		<div class="row">
+  			<?php echo $form->labelEx($model, 'sstVirtualizationVirtualMachineForceStart'); ?>
+  			<?php //echo $form->dropDownList($model,'sstVirtualizationVirtualMachineForceStart',array('TRUE'=>'Yes', 'FALSE'=>'No')); ?>
+   			<div id="vmforcestart">
+  			<?php echo $form->radioButtonList($model,'sstVirtualizationVirtualMachineForceStart', array('FALSE'=>'No', 'TRUE'=>'Yes'), 
+   					array('separator' => '', 'uncheckValue' => null, 'labelOptions' => array('style' => 'display: inline-block;'))); ?>
+   			</div>
+  			<?php echo $form->error($model,'sstVirtualizationVirtualMachineForceStart'); ?>
+  		</div>
+		<h2><?php echo Yii::t('configuration', 'Schedule')?></h2>
+  		<div class="row">
+  			<?php echo $form->radioButton($model,'sstCronActive', array('value' => 'FALSE', 'uncheckValue' => null)); ?>
+  			<?php echo $form->labelEx($model, 'sstCronActiveFalse', array('style' => 'display: inline;')); ?>
+  		</div>
+  		<div class="row">
+  			<?php echo $form->radioButton($model,'sstCronActive', array('value' => 'TRUE', 'style' => 'float: left;', 'uncheckValue' => null)); ?>
+  			<?php echo $form->labelEx($model, 'sstCronActiveTrue', array('style' => 'display: inline; float: left;')); ?>
+  			<div style="float: left; margin-left: 15px;">
+  			<?php echo $form->hiddenField($model, 'sstCronHour'); ?>
+  			<?php echo $form->hiddenField($model, 'sstCronMinute'); ?>
+  			<?php echo $form->textField($model, 'cronTime', array('size' => 4)); ?>&nbsp;<span>(24h)</span><br/>&nbsp;
+   			<div id="dayofweek">
+   			<?php echo $form->radioButtonList($model,'sstCronDayOfWeek', array_merge(array('*' => 'every Day'), CLocale::getInstance(Yii::t('app', 'locale'))->getWeekDayNames('abbreviated')), 
+   					array('separator' => '', 'uncheckValue' => null, 'labelOptions' => array('style' => 'display: inline-block;'))); ?>
+			</div>
+			</div>
+   		</div>
 	</div>
 	<div style="clear: both;" class="row buttons">
 		<?php echo CHtml::submitButton($submittext, array('id' => 'submit')); ?>
 	</div>
 <?php $this->endWidget(); ?>
-
 </div><!-- form -->
+<?php
+$locale = str_replace('_', '-', Yii::t('app', 'locale'));
+Yii::app()->clientScript->registerScriptFile('globalize.js');
+Yii::app()->clientScript->registerScriptFile('globalizecultures.js');
+Yii::app()->clientScript->registerScript('buttons', <<<EOS
+Globalize.culture('de-DE');
+$.widget( "ui.timespinner", $.ui.spinner, {
+	options: {
+		// seconds
+		step: 5 * 60 * 1000,
+		// hours
+		page: 12
+	},
+	_parse: function( value ) {
+		if ( typeof value === "string" ) {
+			// already a timestamp
+			if ( Number( value ) == value ) {
+				return Number( value );
+			}
+			return +Globalize.parseDate( value );
+		}
+		return value;
+	},
+	_format: function( value ) {
+		return Globalize.format( new Date(value), "t" );
+	}
+});
+$("#ConfigurationBackupForm_sstBackupNumberOfIterations").spinner({min: 1, max: 20});
+$("#vmforcestart").buttonset();
+$("#dayofweek").buttonset();
+$("#ConfigurationBackupForm_cronTime").timespinner();
+EOS
+, CClientScript::POS_END);
+?>

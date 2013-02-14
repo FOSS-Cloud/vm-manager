@@ -28,14 +28,17 @@
  *
  */
 
-class ConfigurationGeneralForm extends CFormModel {
+class ConfigurationGlobalForm extends CFormModel {
 	public $allowSound;
 	public $allowUsb;
+	public $minSpicePort;
+	public $maxSpicePort;
 
 	public function rules()
 	{
 		return array(
 			array('allowSound, allowUsb', 'required'),
+			array('minSpicePort, maxSpicePort', 'safe')
 		);
 	}
 
@@ -47,6 +50,8 @@ class ConfigurationGeneralForm extends CFormModel {
 		return array(
 			'allowSound' => Yii::t('configuration', 'allow Sound'),
 			'allowUsb' => Yii::t('configuration', 'allow USB'),
+			'minSpicePort' => Yii::t('configuration', 'min. Spice port'),
+			'maxSpicePort' => Yii::t('configuration', 'max. Spice port'),
 		);
 	}
 }
