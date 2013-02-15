@@ -354,6 +354,22 @@ class Controller extends CController
 	}
 
 	/**
+	 * Runs the action after passing through all filters.
+	 * This method is invoked by {@link runActionWithFilters} after all possible filters have been executed
+	 * and the action starts to run.
+	 * @param CAction $action action to run
+	 */
+ 	public function runAction($action)
+ 	{
+ 		try {
+ 			parent::runAction($action);
+ 		}
+ 		catch (CLdapException $e) {
+ 			throw new CHttpException (500, Yii::t('app', "Can't connect to Ldap Server."));
+ 		}
+ 	}
+
+	/**
 	 * Get the base url of the css to use.
 	 *
 	 * @return string url

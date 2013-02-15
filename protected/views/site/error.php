@@ -28,11 +28,11 @@
  *
  */
 
-$this->pageTitle=Yii::app()->name . ' - Error';
+$this->pageTitle=Yii::app()->name . ' - ' . Yii::t('site', 'Error');
 $this->breadcrumbs=array(
-	'Error',
+	Yii::t('site', 'Error'),
 );
-$this->title = 'Error ' . $code;
+$this->title = Yii::t('site', 'Error') . ' ' . $code;
 
 ?>
 
