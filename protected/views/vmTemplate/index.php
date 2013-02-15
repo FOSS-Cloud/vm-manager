@@ -44,6 +44,7 @@ $deleteurl = $this->createUrl('vmTemplate/delete');
 $finishurl = $this->createUrl('vmTemplate/finish');
 $finishdynurl = $this->createUrl('vmTemplate/finishDynamic');
 $nodeurl = $this->createUrl('node/view');
+$restoreurl = $this->createUrl('vm/restoreVm');
 
 $actrefreshtime = Yii::app()->getSession()->get('vm_refreshtime', 10000);
 
@@ -743,7 +744,7 @@ $this->widget('ext.zii.CJqGrid', array(
       		$('#{$gridid}_grid_' + id).html('<img src="{$imagesurl}/loading.gif"/>');
       		var row = $('#{$gridid}_grid').getRowData(id);
 			$.ajax({
-				url: "{$baseurl}/vmtemplate/getVmInfo",
+				url: "{$baseurl}/vmTemplate/getVmInfo",
 				cache: false,
 				data: "dn=" + row['dn'] + "&rowid=" + id,
 				success: function(html){
