@@ -902,7 +902,7 @@ class VmTemplateController extends Controller
 	public function actionGetVmInfo() {
 		$this->disableWebLogRoutes();
 		$dn = $_GET['dn'];
-		$vm = CLdapRecord::model('LdapVm')->findByDn($dn);
+		$vm = CLdapRecord::model('LdapVmFromTemplate')->findByDn($dn);
 		$rowid  = $_GET['rowid'];
 
 		$ip = '???';
