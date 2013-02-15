@@ -1420,6 +1420,7 @@ EOS;
 				$params['devices']['graphics'] = array();
 				$params['devices']['graphics']['spiceport'] = $vm->sstSpicePort;
 				$params['devices']['graphics']['spicepassword'] = $vm->sstSpicePassword;
+				$params['devices']['graphics']['spicelistenaddress'] = $vm->node->getVLanIP('pub');
 				$params['devices']['graphics']['spiceacceleration'] = isset(Yii::app()->params['virtualization']['disableSpiceAcceleration'])
 					&& Yii::app()->params['virtualization']['disableSpiceAcceleration'];
 				$params['devices']['disks'] = array();

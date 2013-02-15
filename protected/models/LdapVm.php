@@ -124,6 +124,7 @@ class LdapVm extends CLdapRecord {
 		$params['devices']['graphics'] = array();
 		$params['devices']['graphics']['spiceport'] = $this->sstSpicePort;
 		$params['devices']['graphics']['spicepassword'] = $this->sstSpicePassword;
+		$params['devices']['graphics']['spicelistenaddress'] = $this->node->getVLanIP('pub');
 		$params['devices']['graphics']['spiceacceleration'] = isset(Yii::app()->params['virtualization']['disableSpiceAcceleration'])
 			&& Yii::app()->params['virtualization']['disableSpiceAcceleration'];
 		$params['devices']['disks'] = array();
