@@ -47,6 +47,7 @@ $makegoldenurl = $this->createUrl('vm/makeGolden');
 $activategoldenurl = $this->createUrl('vm/activateGolden');
 $refreshtimeouturl = $this->createUrl('vm/refreshTimeout');
 $nodeurl = $this->createUrl('node/view');
+$restoreurl = $this->createUrl('vm/restoreVm');
 
 //$imgcontroller = $this->createUrl('img/percent');
 $actrefreshtime = Yii::app()->getSession()->get('vm_refreshtime', 10000);
