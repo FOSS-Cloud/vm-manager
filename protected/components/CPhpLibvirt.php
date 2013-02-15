@@ -152,22 +152,40 @@ class CPhpLibvirt {
 		Yii::log('migrateVm: libvirt_domain_get_xml_desc(' . $data['libvirt'] . ',NULL)', 'profile', 'phplibvirt');
 		$xmllibvirt = libvirt_domain_get_xml_desc($domain, NULL);
 		Yii::log('migrateVm: orig XML: ' . $xmllibvirt, 'profile', 'phplibvirt');
-		$spicePort = $data['spiceport'];
-		$xml = '';
-		$pos1 = strpos($xmllibvirt, '<graphics');
-		if (false !== $pos1) {
-			$pos2 = strpos($xmllibvirt, "</graphics>", $pos1 + 1);
-			if (false !== $pos2)  {
-				$pos3 = strpos($xmllibvirt, "port='", $pos1 + 1);
-				if (false !== $pos3 && $pos3 < $pos2) {
-					$start = $pos3 + 6;
-					$end = strpos($xmllibvirt, "'", $start);
-					if (false !== $end) {
-						$xml = substr_replace($xmllibvirt, $spicePort, $start, $end - $start);
-					}
-				}
-			}
-		}
+		$xml = $this->replaceXML($xmllibvirt, $data);
+// 		$spicePort = $data['spiceport'];
+// 		$listen = $data['newlisten'];
+// 		$xml = $xmllibvirt;
+// 		$pos1 = strpos($xml, '<graphics');
+// 		if (false !== $pos1) {
+// 			$pos2 = strpos($xml, "</graphics>", $pos1 + 1);
+// 			if (false !== $pos2)  {
+// 				$pos3 = strpos($xml, "port='", $pos1 + 1);
+// 				if (false !== $pos3 && $pos3 < $pos2) {
+// 					$start = $pos3 + 6;
+// 					$end = strpos($xml, "'", $start);
+// 					if (false !== $end) {
+// 						$xml = substr_replace($xml, $spicePort, $start, $end - $start);
+// 					}
+// 				}
+// 				$pos3 = strpos($xml, "listen='", $pos1 + 1);
+// 				if (false !== $pos3 && $pos3 < $pos2) {
+// 					$start = $pos3 + 8;
+// 					$end = strpos($xml, "'", $start);
+// 					if (false !== $end) {
+// 						$xml = substr_replace($xml, $listen, $start, $end - $start);
+// 					}
+// 				}
+// 				$pos3 = strpos($xml, "address='", $pos1 + 1);
+// 				if (false !== $pos3 && $pos3 < $pos2) {
+// 					$start = $pos3 + 9;
+// 					$end = strpos($xml, "'", $start);
+// 					if (false !== $end) {
+// 						$xml = substr_replace($xml, $listen, $start, $end - $start);
+// 					}
+// 				}
+// 			}
+// 		}
 		Yii::log('migrateVm:  new XML: ' . $xml, 'profile', 'phplibvirt');
 				
 		$flags = self::$VIR_MIGRATE_LIVE | self::$VIR_MIGRATE_UNDEFINE_SOURCE | self::$VIR_MIGRATE_PEER2PEER | self::$VIR_MIGRATE_TUNNELLED | self::$VIR_MIGRATE_PERSIST_DEST | self::$VIR_MIGRATE_UNSAFE;
@@ -255,7 +273,8 @@ class CPhpLibvirt {
 	<on_crash>{$data[\'sstOnCrash\']}</on_crash>
 	<devices>
 		<emulator>{$data[\'devices\'][\'sstEmulator\']}</emulator>
-		<graphics type=\"spice\" port=\"{$data[\'devices\'][\'graphics\'][\'spiceport\']}\" tlsPort=\"0\" autoport=\"no\" listen=\"0.0.0.0\" passwd=\"{$data[\'devices\'][\'graphics\'][\'spicepassword\']}\">
+		<graphics type=\"spice\" port=\"{$data[\'devices\'][\'graphics\'][\'spiceport\']}\" tlsPort=\"0\" autoport=\"no\" listen=\"{$data[\'devices\'][\'graphics\'][\'spicelistenaddress\']}\" passwd=\"{$data[\'devices\'][\'graphics\'][\'spicepassword\']}\">
+			<listen type=\"address\" address=\"{$data[\'devices\'][\'graphics\'][\'spicelistenaddress\']}\" />
 {$spiceparams}		</graphics>
 		<channel type=\"spicevmc\">
 			<target type=\"virtio\" name=\"com.redhat.spice.0\"/>
@@ -328,6 +347,43 @@ class CPhpLibvirt {
 			echo "EVAL ERROR!";
 		}
 		return $retval;
+	}
+
+	public function replaceXML($originalxml, $data) {
+		$spicePort = $data['spiceport'];
+		$listen = $data['newlisten'];
+		$xml = $originalxml;
+		$pos1 = strpos($xml, '<graphics');
+		if (false !== $pos1) {
+			$pos2 = strpos($xml, "</graphics>", $pos1 + 1);
+			if (false !== $pos2)  {
+				$pos3 = strpos($xml, "port='", $pos1 + 1);
+				if (false !== $pos3 && $pos3 < $pos2) {
+					$start = $pos3 + 6;
+					$end = strpos($xml, "'", $start);
+					if (false !== $end) {
+						$xml = substr_replace($xml, $spicePort, $start, $end - $start);
+					}
+				}
+				$pos3 = strpos($xml, "listen='", $pos1 + 1);
+				if (false !== $pos3 && $pos3 < $pos2) {
+					$start = $pos3 + 8;
+					$end = strpos($xml, "'", $start);
+					if (false !== $end) {
+						$xml = substr_replace($xml, $listen, $start, $end - $start);
+					}
+				}
+				$pos3 = strpos($xml, "address='", $pos1 + 1);
+				if (false !== $pos3 && $pos3 < $pos2) {
+					$start = $pos3 + 9;
+					$end = strpos($xml, "'", $start);
+					if (false !== $end) {
+						$xml = substr_replace($xml, $listen, $start, $end - $start);
+					}
+				}
+			}
+		}
+		return $xml;
 	}
 
 	public function generateUUID() {
