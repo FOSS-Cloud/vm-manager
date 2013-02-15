@@ -900,7 +900,6 @@ class VmTemplateController extends Controller
 	}
 
 	public function actionGetVmInfo() {
-		//sleep(5);
 		$this->disableWebLogRoutes();
 		$dn = $_GET['dn'];
 		$vm = CLdapRecord::model('LdapVm')->findByDn($dn);
@@ -1206,16 +1205,16 @@ EOS;
 						$json = array('err' => false, 'msg' => Yii::t('vmtemplate', 'Finished!'));
 					}
 					else {
-						$json = array('err' => 1, 'msg' => 'CPhpLibvirt defineVm failed (' . CPhpLibvirt::getInstance()->getLastError() . ')!');
+						$json = array('err' => true, 'msg' => 'CPhpLibvirt defineVm failed (' . CPhpLibvirt::getInstance()->getLastError() . ')!');
 					}
 				}
 				else {
-					$json = array('err' => 1, 'msg' => 'Copied Vm not found!');
+					$json = array('err' => true, 'msg' => 'Copied Vm not found!');
 				}
 				unset($_SESSION['copyVolumeFile']);
 			}
 			else {
-				$json = array('err' => 1, 'msg' => 'No copy action found in session!');
+				$json = array('err' => false, 'msg' => Yii::t('vmtemplate', 'No copy action found in session!'));
 			}
 		}
 		$this->sendJsonAnswer($json);
