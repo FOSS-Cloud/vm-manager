@@ -1134,12 +1134,7 @@ EOS;
 						$vm->sstMigrationNode = $newnode->sstNode;
 						$vm->sstMigrationSpicePort = $spiceport;
 						$vm->save();
-						if ($libvirt->migrateVm(array(
-								'libvirt' => $vm->node->getLibvirtUri(), 
-								'newlibvirt' => $newnode->getLibvirtUri(), 
-								'name' => $vm->sstVirtualMachine, 
-								'spiceport' => $spiceport,
-								'newlisten' => $newnode->getVLanIP('pub')))) {
+						if ($libvirt->migrateVm(array('libvirt' => $vm->node->getLibvirtUri(), 'newlibvirt' => $newnode->getLibvirtUri(), 'name' => $vm->sstVirtualMachine, 'spiceport' => $spiceport))) {
 							$vm->sstNode = $newnode->sstNode;
 							$vm->sstSpicePort = $spiceport;
 							$vm->save();
