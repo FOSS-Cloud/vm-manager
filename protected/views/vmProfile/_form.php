@@ -135,8 +135,7 @@ EOS
 	//echo '<pre>' . print_r($treedata, true) . '</pre>';
 ?>
 	<div id="hidestep2" style="position: absolute; left: 10px; top: 10px; width: 50px; height: 50px; background: transparent url(<?=$this->cssBase;?>/opaque.png) repeat left top; z-index: 2701;"> </div>
-	<p class="note">Fields with <span class="required">*</span> are required.<br/>
-		Fields with <span class="required">**</span>: only one of them must be set.</p>
+	<p class="note">Fields with <span class="required">*</span> are required.</p>
 	<div id="errormessage" class="errorMessage">
 		<?php echo $form->errorSummary($model); ?>
 	</div>
