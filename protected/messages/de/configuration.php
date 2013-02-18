@@ -26,6 +26,7 @@ return array (
   'max. Spice port' => 'max. Anzahl Spice Ports',
   'min. Spice port' => 'min. Anzahl Spice Ports',
   'no schedule' => 'kein Zeitplan',
-  'no. of iterations' => 'Anzahl an Iteration',
+  'no. of iterations' => 'Anzahl an Iterationen',
   'vm force start' => 'VM Start erzwingen',
+  'every day' => 'jeden Tag',
 );

@@ -45,7 +45,7 @@ echo $form->hiddenField($model, 'dn');
 	<div id="errormessage" class="errorMessage">
 		<?php echo $form->errorSummary($model); ?>
 	</div>
-	<div class="column" style="padding: 5px;">
+	<div class="column span-10" style="padding: 5px;">
 		<div class="row">
 			<?php echo $form->labelEx($model,'type'); ?>
 <?php
@@ -179,9 +179,212 @@ else {
 			<?php echo $form->error($model,'brokerPreStart'); ?>
 		</div>
 	</div>
+	<div class="column span-7">
+		<h2><?php echo Yii::t('configuration', 'Backup')?></h2>
+  		<div class="row">
+  			<?php echo $form->radioButton($model,'poolBackupActive', array('id' => 'VmPoolForm_backupActiveFalse', 'value' => 'FALSE', 'style' => 'float: left;', 'uncheckValue' => null)); ?>
+  			<?php echo $form->labelEx($model, 'poolBackupActiveFalse', array('style' => 'display: inline;')); ?>
+  		</div>
+  		<div class="row">
+  			<?php echo $form->radioButton($model,'poolBackupActive', array('id' => 'VmPoolForm_backupActiveTrue', 'value' => 'TRUE', 'style' => 'float: left;', 'uncheckValue' => null)); ?>
+  			<?php echo $form->labelEx($model, 'poolBackupActiveTrue', array('style' => 'display: inline; float: left;')); ?><br/>
+  			<div id="poolbackup" style="clear: both; margin-left: 20px;">
+	   			<?php echo $form->labelEx($model,'sstBackupNumberOfIterations'); ?>
+	  			<?php echo $form->textField($model, 'sstBackupNumberOfIterations', array('size' => 3)); ?>
+	  			<?php echo $form->error($model,'sstBackupNumberOfIterations'); ?>
+	   			<?php echo $form->labelEx($model, 'sstVirtualizationVirtualMachineForceStart'); ?>
+	  			<?php //echo $form->dropDownList($model,'sstVirtualizationVirtualMachineForceStart',array('TRUE'=>'Yes', 'FALSE'=>'No')); ?>
+	   			<div id="vmforcestart">
+		  			<?php echo $form->radioButtonList($model,'sstVirtualizationVirtualMachineForceStart', array('FALSE'=> Yii::t('vmPool', 'NO'), 'TRUE'=> Yii::t('vmPool', 'YES')), 
+		   					array('separator' => '', 'uncheckValue' => null, 'labelOptions' => array('style' => 'display: inline-block;'))); ?>
+	   			</div>
+	  			<?php echo $form->error($model,'sstVirtualizationVirtualMachineForceStart'); ?>
+	  		</div>
+  		</div>
+		<h2><?php echo Yii::t('configuration', 'Schedule')?></h2>
+  		<div class="row">
+  			<?php echo $form->radioButton($model,'poolCronActive', array('id' => 'VmPoolForm_globalCronActive', 'value' => 'GLOBAL', 'style' => 'float: left;', 'uncheckValue' => null)); ?>
+  			<?php echo $form->labelEx($model, 'poolCronActive', array('style' => 'display: inline;')); ?>
+  		</div>
+		<div class="row">
+  			<?php echo $form->radioButton($model,'poolCronActive', array('id' => 'VmPoolForm_cronActiveFalse', 'value' => 'FALSE', 'style' => 'float: left;', 'uncheckValue' => null)); ?>
+  			<?php echo $form->labelEx($model, 'sstCronActiveFalse', array('style' => 'display: inline;')); ?>
+  		</div>
+  		<div class="row">
+  			<?php echo $form->radioButton($model,'poolCronActive', array('id' => 'VmPoolForm_cronActiveTrue', 'value' => 'TRUE', 'style' => 'float: left; margin-top: 7px;', 'uncheckValue' => null)); ?>
+  			<?php echo $form->labelEx($model, 'sstCronActiveTrue', array('style' => 'display: inline; float: left; margin: 4px 6px 0 0;')); ?>
+ 			<?php echo $form->textField($model, 'cronTime', array('size' => 4, 'style' => 'display: inline; float: left;')); ?>&nbsp;<span>(24h)</span><br/>&nbsp;
+  			<div id="poolcron" style="clear: both; margin-left: 15px;">
+  				<?php echo $form->hiddenField($model, 'sstCronHour'); ?>
+  				<?php echo $form->hiddenField($model, 'sstCronMinute'); ?>
+   				<div id="dayofweek1" style="float: right;">
+   				<?php 
+   					$localedays = CLocale::getInstance(Yii::t('app', 'locale'))->getWeekDayNames('abbreviated');
+   					$days = array_merge(array('*' => Yii::t('configuration', 'every day')), array_slice($localedays, 0, 3));
+   					//echo '<pre>' . print_r($days, true) . '</pre>';
+   					echo $form->radioButtonList($model,'sstCronDayOfWeek', $days, 
+   						array('separator' => '', 'uncheckValue' => null, 'labelOptions' => array('style' => 'display: inline-block;'))); ?>
+				</div>
+  				<div id="dayofweek2" style="float: right;">
+   				<?php
+   					//$localedays = CLocale::getInstance(Yii::t('app', 'locale'))->getWeekDayNames('abbreviated');
+   					$days = array(); 
+   					for($i=3; $i<7; $i++) {
+						$days[$i] = $localedays[$i];
+					}
+					$days = array_slice($localedays, 3, 4, true);
+					//echo '<pre>' . print_r($days, true) . '</pre>';
+   					echo $form->radioButtonList($model,'sstCronDayOfWeek', $days, 
+   						array('separator' => '', 'uncheckValue' => null, 'labelOptions' => array('style' => 'display: inline-block;'))); ?>
+				</div>
+			</div>
+   		</div>
+		<h2><?php echo Yii::t('vmpool', 'interfaces')?></h2>
+		<div class="row">
+			<?php echo $globalSound ? $form->labelEx($model,'allowSoundTrue') : $form->labelEx($model,'allowSoundFalse'); ?>
+			<?php echo $form->checkbox($model, 'poolSound', array('style' => 'float: left; margin-top: 10px;'))?>
+			<?php echo $form->labelEx($model, 'poolSound', array('style' => 'float: left; margin: 8px 6px 0 6px;'))?>
+			<div id="soundsettings" style="float: right;">
+				<input type="radio" name="VmPoolForm[allowSound]" value="0"  <?php echo (false === $model->allowSound ? 'checked="checked"' : ''); ?> id="sound2" /><label for="sound2" style="display: inline-block;"><?php echo Yii::t('vmPool', 'NO');?></label>
+				<input type="radio" name="VmPoolForm[allowSound]" value="1"  <?php echo (true === $model->allowSound ? 'checked="checked"' : '');  ?> id="sound3" /><label for="sound3" style="display: inline-block;"><?php echo Yii::t('vmPool', 'YES');?></label>
+			</div>
+			<?php echo $form->error($model,'allowSound', array('style' => 'clear: both;')); ?>
+		</div>
+		<div class="row">
+			<?php echo $globalUsb ? $form->labelEx($model,'allowUsbTrue') : $form->labelEx($model,'allowUsbFalse'); ?>
+			<?php echo $form->checkbox($model, 'poolUsb', array('style' => 'float: left; margin-top: 10px;'))?>
+			<?php echo $form->labelEx($model, 'poolUsb', array('style' => 'float: left; margin: 8px 6px 0 6px;'))?>
+			<div id="usbsettings" style="float: right;">
+				<input type="radio" name="VmPoolForm[allowUsb]" value="0"  <?php echo (false === $model->allowUsb ? 'checked="checked"' : ''); ?> id="usb2" /><label for="usb2" style="display: inline-block;"><?php echo Yii::t('vmPool', 'NO');?></label>
+				<input type="radio" name="VmPoolForm[allowUsb]" value="1"  <?php echo (true === $model->allowUsb ? 'checked="checked"' : '');  ?> id="usb3" /><label for="usb3" style="display: inline-block;"><?php echo Yii::t('vmPool', 'YES');?></label>
+			</div>
+			<?php echo $form->error($model,'allowUsb'); ?>
+		</div>
+	</div>
 		<div style="clear: both;" class="row buttons">
 			<?php echo CHtml::submitButton($submittext, array('id' => 'submit')); ?>
 		</div>
 <?php $this->endWidget(); ?>
 
 </div><!-- form -->
+<?php
+$locale = str_replace('_', '-', Yii::t('app', 'locale'));
+Yii::app()->clientScript->registerScriptFile('globalize.js');
+Yii::app()->clientScript->registerScriptFile('globalizecultures.js');
+Yii::app()->clientScript->registerScript('buttons', <<<EOS
+Globalize.culture('de-DE');
+$.widget( "ui.timespinner", $.ui.spinner, {
+	options: {
+		// seconds
+		step: 5 * 60 * 1000,
+		// hours
+		page: 12
+	},
+	_parse: function( value ) {
+		if ( typeof value === "string" ) {
+			// already a timestamp
+			if ( Number( value ) == value ) {
+				return Number( value );
+			}
+			return +Globalize.parseDate( value );
+		}
+		return value;
+	},
+	_format: function( value ) {
+		return Globalize.format( new Date(value), "t" );
+	}
+});
+$("#VmPoolForm_sstBackupNumberOfIterations").spinner({min: 1, max: 20});
+$("#vmforcestart").buttonset();
+var el, val;
+// el = $("#dayofweek2 #VmPoolForm_sstCronDayOfWeek_4");
+// val = parseInt(el.val()) + 1;
+// $("#dayofweek2 label[for=VmPoolForm_sstCronDayOfWeek_4]").attr('for', 'VmPoolForm_sstCronDayOfWeek_' + val);
+// el.attr('id', 'VmPoolForm_sstCronDayOfWeek_' + val);
+el = $("#dayofweek2 #VmPoolForm_sstCronDayOfWeek_3");
+val = parseInt(el.val()) + 1;
+$("#dayofweek2 label[for=VmPoolForm_sstCronDayOfWeek_3]").attr('for', 'VmPoolForm_sstCronDayOfWeek_' + val);
+el.attr('id', 'VmPoolForm_sstCronDayOfWeek_' + val);
+el = $("#dayofweek2 #VmPoolForm_sstCronDayOfWeek_2");
+val = parseInt(el.val()) + 1;
+$("#dayofweek2 label[for=VmPoolForm_sstCronDayOfWeek_2]").attr('for', 'VmPoolForm_sstCronDayOfWeek_' + val);
+el.attr('id', 'VmPoolForm_sstCronDayOfWeek_' + val);
+el = $("#dayofweek2 #VmPoolForm_sstCronDayOfWeek_1");
+val = parseInt(el.val()) + 1;
+$("#dayofweek2 label[for=VmPoolForm_sstCronDayOfWeek_1]").attr('for', 'VmPoolForm_sstCronDayOfWeek_' + val);
+el.attr('id', 'VmPoolForm_sstCronDayOfWeek_' + val);
+ 		el = $("#dayofweek2 #VmPoolForm_sstCronDayOfWeek_0");
+val = parseInt(el.val()) + 1;
+$("#dayofweek2 label[for=VmPoolForm_sstCronDayOfWeek_0]").attr('for', 'VmPoolForm_sstCronDayOfWeek_' + val);
+el.attr('id', 'VmPoolForm_sstCronDayOfWeek_' + val);
+ 		
+// $("#dayofweek2 input[type=radio]").each(function() {
+//   	var val = parseInt($(this).val()) + 1;
+//   	$("#dayofweek2 label[for=" + $(this).attr('id') + "]").attr('for', 'VmPoolForm_sstCronDayOfWeek_' + val);
+//  	$(this).attr('id', 'VmPoolForm_sstCronDayOfWeek_' + val);
+// 	});
+$("#VmPoolForm_cronTime").timespinner();
+$("#dayofweek1").buttonset();
+$("#dayofweek2").buttonset();
+$("#soundsettings").buttonset();
+$("#usbsettings").buttonset();
+ 		
+$("#VmPoolForm_backupActiveFalse").click(function() {
+	$("#VmPoolForm_sstBackupNumberOfIterations").spinner('disable');
+	$("label[for=VmPoolForm_sstBackupNumberOfIterations]").addClass('disabled');
+ 	$("#vmforcestart").buttonset('disable');
+	$("label[for=VmPoolForm_sstVirtualizationVirtualMachineForceStart]").addClass('disabled');
+});
+$("#VmPoolForm_backupActiveTrue").click(function() {
+	$("#VmPoolForm_sstBackupNumberOfIterations").spinner('enable');
+	$("label[for=VmPoolForm_sstBackupNumberOfIterations]").removeClass('disabled');
+ 	$("#vmforcestart").buttonset('enable');
+	$("label[for=VmPoolForm_sstVirtualizationVirtualMachineForceStart]").removeClass('disabled');
+});
+$("#VmPoolForm_backupActiveFalse:checked").click();
+ 		
+$("#VmPoolForm_globalCronActive").click(function() {
+	$("#VmPoolForm_cronTime").timespinner('disable');
+	$("#dayofweek1").buttonset('disable');
+	$("#dayofweek2").buttonset('disable');
+});
+$("#VmPoolForm_cronActiveFalse").click(function() {
+	$("#VmPoolForm_cronTime").timespinner('disable');
+	$("#dayofweek1").buttonset('disable');
+	$("#dayofweek2").buttonset('disable');
+});
+$("#VmPoolForm_cronActiveTrue").click(function() {
+	$("#VmPoolForm_cronTime").timespinner('enable');
+ 	$("#dayofweek1").buttonset('enable');
+	$("#dayofweek2").buttonset('enable');
+});
+$("#VmPoolForm_globalCronActive:checked").click();
+$("#VmPoolForm_cronActiveFalse:checked").click();
+
+$("#VmPoolForm_poolSound").change(function() {
+	if (this.checked) {
+ 		$("#soundsettings").buttonset('enable');
+ 	}
+ 	else  {
+ 		$("#soundsettings").buttonset('disable');
+ 	}
+});
+if (!$("#VmPoolForm_poolSound").prop('checked')) {
+	$("#soundsettings").buttonset('disable');
+}
+
+
+$("#VmPoolForm_poolUsb").change(function() {
+	if (this.checked) {
+ 		$("#usbsettings").buttonset('enable');
+ 	}
+ 	else  {
+ 		$("#usbsettings").buttonset('disable');
+ 	}
+});
+if (!$("#VmPoolForm_poolUsb").prop('checked')) {
+	$("#usbsettings").buttonset('disable');
+}
+EOS
+, CClientScript::POS_END);
+?>

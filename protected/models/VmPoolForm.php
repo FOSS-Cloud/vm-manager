@@ -39,7 +39,22 @@ class VmPoolForm extends CFormModel {
 	public $brokerMax = -1;
 	public $brokerPreStart = -1;
 	public $type;
-
+	public $poolSound;
+	public $allowSound;
+	public $poolUsb;
+	public $allowUsb;
+	
+	public $poolBackupActive;
+	public $sstBackupNumberOfIterations;
+	public $sstVirtualizationVirtualMachineForceStart;
+	
+	public $poolCronActive;
+	public $sstCronMinute;
+	public $sstCronHour;
+	public $sstCronDayOfWeek;
+	//public $sstCronActive;
+	public $cronTime;
+	
 	public function rules()
 	{
 		return array(
@@ -47,7 +62,7 @@ class VmPoolForm extends CFormModel {
 			array('dn', 'safe', 'on' => 'create'),
 			array('dn, storagepool, displayName, description, nodes, range', 'required', 'on' => 'update'),
 			array('type', 'safe', 'on' => 'update'),
-			array('brokerMin, brokerMax, brokerPreStart, nodes, range', 'safe'),
+			array('brokerMin, brokerMax, brokerPreStart, nodes, range, poolSound, allowSound, poolUsb, allowUsb, poolBackupActive, sstBackupNumberOfIterations, sstVirtualizationVirtualMachineForceStart, poolCronActive, sstCronMinute, sstCronHour, sstCronDayOfWeek, cronTime', 'safe'),
 		);
 	}
 
@@ -65,6 +80,19 @@ class VmPoolForm extends CFormModel {
 			'brokerMin' => Yii::t('vmpool', 'brokerMin'),
 			'brokerMax' => Yii::t('vmpool', 'brokerMax'),
 			'brokerPreStart' => Yii::t('vmpool', 'brokerPreStart'),
+			'poolBackupActiveFalse' => Yii::t('vmpool', 'global backup'),
+			'poolBackupActiveTrue' => Yii::t('vmpool', 'pool backup'),
+			'sstBackupNumberOfIterations' => Yii::t('configuration', 'no. of iterations'),
+			'sstVirtualizationVirtualMachineForceStart' => Yii::t('configuration', 'vm force start'),
+			'poolCronActive' => Yii::t('vmpool', 'global cron'),
+			'sstCronActiveFalse' => Yii::t('configuration', 'no schedule'),
+			'sstCronActiveTrue' => Yii::t('configuration', 'at'),
+			'poolSound' => Yii::t('vmpool', 'poolSound'),
+			'allowSoundTrue' => Yii::t('vmpool', 'allowSound (gloabal: YES)'),
+			'allowSoundFalse' => Yii::t('vmpool', 'allowSound (gloabal: NO)'),
+			'poolUsb' => Yii::t('vmpool', 'poolUsb'),
+			'allowUsbTrue' => Yii::t('vmpool', 'allowUsb (gloabal: YES)'),
+			'allowUsbFalse' => Yii::t('vmpool', 'allowUsb (gloabal: NO)'),
 		);
 	}
 }

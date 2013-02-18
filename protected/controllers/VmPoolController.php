@@ -439,10 +439,74 @@ class VmPoolController extends Controller
 			$pool->sstBelongsToResellerUID = Yii::app()->user->resellerUID;
 			$pool->save();
 
+			$globalbackup = LdapConfigurationBackup::model()->findByDn('ou=backup,ou=configuration,ou=virtualization,ou=services');
+			$poolbackup = new LdapConfigurationBackup();
+			$poolbackup->attributes = $globalbackup->attributes;
+			$poolbackup->branchDn = $pool->getDn();
+			$poolbackup->setOverwrite(true);
+			$poolbackup->description = 'This sub tree contains the backup plan of the pool \'' . $pool->sstDisplayName . '\'';
+			
+			$saveattrs = array();
+			if ('TRUE' === $model->poolBackupActive) {
+				$poolbackup->sstBackupNumberOfIterations = $model->sstBackupNumberOfIterations;
+				$poolbackup->sstVirtualizationVirtualMachineForceStart = $model->sstVirtualizationVirtualMachineForceStart;
+				$saveattrs[] = 'sstBackupNumberOfIterations';
+				$saveattrs[] = 'sstVirtualizationVirtualMachineForceStart';
+			}
+			
+				
+			if ('GLOBAL' !== $model->poolCronActive) {
+				$poolbackup->sstCronActive = $model->poolCronActive;
+				if ('TRUE' === $model->poolCronActive) {
+					list($hour, $minute) = explode(':', $model->cronTime);
+					$poolbackup->sstCronMinute = (int) $minute;
+					$poolbackup->sstCronHour = (int) $hour;
+					$poolbackup->sstCronDayOfWeek = $model->sstCronDayOfWeek;
+					$saveattrs[] = 'sstCronMinute';
+					$saveattrs[] = 'sstCronHour';
+					$saveattrs[] = 'sstCronDayOfWeek';
+					$saveattrs[] = 'sstCronActive';
+				}
+				else {
+					$saveattrs[] = 'sstCronActive';
+				}
+			}
+				
+			if (0 < count($saveattrs)) {
+				echo '<pre>' . print_r($saveattrs, true) . '</pre>';
+				if (!in_array('sstCronActive', $saveattrs)) {
+					// only sstVirtualizationBackupObjectClass needed
+					$poolbackup->removeAttributesByObjectClass('sstCronObjectClass');
+				}
+				if (!in_array('sstBackupNumberOfIterations', $saveattrs)) {
+					// only sstCronObjectClass needed
+					$poolbackup->removeAttributesByObjectClass('sstVirtualizationBackupObjectClass');
+				}
+				echo '<pre>' . print_r($poolbackup, true) . '</pre>';
+
+				$poolbackup->save(false);
+			}
+				
 			$settings = new LdapVmPoolConfigurationSettings();
 			$settings->setBranchDn($pool->dn);
 			$settings->ou = "settings";
 			$settings->save();
+
+			if (1 == $model->poolSound) {
+				$poolSound = new LdapConfigurationSetting();
+				$poolSound->branchDn = $settings->getDn();
+				$poolSound->ou = 'sound';
+				$poolSound->sstAllowSound = 1 == $model->allowSound ? 'TRUE' : 'FALSE';
+				$poolSound->save();
+			}
+				
+			if (1 == $model->poolUsb) {
+				$poolUsb = new LdapConfigurationSetting();
+				$poolUsb->branchDn = 'ou=settings,' . $pool->getDn();
+				$poolUsb->ou = 'usb';
+				$poolUsb->sstAllowUsb = 1 == $model->allowUsb ? 'TRUE' : 'FALSE';
+				$poolUsb->save();
+			}
 				
 			$server = CLdapServer::getInstance();
 			$data = array();
@@ -545,6 +609,24 @@ class VmPoolController extends Controller
 					$nodes[$node->sstNode] = $node->sstNode;
 				}
 			}
+
+			$model->allowSound = null;
+			$model->poolSound = false;
+
+			$model->allowUsb = null;
+			$model->poolUsb = false;
+
+			$model->poolBackupActive = 'FALSE';
+			$model->poolCronActive = 'GLOBAL';
+			$backup = LdapConfigurationBackup::model()->findByDn('ou=backup,ou=configuration,ou=virtualization,ou=services');
+
+			$model->sstBackupNumberOfIterations = $backup->sstBackupNumberOfIterations;
+			$model->sstVirtualizationVirtualMachineForceStart = $backup->sstVirtualizationVirtualMachineForceStart;
+			
+			$model->sstCronMinute = $backup->sstCronMinute;
+			$model->sstCronHour = $backup->sstCronHour;
+			$model->sstCronDayOfWeek = $backup->sstCronDayOfWeek;
+			$model->cronTime = $model->sstCronHour . ':' . $model->sstCronMinute;
 /*
 			$allRanges = array();
 			$subnets = CLdapRecord::model('LdapDhcpSubnet')->findAll(array('attr'=>array()));
@@ -558,12 +640,16 @@ class VmPoolController extends Controller
 				$allRanges[$subnet->cn . '/' . $subnet->dhcpNetMask] = $ranges;
 			}
 */
+			$globalSettings = LdapConfigurationSettings::model()->findByDn('ou=settings,ou=configuration,ou=virtualization,ou=services');
+			
 			$this->render('create',array(
 				'model' => $model,
 				'storagepools' => array(),
 				'nodes' => $nodes,
 				'ranges' => array(),
-				'types' => array('dynamic'=>'dynamic', 'persistent'=>'persistent', 'template'=>'template')
+				'types' => array('dynamic'=>'dynamic', 'persistent'=>'persistent', 'template'=>'template'),
+				'globalSound' => $globalSettings->isSoundAllowed(),
+				'globalUsb' => $globalSettings->isUsbAllowed(),
 			));
 		}
 	}
@@ -631,6 +717,104 @@ class VmPoolController extends Controller
 				$dn2 = 'ou=' . $model->range . ',' . $dn;
 				$server->add($dn2, $data);
 			}
+			$globalbackup = LdapConfigurationBackup::model()->findByDn('ou=backup,ou=configuration,ou=virtualization,ou=services');
+			$poolbackupfound = true;
+			$poolbackup = $pool->backup;
+			if (is_null($poolbackup)) {
+				$poolbackupfound = false;
+				$poolbackup = new LdapConfigurationBackup();
+				$poolbackup->attributes = $globalbackup->attributes;
+				$poolbackup->branchDn = $pool->getDn();
+				$poolbackup->setOverwrite(true);
+				$poolbackup->description = 'This sub tree contains the backup plan of the pool \'' . $pool->sstDisplayName . '\'';
+			}
+			else {
+				$poolbackup->setAsNew();
+				$poolbackup->setOverwrite(true);
+			}
+
+			$saveattrs = array();
+			if ('TRUE' === $model->poolBackupActive) {
+				$poolbackup->sstBackupNumberOfIterations = $model->sstBackupNumberOfIterations;
+				$poolbackup->sstVirtualizationVirtualMachineForceStart = $model->sstVirtualizationVirtualMachineForceStart;
+				$saveattrs[] = 'sstBackupNumberOfIterations';
+				$saveattrs[] = 'sstVirtualizationVirtualMachineForceStart';
+			}
+
+			
+			if ('GLOBAL' !== $model->poolCronActive) {
+				$poolbackup->sstCronActive = $model->poolCronActive;
+				if ('TRUE' === $model->poolCronActive) {
+					list($hour, $minute) = explode(':', $model->cronTime);
+					$poolbackup->sstCronMinute = (int) $minute;
+					$poolbackup->sstCronHour = (int) $hour;
+					$poolbackup->sstCronDayOfWeek = $model->sstCronDayOfWeek;
+					$saveattrs[] = 'sstCronMinute';
+					$saveattrs[] = 'sstCronHour';
+					$saveattrs[] = 'sstCronDayOfWeek';
+					$saveattrs[] = 'sstCronActive';
+				}
+				else {
+					$saveattrs[] = 'sstCronActive';
+				}
+			}
+					
+			if (0 < count($saveattrs)) {
+				if (!in_array('sstCronActive', $saveattrs)) {
+					// only sstVirtualizationBackupObjectClass needed
+					$poolbackup->removeAttributesByObjectClass('sstCronObjectClass');
+				}
+				if (!in_array('sstBackupNumberOfIterations', $saveattrs)) {
+					// only sstCronObjectClass needed
+					$poolbackup->removeAttributesByObjectClass('sstVirtualizationBackupObjectClass');
+				}
+				echo '<pre>' . print_r($poolbackup, true) . '</pre>';
+				if ($poolbackupfound) {
+					CLdapServer::getInstance()->delete($poolbackup->getDn());
+				}
+				$poolbackup->save(false);
+			}
+			else if ($poolbackupfound) {
+				$poolbackup->delete();
+			}
+			
+			$poolSound = $pool->settings->getSoundSetting();
+			if (0 == $model->poolSound) {
+				if (!is_null($poolSound)) {
+					$poolSound->delete();
+				}
+			}
+			else {
+				if (!is_null($poolSound)) {
+					$poolSound->setOverwrite(true);
+				}
+				else {
+					$poolSound = new LdapConfigurationSetting();
+					$poolSound->branchDn = 'ou=settings,' . $pool->getDn();
+					$poolSound->ou = 'sound';
+				}
+				$poolSound->sstAllowSound = 1 == $model->allowSound ? 'TRUE' : 'FALSE';
+				$poolSound->save();
+			}
+			
+			$poolUsb = $pool->settings->getUsbSetting();
+			if (0 == $model->poolUsb) {
+				if (!is_null($poolUsb)) {
+					$poolUsb->delete();
+				}
+			}
+			else {
+				if (!is_null($poolUsb)) {
+					$poolUsb->setOverwrite(true);
+				}
+				else {
+					$poolUsb = new LdapConfigurationSetting();
+					$poolUsb->branchDn = 'ou=settings,' . $pool->getDn();
+					$poolUsb->ou = 'usb';
+				}
+				$poolUsb->sstAllowUsb = 1 == $model->allowUsb ? 'TRUE' : 'FALSE';
+				$poolUsb->save();
+			}
 /*
 			$data = array();
 			$data['objectClass'] = array('top', 'organizationalUnit', 'sstRelationship');
@@ -693,6 +877,52 @@ class VmPoolController extends Controller
 				$model->brokerPreStart = $pool->sstBrokerPreStartNumberOfVirtualMachines;
 			}
 
+			//echo '<pre>GLOBAL:SOUND ' . var_export($pool->settings->defaultSettings->isSoundAllowed(), true) . '</pre>';
+			$model->allowSound = $pool->settings->isSoundAllowed();
+			$model->poolSound = true;
+			//echo '<pre>POOL:SOUND ' . var_export($model->allowSound, true) . ', ' . $pool->settings->getSoundLocation() . '</pre>';
+			if ('global' === $pool->settings->getSoundLocation()) {
+				$model->allowSound = null;
+				$model->poolSound = false;
+			}
+
+			//echo '<pre>GLOBAL:USB ' . var_export($pool->settings->defaultSettings->isUsbAllowed(), true) . '</pre>';
+			$model->allowUsb = $pool->settings->isUsbAllowed();
+			$model->poolUsb = true;
+			//echo '<pre>POOL:USB ' . var_export($model->allowUsb, true) . ', ' . $pool->settings->getUsbLocation() . '</pre>';
+			if ('global' === $pool->settings->getUsbLocation()) {
+				$model->allowUsb = null;
+				$model->poolUsb = false;
+			}
+
+			$model->poolBackupActive = 'TRUE';
+			$model->poolCronActive = 'TRUE';
+			$backup = $pool->backup;
+			if (is_null($backup)) {
+				$model->poolBackupActive = 'FALSE';
+				$model->poolCronActive = 'GLOBAL';
+				$backup = LdapConfigurationBackup::model()->findByDn('ou=backup,ou=configuration,ou=virtualization,ou=services');
+			}
+			else {
+				if (isset($backup->sstCronActive)) {
+					$model->poolCronActive = $backup->sstCronActive;
+				}
+				else {
+					$model->poolCronActive = 'GLOBAL';
+				}
+				if (!isset($backup->sstBackupNumberOfIterations)) {
+					$model->poolBackupActive = 'FALSE';
+				}
+			}
+
+			$model->sstBackupNumberOfIterations = $backup->sstBackupNumberOfIterations;
+			$model->sstVirtualizationVirtualMachineForceStart = $backup->sstVirtualizationVirtualMachineForceStart;
+			
+			$model->sstCronMinute = $backup->sstCronMinute;
+			$model->sstCronHour = $backup->sstCronHour;
+			$model->sstCronDayOfWeek = $backup->sstCronDayOfWeek;
+			$model->cronTime = $model->sstCronHour . ':' . $model->sstCronMinute;
+			
 			$pools = CLdapRecord::model('LdapStoragePool')->findAll(array('attr'=>array()));
 			$storagepools = $this->createDropdownFromLdapRecords($pools, 'sstStoragePool', 'sstDisplayName');
 
@@ -709,7 +939,9 @@ class VmPoolController extends Controller
 				'nodes' => $nodes,
 				'ranges' => $allRanges,
 				'types' => array('dynamic'=>'dynamic', 'persistent'=>'persistent', 'template'=>'template'),
-				'vmcount' => count($pool->vms)
+				'vmcount' => count($pool->vms),
+				'globalSound' => $pool->settings->defaultSettings->isSoundAllowed(),
+				'globalUsb' => $pool->settings->defaultSettings->isUsbAllowed(),
 			));
 		}
 	}

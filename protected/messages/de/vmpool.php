@@ -15,6 +15,16 @@
  *
  */
 return array (
+  'global backup' => 'Globales Backup',
+  'pool backup' => 'VM Pool Backup',
+  'global cron' => 'Globaler Zeitplan',
+  'interfaces' => 'Schnittstellen',
+  'poolSound' => 'benutze Sound',
+  'allowSound (gloabal: NO)' => 'Sound (global: NEIN)',
+  'allowSound (gloabal: YES)' => 'Sound (global: JA)',
+  'poolUsb' => 'benutze USB',
+  'allowUsb (gloabal: NO)' => 'USB (global: NEIN)',
+  'allowUsb (gloabal: YES)' => 'USB (global: JA)',
   'Assign groups to VM' => 'Benutzergruppen mit einer VM verknüpfen',
   'Assign groups to VM Pool' => 'Benutzergruppen mit einem VM Pool verknüpfen',
   'Assigned groups' => 'verknüpfte Benutzergruppen',
@@ -38,4 +48,6 @@ return array (
   'range' => 'Range',
   'storagepool' => 'Storage Pool',
   'description' => 'Beschreibung',
+  'YES' => 'JA',
+  'NO' => 'NEIN',
 );

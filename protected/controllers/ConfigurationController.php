@@ -133,7 +133,6 @@ class ConfigurationController extends Controller
 			$globalBackup->sstCronActive = $model->sstCronActive;
 			$globalBackup->save(false, array('sstBackupNumberOfIterations', 'sstVirtualizationVirtualMachineForceStart', 'sstCronMinute', 'sstCronHour', 'sstCronDayOfWeek', 'sstCronActive'));
 			//echo '<pre>' . print_r($globalBackup, true) . '</pre>';
-			Yii::app()->end();
 		}
 		{
 			$model->sstBackupNumberOfIterations = $globalBackup->sstBackupNumberOfIterations;

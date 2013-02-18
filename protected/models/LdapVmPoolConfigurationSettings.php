@@ -74,7 +74,7 @@ class LdapVmPoolConfigurationSettings extends LdapConfigurationSettings {
 
 	public function isUsbAllowed(&$location=null) {
 		$retval = false;
-		$setting = $this->getSetting('sound');
+		$setting = $this->getSetting('usb');
 		if (!is_null($setting) && isset($setting->sstAllowUSB)) {
 			if (is_null($location)) {
 				$this->location['usb'] = 'pool';
@@ -97,7 +97,7 @@ class LdapVmPoolConfigurationSettings extends LdapConfigurationSettings {
 
 	public function isSpiceAllowed(&$location=null) {
 		$retval = false;
-		$setting = $this->getSetting('sound');
+		$setting = $this->getSetting('spice');
 		if (!is_null($setting) && isset($setting->sstAllowSpice)) {
 			if (is_null($location)) {
 				$this->location['spice'] = 'pool';

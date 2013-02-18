@@ -53,6 +53,7 @@ class LdapVmPool extends CLdapRecord {
 			'vms' => array(self::HAS_MANY, 'sstVirtualMachinePool', 'LdapVm', 'sstVirtualMachinePool'),
 			'runningDynVms' => array(self::HAS_MANY, 'sstVirtualMachinePool', 'LdapVm', 'sstVirtualMachinePool', array('sstVirtualMachineType' => 'dynamic', 'sstVirtualMachineSubType' => 'Desktop')),
 			'settings' => array(self::HAS_ONE, 'dn', 'LdapVmPoolConfigurationSettings', '$model->getDn()', array('ou' => 'settings')),
+			'backup' => array(self::HAS_ONE, 'dn', 'LdapConfigurationBackup', '$model->getDn()', array('ou' => 'backup')),
 		);
 	}
 

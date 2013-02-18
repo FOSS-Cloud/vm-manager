@@ -75,6 +75,11 @@ div.form label
 	margin-bottom: 0.2em;
 }
 
+div.form label.disabled
+{
+	color: lightgrey;
+}
+
 div.form .column
 {
 	float: left;

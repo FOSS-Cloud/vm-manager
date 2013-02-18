@@ -28,4 +28,5 @@ return array (
   'no schedule' => '',
   'no. of iterations' => '',
   'vm force start' => '',
+  'every day' => '',
 );

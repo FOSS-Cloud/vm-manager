@@ -69,13 +69,13 @@ $this->title = Yii::t('configuration', 'Backup');
   			<?php echo $form->radioButton($model,'sstCronActive', array('value' => 'TRUE', 'style' => 'float: left;', 'uncheckValue' => null)); ?>
   			<?php echo $form->labelEx($model, 'sstCronActiveTrue', array('style' => 'display: inline; float: left;')); ?>
   			<div style="float: left; margin-left: 15px;">
-  			<?php echo $form->hiddenField($model, 'sstCronHour'); ?>
-  			<?php echo $form->hiddenField($model, 'sstCronMinute'); ?>
-  			<?php echo $form->textField($model, 'cronTime', array('size' => 4)); ?>&nbsp;<span>(24h)</span><br/>&nbsp;
-   			<div id="dayofweek">
-   			<?php echo $form->radioButtonList($model,'sstCronDayOfWeek', array_merge(array('*' => 'every Day'), CLocale::getInstance(Yii::t('app', 'locale'))->getWeekDayNames('abbreviated')), 
-   					array('separator' => '', 'uncheckValue' => null, 'labelOptions' => array('style' => 'display: inline-block;'))); ?>
-			</div>
+  				<?php echo $form->hiddenField($model, 'sstCronHour'); ?>
+  				<?php echo $form->hiddenField($model, 'sstCronMinute'); ?>
+  				<?php echo $form->textField($model, 'cronTime', array('size' => 4)); ?>&nbsp;<span>(24h)</span><br/>&nbsp;
+   				<div id="dayofweek">
+   				<?php echo $form->radioButtonList($model,'sstCronDayOfWeek', array_merge(array('*' => Yii::t('configuration', 'every day')), CLocale::getInstance(Yii::t('app', 'locale'))->getWeekDayNames('abbreviated')), 
+   						array('separator' => '', 'uncheckValue' => null, 'labelOptions' => array('style' => 'display: inline-block;'))); ?>
+				</div>
 			</div>
    		</div>
 	</div>
