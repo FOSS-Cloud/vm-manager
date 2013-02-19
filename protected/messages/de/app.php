@@ -15,6 +15,7 @@
  *
  */
 return array (
+  'Can\'t connect to Ldap Server.' => 'Verbindung zum LDAP Server kann nicht hergestellt werden.',
   'Can\'t move uploaded file.' => 'Die hochgeladene Datei kann nicht verschoben werden.',
   'Can\'t open input stream.' => '',
   'Can\'t open output stream.' => '',
