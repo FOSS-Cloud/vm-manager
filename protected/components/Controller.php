@@ -365,7 +365,12 @@ class Controller extends CController
  			parent::runAction($action);
  		}
  		catch (CLdapException $e) {
- 			throw new CHttpException (500, Yii::t('app', "Can't connect to Ldap Server."));
+ 			if (-1 == $e->getCode()) {
+ 				throw new CHttpException (500, Yii::t('app', "Can't connect to Ldap Server."));
+ 			}
+ 			else {
+ 				throw $e;
+ 			}
  		}
  	}
 

@@ -15,6 +15,7 @@
  *
  */
 return array (
+  'Can\'t connect to Ldap Server.' => '',
   'Can\'t move uploaded file.' => '',
   'Can\'t open input stream.' => '',
   'Can\'t open output stream.' => '',
