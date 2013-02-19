@@ -118,6 +118,11 @@ class CPhpLibvirt {
 		}
 		return true;
 	}
+	
+	public function redefineVm($data) {
+		$this->undefineVm($data);
+		return $this->defineVm($data);
+	}
 
 	public function rebootVm($data) {
 		$con = $this->getConnection($data['libvirt']);
