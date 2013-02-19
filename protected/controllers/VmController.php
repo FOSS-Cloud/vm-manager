@@ -446,7 +446,12 @@ class VmController extends Controller
 			$s .= "<cell>---</cell>\n";
 			$s .= "<cell>---</cell>\n";
 			$s .= "<cell></cell>\n";
-			$s .= '<cell>'. $vm->sstNode ."</cell>\n";
+			if ('Golden-Image' == $vm->sstVirtualMachineSubType) {
+				$s .= "<cell></cell>\n";
+			}
+			else {
+				$s .= '<cell>'. $vm->sstNode ."</cell>\n";
+			}
 			$s .= "<cell></cell>\n";
 			$s .= "</row>\n";
 			$i++;
@@ -1152,7 +1157,12 @@ EOS;
 						$vm->sstMigrationNode = $newnode->sstNode;
 						$vm->sstMigrationSpicePort = $spiceport;
 						$vm->save();
-						if ($libvirt->migrateVm(array('libvirt' => $vm->node->getLibvirtUri(), 'newlibvirt' => $newnode->getLibvirtUri(), 'name' => $vm->sstVirtualMachine, 'spiceport' => $spiceport))) {
+						if ($libvirt->migrateVm(array(
+								'libvirt' => $vm->node->getLibvirtUri(), 
+								'newlibvirt' => $newnode->getLibvirtUri(), 
+								'name' => $vm->sstVirtualMachine, 
+								'spiceport' => $spiceport,
+								'newlisten' => $newnode->getVLanIP('pub')))) {
 							$vm->sstNode = $newnode->sstNode;
 							$vm->sstSpicePort = $spiceport;
 							$vm->save();
@@ -1241,7 +1251,7 @@ EOS;
 			$backup = CLdapRecord::model('LdapVmSingleBackup')->findByDn($_GET['dn']);
 			if (!is_null($backup)) {
 				$backup->setOverwrite(true);
-				$backup->sstProvisioningMode = 'unretain';
+				$backup->sstProvisioningMode = 'unretainSmallFiles';
 				$backup->sstProvisioningState = '0';
 				$backup->save(true, array('sstProvisioningMode', 'sstProvisioningState'));
 				$json = array('err' => false, 'msg' => Yii::t('vm', 'Restore Vm started!'));
