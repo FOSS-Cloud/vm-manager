@@ -29,4 +29,9 @@ return array (
   'no. of iterations' => 'Anzahl an Iterationen',
   'vm force start' => 'VM Start erzwingen',
   'every day' => 'jeden Tag',
+  'vm force start hint' => <<<EOS
+Force start virtual machine in the case of not being able<br/>to restore the virtual machine state during the backup process.<br/>
+<b>Attention:</b> If set to Yes, this could lead to file system<br/>inconsistencies in the virtual machine.
+EOS
+,
 );

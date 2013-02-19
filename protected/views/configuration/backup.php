@@ -54,10 +54,11 @@ $this->title = Yii::t('configuration', 'Backup');
 		<div class="row">
   			<?php echo $form->labelEx($model, 'sstVirtualizationVirtualMachineForceStart'); ?>
   			<?php //echo $form->dropDownList($model,'sstVirtualizationVirtualMachineForceStart',array('TRUE'=>'Yes', 'FALSE'=>'No')); ?>
-   			<div id="vmforcestart">
+   			<div id="vmforcestart" style="float: left;">
   			<?php echo $form->radioButtonList($model,'sstVirtualizationVirtualMachineForceStart', array('FALSE'=>'No', 'TRUE'=>'Yes'), 
    					array('separator' => '', 'uncheckValue' => null, 'labelOptions' => array('style' => 'display: inline-block;'))); ?>
    			</div>
+   			<div class="hint" style="float: left; margin-top: 0;"><?php echo Yii::t('configuration', 'vm force start hint')?></div>
   			<?php echo $form->error($model,'sstVirtualizationVirtualMachineForceStart'); ?>
   		</div>
 		<h2><?php echo Yii::t('configuration', 'Schedule')?></h2>
