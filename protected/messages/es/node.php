@@ -20,7 +20,7 @@ return array (
   'wizard.outputvar \'{var}\' missing' => 'no se encuentra wizard.outputvar \'{var}\'',
  '"{nodename}" is already integrated!' => '"{nodename}" ya está integrado!',
   'Manage Nodes' => 'Gestionar nodos',
-  'View Node' => 'Ver nodos',
+  'View Node {name}' => 'Ver nodos \'{name}\'',
   'Node' => 'nodo',
   'Type' => 'tipo',
   'wizard.type' => 'Tipo de nodo',

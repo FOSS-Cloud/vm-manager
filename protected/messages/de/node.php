@@ -20,7 +20,7 @@ return array (
   'wizard.outputvar \'{var}\' missing' => 'wizard.outputvar: Variable: \'{var}\' nicht gefunden',
  '"{nodename}" is already integrated!' => '"{nodename}" ist bereits im System vorhanden!',
   'Manage Nodes' => 'Rechner verwalten',
-  'View Node' => 'Rechner anzeigen',
+  'View Node {name}' => 'Rechner \'{name}\' anzeigen',
   'Node' => 'Rechner',
   'Type' => 'Typ',
   'wizard.type' => 'Node Typ',

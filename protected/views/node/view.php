@@ -33,54 +33,15 @@ $this->breadcrumbs=array(
 	$model->sstNode,
 );
 
-$this->title = Yii::t('node', 'View Node');
+$this->title = Yii::t('node', 'View Node {name}', array('{name}' => $model->sstNode));
 //$this->helpurl = Yii::t('help', 'viewNode');
-
-Yii::app()->getClientScript()->registerScript('refreshVms', <<<EOS
-$('#tabpanel').tabs([]);
-EOS
-, CClientScript::POS_READY);
 ?>
-<div id="tabpanel">
-	<ul>
-		<li><a href="#tab1">General</a></li>
-		<li><a href="#tab2">VMs</a></li>
-	</ul>
-	<div id="tab1" title="General">
+
 		<div class="row">
-			<b><?php echo $model->getAttributeLabel('node'); ?>: </b><?php echo $model->sstNode;?><br /><br />
-			<b>pub IP: </b><?php echo $model->getVLanIP('pub');?><br />
-			<b>data IP: </b><?php echo $model->getVLanIP('data');?><br />
-			<b>int IP: </b><?php echo $model->getVLanIP('int');?><br />
-			<b>admin IP: </b><?php echo $model->getVLanIP('admin');?><br />
-			<b style="float: left;"><?php echo $model->getAttributeLabel('type'); ?>:&nbsp;</b><div style="float: left;"><?php foreach($model->types as $type) echo $type->sstNodeType . '<br/>';?></div>
+			<span style="font-weight: bold; width: 100px; display: inline-block;">pub IP: </span><?php echo $model->getVLanIP('pub');?><br />
+			<span style="font-weight: bold; width: 100px; display: inline-block;">data IP: </span><?php echo $model->getVLanIP('data');?><br />
+			<span style="font-weight: bold; width: 100px; display: inline-block;">int IP: </span><?php echo $model->getVLanIP('int');?><br />
+			<span style="font-weight: bold; width: 100px; display: inline-block;">admin IP: </span><?php echo $model->getVLanIP('admin');?><br /><br />
+			<span style="font-weight: bold; width: 100px; display: inline-block; float: left;"><?php echo $model->getAttributeLabel('type'); ?>:&nbsp;</span><div style="float: left;"><?php foreach($model->types as $type) echo $type->sstNodeType . '<br/>';?></div>
 			<br style="clear: both;" />
 		</div>
-	</div>
-	<div id="tab2" title="VMs">
-		<?php include (dirname(__FILE__) . '/_viewVms.php'); ?>
-	</div>
-</div>
-<div style="display: none;">
-<a id="startnode" href="#selectNode">start node</a>
-<div id="selectNode">
-</div>
-</div>
-<?php
-	$this->createwidget('ext.zii.CJqSingleselect', array(
-		'id' => 'nodeSelection',
-		'values' => array(),
-		'size' => 5,
-		'multiselect' => false,
-		'options' => array(
-			'sorted' => true,
-			'header' => Yii::t('vm', 'Nodes'),
-		),
-		'theme' => 'osbd',
-		'themeUrl' => $this->cssBase . '/jquery',
-		'cssFile' => 'singleselect.css',
-	));
-?>
-		<?php
-$this->createWidget('ext.fancybox.EFancyBox');
-?>

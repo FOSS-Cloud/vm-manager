@@ -20,7 +20,7 @@ return array (
   'wizard.outputvar \'{var}\' missing' => '',
  '"{nodename}" is already integrated!' => '"',
   'Manage Nodes' => '',
-  'View Node' => '',
+  'View Node {name}' => 'View Node \'{name}\'',
   'node' => 'Node',
   'type' => 'Type',
   'wizard.type' => 'Node type',

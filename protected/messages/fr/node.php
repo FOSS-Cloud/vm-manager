@@ -20,7 +20,7 @@ return array (
   'wizard.outputvar \'{var}\' missing' => 'wizard.outputvar \'{var}\'manquant',
  '"{nodename}" is already integrated!' => '"{nodename}" est déjà intégré',
   'Manage Nodes' => 'Gérer noeuds',
-  'View Node' => 'Afficher noeud',
+  'View Node {name}' => 'Afficher noeud \'{name}\'',
   'Node' => 'Noeud',
   'Type' => 'Type',
   'wizard.type' => 'Type de noeud',
