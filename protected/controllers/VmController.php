@@ -895,6 +895,11 @@ EOS;
 				$libvirt = CPhpLibvirt::getInstance();
 				if ('persistent' == $vm->sstVirtualMachineType) {
 					$retval = $libvirt->startVm($vm->getStartParams());
+					if ($retval) {
+						$vm->setOverwrite(true);
+						$vm->sstStatus = 'running';
+						$vm->save();
+					}
 				}
 				else {
 					if ('Golden-Image' == $vm->sstVirtualMachineSubType) {
@@ -915,6 +920,7 @@ EOS;
 						$vmcopy->attributes = $vm->attributes;
 
 						$vmcopy->setOverwrite(true);
+						$vmcopy->sstStatus = 'running';
 						$vmcopy->sstVirtualMachine = CPhpLibvirt::getInstance()->generateUUID();
 						$vmcopy->sstVirtualMachineType = 'dynamic';
 						$vmcopy->sstVirtualMachineSubType = 'Desktop';
@@ -1058,6 +1064,9 @@ EOS;
 			if (!is_null($vm)) {
 				$libvirt = CPhpLibvirt::getInstance();
 				if ($libvirt->shutdownVm(array('libvirt' => $vm->node->getLibvirtUri(), 'name' => $vm->sstVirtualMachine))) {
+					$vm->setOverwrite(true);
+					$vm->sstStatus = 'shutdown';
+					$vm->save();
 					$this->sendAjaxAnswer(array('error' => 0));
 				}
 				else {
@@ -1081,6 +1090,9 @@ EOS;
 				$libvirt = CPhpLibvirt::getInstance();
 				if ('persistent' == $vm->sstVirtualMachineType) {
 					if ($libvirt->destroyVm(array('libvirt' => $vm->node->getLibvirtUri(), 'name' => $vm->sstVirtualMachine))) {
+						$vm->setOverwrite(true);
+						$vm->sstStatus = 'shutdown';
+						$vm->save();
 						$this->sendAjaxAnswer(array('error' => 0));
 					}
 					else {
