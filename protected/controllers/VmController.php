@@ -204,6 +204,12 @@ class VmController extends Controller
 				}
 			}
 
+			// reload because of the node bug
+			$vm = CLdapRecord::model('LdapVm')->findByDn($_POST['VmForm']['dn']);
+			$data = $vm->getStartParams();
+			$data['name'] = $data['sstName'];
+			CPhpLibvirt::getInstance()->redefineVm($data);
+				
 			$this->redirect(array('index', 'vmtype'=>$result->sstVirtualMachineType));
 		}
 		else {
