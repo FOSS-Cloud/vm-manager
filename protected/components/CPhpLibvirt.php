@@ -253,6 +253,10 @@ class CPhpLibvirt {
 		return $retval;
 	}
 
+	public function checkNode($libvirt) {
+		return $this->getConnection($libvirt);
+	}
+
 	public function getLastError() {
 		$retval = libvirt_get_last_error();
 		Yii::log('getVmStatus: libvirt_get_last_error (): ' . $retval, 'profile', 'phplibvirt');
@@ -569,7 +573,7 @@ class CPhpLibvirt {
 			mkdir($path, 0770);
 		}
 		$con = $this->getConnection($host);
-		Yii::log('createVolumeFile: ' . $host . ', ' . $path . ',' . $pooluuid, 'profile', 'phplibvirt');
+		Yii::log('createVolumeFile: ' . $host . ', ' . $path . ', ' . $pooluuid, 'profile', 'phplibvirt');
 		$pool = libvirt_storagepool_lookup_by_uuid_string($con, $pooluuid);
 		$retval = false;
 		if (!is_null($pool)) {

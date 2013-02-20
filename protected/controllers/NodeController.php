@@ -247,7 +247,8 @@ class NodeController extends WizardController
 				$vms .= '<i>' . $vm->sstDisplayName . '</i>';
 			}
 */
-			$types = '';
+			$running = CPhpLibvirt::getInstance()->checkNode($node->getLibvirtUri());
+			$types = false === $running ? 'stopped' : 'running';
 			if ($node->types) {
 				foreach($node->types as $type) {
 					if ('' != $types) {

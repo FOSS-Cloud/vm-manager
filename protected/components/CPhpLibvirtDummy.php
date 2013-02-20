@@ -94,6 +94,14 @@ class CPhpLibvirtDummy extends CPhpLibvirt {
 		return true;
 	}
 
+	public function checkNode($libvirt) {
+		return true;
+	}
+
+	public function changeVmBootDevice($data) {
+		return 2701;
+	}
+	
 	public function getVmStatus($data) {
 		$retval = array();
 		if (!isset($_SESSION['phplibvirt']['vms'][$data['name']])) {
