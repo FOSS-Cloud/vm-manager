@@ -220,19 +220,25 @@ else {
    				<div id="dayofweek1" style="float: right;">
    				<?php 
    					$localedays = CLocale::getInstance(Yii::t('app', 'locale'))->getWeekDayNames('abbreviated');
-   					$days = array_merge(array('*' => Yii::t('configuration', 'every day')), array_slice($localedays, 0, 3));
+   					$days = array_merge(array('*' => Yii::t('configuration', 'every day')), array_slice($localedays, 0, 1));
    					//echo '<pre>' . print_r($days, true) . '</pre>';
    					echo $form->radioButtonList($model,'sstCronDayOfWeek', $days, 
    						array('separator' => '', 'uncheckValue' => null, 'labelOptions' => array('style' => 'display: inline-block;'))); ?>
 				</div>
   				<div id="dayofweek2" style="float: right;">
    				<?php
-   					//$localedays = CLocale::getInstance(Yii::t('app', 'locale'))->getWeekDayNames('abbreviated');
+					$days = array_slice($localedays, 1, 3, true);
+					//echo '<pre>' . print_r($days, true) . '</pre>';
+   					echo $form->radioButtonList($model,'sstCronDayOfWeek', $days, 
+   						array('separator' => '', 'uncheckValue' => null, 'labelOptions' => array('style' => 'display: inline-block;'))); ?>
+				</div>
+  				<div id="dayofweek3" style="float: right;">
+   				<?php
    					$days = array(); 
    					for($i=3; $i<7; $i++) {
 						$days[$i] = $localedays[$i];
 					}
-					$days = array_slice($localedays, 3, 4, true);
+					$days = array_slice($localedays, 4, 3, true);
 					//echo '<pre>' . print_r($days, true) . '</pre>';
    					echo $form->radioButtonList($model,'sstCronDayOfWeek', $days, 
    						array('separator' => '', 'uncheckValue' => null, 'labelOptions' => array('style' => 'display: inline-block;'))); ?>
@@ -297,35 +303,40 @@ $.widget( "ui.timespinner", $.ui.spinner, {
 $("#VmPoolForm_sstBackupNumberOfIterations").spinner({min: 1, max: 20});
 $("#vmforcestart").buttonset();
 var el, val;
-// el = $("#dayofweek2 #VmPoolForm_sstCronDayOfWeek_4");
-// val = parseInt(el.val()) + 1;
-// $("#dayofweek2 label[for=VmPoolForm_sstCronDayOfWeek_4]").attr('for', 'VmPoolForm_sstCronDayOfWeek_' + val);
-// el.attr('id', 'VmPoolForm_sstCronDayOfWeek_' + val);
-el = $("#dayofweek2 #VmPoolForm_sstCronDayOfWeek_3");
-val = parseInt(el.val()) + 1;
-$("#dayofweek2 label[for=VmPoolForm_sstCronDayOfWeek_3]").attr('for', 'VmPoolForm_sstCronDayOfWeek_' + val);
-el.attr('id', 'VmPoolForm_sstCronDayOfWeek_' + val);
 el = $("#dayofweek2 #VmPoolForm_sstCronDayOfWeek_2");
 val = parseInt(el.val()) + 1;
 $("#dayofweek2 label[for=VmPoolForm_sstCronDayOfWeek_2]").attr('for', 'VmPoolForm_sstCronDayOfWeek_' + val);
 el.attr('id', 'VmPoolForm_sstCronDayOfWeek_' + val);
+
 el = $("#dayofweek2 #VmPoolForm_sstCronDayOfWeek_1");
 val = parseInt(el.val()) + 1;
 $("#dayofweek2 label[for=VmPoolForm_sstCronDayOfWeek_1]").attr('for', 'VmPoolForm_sstCronDayOfWeek_' + val);
 el.attr('id', 'VmPoolForm_sstCronDayOfWeek_' + val);
- 		el = $("#dayofweek2 #VmPoolForm_sstCronDayOfWeek_0");
+
+el = $("#dayofweek2 #VmPoolForm_sstCronDayOfWeek_0");
 val = parseInt(el.val()) + 1;
 $("#dayofweek2 label[for=VmPoolForm_sstCronDayOfWeek_0]").attr('for', 'VmPoolForm_sstCronDayOfWeek_' + val);
 el.attr('id', 'VmPoolForm_sstCronDayOfWeek_' + val);
- 		
-// $("#dayofweek2 input[type=radio]").each(function() {
-//   	var val = parseInt($(this).val()) + 1;
-//   	$("#dayofweek2 label[for=" + $(this).attr('id') + "]").attr('for', 'VmPoolForm_sstCronDayOfWeek_' + val);
-//  	$(this).attr('id', 'VmPoolForm_sstCronDayOfWeek_' + val);
-// 	});
+
+el = $("#dayofweek3 #VmPoolForm_sstCronDayOfWeek_2");
+val = parseInt(el.val()) + 1;
+$("#dayofweek3 label[for=VmPoolForm_sstCronDayOfWeek_2]").attr('for', 'VmPoolForm_sstCronDayOfWeek_' + val);
+el.attr('id', 'VmPoolForm_sstCronDayOfWeek_' + val);
+
+ el = $("#dayofweek3 #VmPoolForm_sstCronDayOfWeek_1");
+val = parseInt(el.val()) + 1;
+$("#dayofweek3 label[for=VmPoolForm_sstCronDayOfWeek_1]").attr('for', 'VmPoolForm_sstCronDayOfWeek_' + val);
+el.attr('id', 'VmPoolForm_sstCronDayOfWeek_' + val);
+
+el = $("#dayofweek3 #VmPoolForm_sstCronDayOfWeek_0");
+val = parseInt(el.val()) + 1;
+$("#dayofweek3 label[for=VmPoolForm_sstCronDayOfWeek_0]").attr('for', 'VmPoolForm_sstCronDayOfWeek_' + val);
+el.attr('id', 'VmPoolForm_sstCronDayOfWeek_' + val);
+
 $("#VmPoolForm_cronTime").timespinner();
 $("#dayofweek1").buttonset();
 $("#dayofweek2").buttonset();
+$("#dayofweek3").buttonset();
 $("#soundsettings").buttonset();
 $("#usbsettings").buttonset();
  		
@@ -347,16 +358,19 @@ $("#VmPoolForm_globalCronActive").click(function() {
 	$("#VmPoolForm_cronTime").timespinner('disable');
 	$("#dayofweek1").buttonset('disable');
 	$("#dayofweek2").buttonset('disable');
+	$("#dayofweek3").buttonset('disable');
 });
 $("#VmPoolForm_cronActiveFalse").click(function() {
 	$("#VmPoolForm_cronTime").timespinner('disable');
 	$("#dayofweek1").buttonset('disable');
 	$("#dayofweek2").buttonset('disable');
+	$("#dayofweek3").buttonset('disable');
 });
 $("#VmPoolForm_cronActiveTrue").click(function() {
 	$("#VmPoolForm_cronTime").timespinner('enable');
  	$("#dayofweek1").buttonset('enable');
 	$("#dayofweek2").buttonset('enable');
+	$("#dayofweek3").buttonset('enable');
 });
 $("#VmPoolForm_globalCronActive:checked").click();
 $("#VmPoolForm_cronActiveFalse:checked").click();
@@ -386,5 +400,5 @@ if (!$("#VmPoolForm_poolUsb").prop('checked')) {
 	$("#usbsettings").buttonset('disable');
 }
 EOS
-, CClientScript::POS_END);
+, CClientScript::POS_READY);
 ?>

@@ -117,5 +117,5 @@ $("#vmforcestart").buttonset();
 $("#dayofweek").buttonset();
 $("#ConfigurationBackupForm_cronTime").timespinner();
 EOS
-, CClientScript::POS_END);
+, CClientScript::POS_READY);
 ?>
