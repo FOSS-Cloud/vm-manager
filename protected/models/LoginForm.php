@@ -99,6 +99,7 @@ class LoginForm extends CFormModel
 	{
 		$this->_identity = new LdapUserIdentity($this->username, $this->password, $this->realm);
 		$this->_identity->authenticate();
+		Yii::log("authenticate: errorCode " . var_export($this->_identity->errorCode, true), 'profile', 'LoginForm');
 		switch($this->_identity->errorCode) {
 			case LdapUserIdentity::ERROR_USERNAME_INVALID:
 				$this->addError('username',Yii::t('site', 'Incorrect username.'));
@@ -124,6 +125,7 @@ class LoginForm extends CFormModel
 			$this->_identity = new LdapUserIdentity($this->username, $this->password, $this->realm);
 			$this->_identity->authenticate();
 		}
+		Yii::log("login: errorCode " . var_export($this->_identity->errorCode, true), 'profile', 'LoginForm');
 		if($this->_identity->errorCode === LdapUserIdentity::ERROR_NONE)
 		{
 			$duration = $this->rememberMe ? 3600*24*30 : 0; // 30 days

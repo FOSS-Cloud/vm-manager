@@ -66,6 +66,8 @@ class LdapUserIdentity extends CUserIdentity
 	 */
 	public function authenticate()
 	{
+		Yii::log("authenticate", 'profile', 'LdapUserIdentity');
+
 		$server = CLdapServer::getInstance();
 		$realm = CLdapRecord::model('LdapRealm')->findByAttributes(array('attr'=>array('ou'=>$this->realm)));
 		if (!is_null($realm)) {
@@ -93,6 +95,7 @@ class LdapUserIdentity extends CUserIdentity
 				$branchDn = $usersearch->sstLDAPBaseDn;
 				$filter = sprintf($usersearch->sstLDAPFilter, $this->username);
 //echo "branchDn: $branchDn; filter: $filter<br/>";
+				Yii::log('authenticate: checkUser ' . $branchDn . ', ' . $filter, 'profile', 'LdapUserIdentity');
 				$result = @ldap_search($connection, $branchDn, $filter);
 				if ($result === false) {
 					throw new CLdapException(Yii::t('LdapComponent.server', 'ldap_search failt ({errno}): {message}',
@@ -141,11 +144,13 @@ class LdapUserIdentity extends CUserIdentity
 						$this->errorCode = self::ERROR_PASSWORD_INVALID;
 					}
 					else {
+						Yii::log('authenticate: extern OK', 'profile', 'LdapUserIdentity');
 						$usergroupsearch = $realm->usergroupsearch;
 						$branchDn = $usergroupsearch->sstLDAPBaseDn;
 						$filter = sprintf($usergroupsearch->sstLDAPFilter, $staticAttr);
 //echo "branchDn: $branchDn; filter: $filter<br/>";
-
+						Yii::log('authenticate: getGroups ' . $branchDn . ', ' . $filter, 'profile', 'LdapUserIdentity');
+						
 						$result = @ldap_search($connection, $branchDn, $filter);
 						if ($result === false) {
 							throw new CLdapException(Yii::t('LdapComponent.server', 'ldap_search failt ({errno}): {message}',
@@ -228,17 +233,22 @@ class LdapUserIdentity extends CUserIdentity
 					$usergroupsearch = LdapNameless::model()->findByDn('ou=User Group Search,ou=internal searches,ou=configuration,ou=virtualization,ou=services');
 
 					$this->authenticateIntern($realm, $usersearch, $userauth, $usergroupsearch);
+					Yii::log("authenticate: " . var_export($_SESSION, true), 'profile', 'LdapUserIdentity');
+
 				}
 			}
 		}
 		else {
 			$this->errorCode = self::ERROR_REALM_INVALID;
 		}
+		Yii::log("authenticate: errorCode " . var_export($this->errorCode, true), 'profile', 'LdapUserIdentity');
 		return self::ERROR_NONE === $this->errorCode;
 	}
 
 	private function authenticateIntern($realm, $usersearch, $userauth, $usergroupsearch)
 	{
+		Yii::log("authenticateIntern", 'profile', 'ext.ldaprecord.UserIdentity');
+
 		$server = CLdapServer::getInstance();
 		//$usersearch = $realm->usersearch;
 		$criteria = array(
@@ -306,6 +316,8 @@ class LdapUserIdentity extends CUserIdentity
 							$lang = substr($lang, 0, 2);
 						}
 						$this->setState('lang', $lang);
+						
+						Yii::log('authenticationIntern: ' . var_export($_SESSION, true), 'profile', 'ext.ldaprecord.UserIdentity');
 					}
 					else {
 						$this->errorCode = self::ERROR_REALM_INVALID;
@@ -364,7 +376,7 @@ class LdapUserIdentity extends CUserIdentity
 
 	public static function checkUser($username, $realm)
 	{
-		Yii::log("checkUser: $username, $realm", 'profile', 'ext.ldaprecord.UserIdentity');
+		Yii::log("checkUser: $username, $realm", 'profile', 'LdapUserIdentity');
 
 		$checkIntern = false;
 		$server = CLdapServer::getInstance();
@@ -375,7 +387,7 @@ class LdapUserIdentity extends CUserIdentity
 				$parts = explode(':', $realm->labeledURI);
 				$hostname = $parts[0] . ':' . $parts[1];
 				$port = $parts[2];
-				$connection = @ldap_connect($hostname, $port) or die('LDAP connect failed!');
+				$connection = @ldap_connect($hostname, $port);
 				if ($connection === false) {
 					throw new CLdapException(Yii::t('LdapComponent.server', 'ldap_connect to {server} failt ({errno}): {message}',
 						array('{errno}'=>ldap_errno($connection), '{message}'=>ldap_error($connection),'{server}'=>$realm->labeledURI)), ldap_errno($connection));
@@ -391,6 +403,7 @@ class LdapUserIdentity extends CUserIdentity
 				$branchDn = $usersearch->sstLDAPBaseDn;
 				$filter = sprintf($usersearch->sstLDAPFilter, $username);
 //echo "branchDn: $branchDn; filter: $filter<br/>";
+				Yii::log('checkUser: userSearch ' . $branchDn . ', ' . $filter, 'profile', 'LdapUserIdentity');
 				$result = @ldap_search($connection, $branchDn, $filter);
 				if ($result === false) {
 					throw new CLdapException(Yii::t('LdapComponent.server', 'ldap_search failt ({errno}): {message}',
@@ -411,6 +424,7 @@ class LdapUserIdentity extends CUserIdentity
 					$checkIntern = true;
 				}
 			}
+			Yii::log("checkUser: intern? " . var_export('TRUE' !== $realm->sstLDAPExternalDirectory || $checkIntern, true), 'profile', 'LdapUserIdentity');
 			if ('TRUE' !== $realm->sstLDAPExternalDirectory || $checkIntern) {
 				$usersearch = $realm->usersearch;
 				$usersearch = LdapNameless::model()->findByDn('ou=User Search,ou=internal searches,ou=configuration,ou=virtualization,ou=services');
