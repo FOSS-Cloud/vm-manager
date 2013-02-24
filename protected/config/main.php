@@ -91,6 +91,14 @@ return CMap::mergeArray(
 
 			),
 		),
+		'widgetFactory'=>array(
+			'class'=>'CWidgetFactory',
+			'widgets'=>array(
+				'CJqGrid'=>array('cssFile'=>false, 'scriptFile'=>false),
+				'CJqSingleselect'=>array('cssFile'=>false, 'scriptFile'=>false),
+				'CJqDualselect'=>array('cssFile'=>false, 'scriptFile'=>false),
+			)
+		),      
 		'clientScript' => array(
 			'scriptMap' => array(
 				'jquery.js' => '/vm-manager/js/jquery-1.8.3.js',
