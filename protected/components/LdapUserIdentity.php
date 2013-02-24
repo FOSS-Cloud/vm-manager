@@ -127,7 +127,7 @@ class LdapUserIdentity extends CUserIdentity
 					$mapping = array();
 					if (isset($usersearch->sstLDAPInternalForeignMapping)) {
 						foreach($usersearch->sstLDAPInternalForeignMapping as $intext) {
-							list($intern, $foreign) = split(':', $intext);
+							list($intern, $foreign) = preg_split(':', $intext);
 							if ('' == $foreign) {
 								$mapping[$intern] = '';
 							}
