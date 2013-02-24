@@ -50,4 +50,7 @@ return array (
   'sstVolumeCapacity' => 'Laufwerksgröße',
   'staticIP' => 'andere IP Adresse',
   'title' => 'Titel',
+  'Assigned groups' => 'verknüpfte Benutzergruppen',
+  'Backup with dn=\'{dn}\' not found!' => '',
+  'Groups' => 'Benutzergruppen',
 );

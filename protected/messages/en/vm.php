@@ -50,4 +50,7 @@ return array (
   'sstVolumeCapacity' => 'Volume Capacity',
   'staticIP' => 'change IP address',
   'title' => 'Title',
+  'Assigned groups' => '',
+  'Backup with dn=\'{dn}\' not found!' => '',
+  'Groups' => '',
 );

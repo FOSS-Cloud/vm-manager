@@ -15,7 +15,7 @@
  *
  */
 return array (
-  'Error' => '',
+  'Error' => 'Fehler',
   'Incorrect username.' => 'Dieser Benutzer existiert nicht.',
   'Incorrect password.' => 'Falsches Passwort.',
   'Password' => 'Passwort',
