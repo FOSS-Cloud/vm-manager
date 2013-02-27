@@ -53,4 +53,7 @@ return array (
   'Assigned groups' => '',
   'Backup with dn=\'{dn}\' not found!' => '',
   'Groups' => '',
+  'Restore Vm started!' => 'Restore of the Vm started!<br />Please wait for possible questions that might arise during the restore.',
+  'Waiting for data' => 'Wait for answer ...',
+  'Should restore of Vm start?' => 'Vm can be restored!<br />do you want to start?',
 );

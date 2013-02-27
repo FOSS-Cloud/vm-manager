@@ -768,7 +768,7 @@ class VmPoolController extends Controller
 					// only sstCronObjectClass needed
 					$poolbackup->removeAttributesByObjectClass('sstVirtualizationBackupObjectClass');
 				}
-				echo '<pre>' . print_r($poolbackup, true) . '</pre>';
+				//echo '<pre>' . print_r($poolbackup, true) . '</pre>';
 				if ($poolbackupfound) {
 					CLdapServer::getInstance()->delete($poolbackup->getDn());
 				}
@@ -815,27 +815,7 @@ class VmPoolController extends Controller
 				$poolUsb->sstAllowUsb = 1 == $model->allowUsb ? 'TRUE' : 'FALSE';
 				$poolUsb->save();
 			}
-/*
-			$data = array();
-			$data['objectClass'] = array('top', 'organizationalUnit', 'sstRelationship');
-			$data['ou'] = array('storage pools');
-			$data['description'] = array('This is the StoragePool subtree.');
-			$data['sstBelongsToCustomerUID'] = array(Yii::app()->user->customerUID);
-			$data['sstBelongsToResellerUID'] = array(Yii::app()->user->resellerUID);
-			$dn = 'ou=storage pools,' . $pool->dn;
-			$server->add($dn, $data);
-			$data = array();
-			$data['objectClass'] = array('top', 'organizationalUnit', 'labeledURIObject', 'sstRelationship');
-			$data['ou'] = $model->storagepool;
-			$storagepool = CLdapRecord::model('LdapStoragePool')->findByAttributes(array('attr'=>array('sstStoragePool'=>$model->storagepool)));
 
-			$data['description'] = array('This entry links to the storagepool ' . $model->storagepool . '.');
-			$data['labeledURI'] = array('ldap:///' . $storagepool->dn);
-			$data['sstBelongsToCustomerUID'] = array(Yii::app()->user->customerUID);
-			$data['sstBelongsToResellerUID'] = array(Yii::app()->user->resellerUID);
-			$dn2 = 'ou=' . $model->storagepool . ',' . $dn;
-			$server->add($dn2, $data);
-*/
 			//echo '<pre>' . print_r($pool, true) . '</pre>';
 			$this->redirect(array('index'));
 		}

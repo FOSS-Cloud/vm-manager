@@ -54,6 +54,7 @@ class LdapVmPool extends CLdapRecord {
 			'runningDynVms' => array(self::HAS_MANY, 'sstVirtualMachinePool', 'LdapVm', 'sstVirtualMachinePool', array('sstVirtualMachineType' => 'dynamic', 'sstVirtualMachineSubType' => 'Desktop')),
 			'settings' => array(self::HAS_ONE, 'dn', 'LdapVmPoolConfigurationSettings', '$model->getDn()', array('ou' => 'settings')),
 			'backup' => array(self::HAS_ONE, 'dn', 'LdapConfigurationBackup', '$model->getDn()', array('ou' => 'backup')),
+			'defaultBackupConfiguration' => array(self::HAS_ONE, 'dn', 'LdapConfigurationBackup', '\'ou=configuration,ou=virtualization,ou=services\'', array('ou' => 'backup')),
 		);
 	}
 
@@ -98,6 +99,14 @@ class LdapVmPool extends CLdapRecord {
 		$this->ranges = array();
 	}
 
+	public function getConfigurationBackup() {
+		$backupConf = $this->backup;
+		if (is_null($backupConf)) {
+			$backupConf = $this->defaultBackupConfiguration;
+		}
+		return $backupConf;
+	}
+	
 	public function startVm($golden=null) {
 		if ($this->sstBrokerMaximalNumberOfVirtualMachines <= count($this->runningDynVms)) {
 			throw new Exception('There is currently no free workplace. Maximum number of virtual machines reached that are specified in the VM Pool. Contact your administrator or try it again later.');

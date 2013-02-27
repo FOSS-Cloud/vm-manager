@@ -48,6 +48,10 @@ $activategoldenurl = $this->createUrl('vm/activateGolden');
 $refreshtimeouturl = $this->createUrl('vm/refreshTimeout');
 $nodeurl = $this->createUrl('node/view');
 $restoreurl = $this->createUrl('vm/restoreVm');
+$waitforrestoreactionurl = $this->createUrl('vm/waitForRestoreAction');
+$getrestoreactionurl = $this->createUrl('vm/getRestoreAction');
+$startrestoreactionurl = $this->createUrl('vm/startRestoreAction');
+$cancelrestoreactionurl = $this->createUrl('vm/cancelRestoreAction');
 
 //$imgcontroller = $this->createUrl('img/percent');
 $actrefreshtime = Yii::app()->getSession()->get('vm_refreshtime', 10000);
@@ -546,6 +550,8 @@ function activateGoldenImage(id)
 }
 function restoreVm(evt)
 {
+	clearTimeout(timeoutid);
+	timeoutid = -1;
 	$.ajax({
 		url: "{$restoreurl}",
 		data: 'dn=' + evt.data.backupDn,
@@ -557,15 +563,88 @@ function restoreVm(evt)
 					resizable: true,
 					modal: true,
 					buttons: {
-						schließen: function() {
+						Cancel: function() {
 							$(this).dialog('close');
 						}
 					}
 				});
 			}
+			else {
+				$("#vmdialogtext").html(data['msg']);
+				$("#vmdialog").dialog({
+					title: 'Restore Vm',
+					resizable: true,
+					minWidth: 330,
+					modal: false,
+					open: function( event, ui ) {
+						$("#vmdialog ~ .ui-dialog-buttonpane :button").button({disabled: true}); //.attr('disabled', 'disabled');
+					},
+					buttons: {
+						OK: function() {
+							$.ajax({
+								url: "{$startrestoreactionurl}",
+								data: 'dn=' + waitForRestoreActionDn,
+								success: function(data) {
+								},
+								dataType: 'json'
+							});
+							$(this).dialog('close');
+						},
+						Cancel: function() {
+							$.ajax({
+								url: "{$cancelrestoreactionurl}",
+								data: 'dn=' + waitForRestoreActionDn,
+								success: function(data) {
+								},
+								dataType: 'json'
+							});
+						$(this).dialog('close');
+						}
+					}
+				});
+//				alert("NOW");
+				waitForRestoreActionDn = evt.data.backupDn;
+				timeoutid = setTimeout(waitForRestoreAction, 5000);
+			}
+			
 			$('#{$gridid}_grid').trigger('reloadGrid');
 		},
 		dataType: 'json'
+	});
+}
+var waitForRestoreActionDn = null;
+function waitForRestoreAction()
+{
+	$.ajax({
+		url: "{$waitforrestoreactionurl}",
+		data: 'dn=' + waitForRestoreActionDn,
+		success: function(data) {
+			if (data['err']) {
+				$("#vmdialogtext").html(data['msg']);
+				if (undefined != data['refresh'] && data['refresh']) {
+					timeoutid = setTimeout(waitForRestoreAction, 5000);
+				}
+			}
+			else {
+				$("#vmdialogtext").html(data['msg']);
+				$("#vmdialog ~ .ui-dialog-buttonpane :button").button({disabled: false});
+				clearTimeout(timeoutid);
+				timeoutid = -1;
+//				timeoutid = setTimeout(getRestoreAction, 100);
+			}
+		},
+		dataType: 'json'
+	});
+}
+function getRestoreAction()
+{
+	$("#vmdialogtext").load("{$getrestoreactionurl}", {'dn': waitForRestoreActionDn}, function(response, status, xhr) {
+		var a = 12;
+		if (status == "error") {
+		}
+		else {
+			//timeoutid = setTimeout(refreshVms, 1000);
+		}
 	});
 }
 EOS;

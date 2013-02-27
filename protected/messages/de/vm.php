@@ -53,4 +53,7 @@ return array (
   'Assigned groups' => 'verknüpfte Benutzergruppen',
   'Backup with dn=\'{dn}\' not found!' => '',
   'Groups' => 'Benutzergruppen',
+  'Restore Vm started!' => 'Wiederherstellen der Vm gestartet!<br />Bitte warten Sie um mögliche Fragen, die während des Wiederherstellens auftreten, zu beantworten.',
+  'Waiting for data' => 'Warten auf Antwort ...',
+  'Should restore of Vm start?' => 'Vm kann wiederhergestellt werden!<br />Möchten Sie jetzt beginnen?',
 );

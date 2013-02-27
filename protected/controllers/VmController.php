@@ -104,7 +104,7 @@ class VmController extends Controller
 				'actions'=>array('index', 'view', 'update', 'delete', 'template', 'profile',
 					'getPoolInfo', 'getVms', 'getVmInfo', 'refreshTimeout', 'refreshVms', 'getUserGui', 'saveUserAssign', 'getGroupGui', 'saveGroupAssign', 'getNodeGui',
 					'saveVm', 'startVm', 'shutdownVm', 'rebootVm', 'destroyVm', 'migrateVm',
-					'makeGolden', 'activateGolden', 'restoreVm'),
+					'makeGolden', 'activateGolden', 'restoreVm', 'waitForRestoreAction', 'getRestoreAction', 'startRestoreAction', 'cancelRestoreAction', 'handleRestoreAction'),
 				'users'=>array('@'),
 				'expression'=>'Yii::app()->user->isAdmin'
 			),
@@ -690,7 +690,7 @@ EOS;
 ?>
 		<br/>
 		<button id="migrateNode" style="margin-top: 10px; float: left;"></button>
-		<div id="errorNode" class="ui-state-error ui-corner-all" style="display: none; margin-top: 10px; margin-left: 20px; padding: 0pt 0.7em; float: right;">
+		<div id="errorNode" class="ui-state-error ui-corner-all" style="display: none; width: 160px; margin-top: 10px; margin-left: 20px; padding: 0pt 0.7em; float: right;">
 			<p style="margin: 0.3em 0pt ; "><span style="float: left; margin-right: 0.3em;" class="ui-icon ui-icon-alert"></span><span id="errorNodeMsg" style="display: block;"></span></p>
 		</div>
 		<div id="infoNode" class="ui-state-highlight ui-corner-all" style="display: none; margin-top: 10px; margin-left: 20px; padding: 0pt 0.7em; float: right;">
@@ -1281,5 +1281,130 @@ EOS;
 			$json = array('err' => true, 'msg' => Yii::t('vm', 'Parameter dn not found!'));
 		}
 		$this->sendJsonAnswer($json);
+	}
+	
+	public function actionWaitForRestoreAction() {
+		$this->disableWebLogRoutes();
+		Yii::log('waitForRestoreAction: ' . $_GET['dn'], 'profile', 'vmController');
+		if (isset($_GET['dn'])) {
+			$backup = LdapVmSingleBackup::model()->findByDn($_GET['dn']);
+			if (!is_null($backup)) {
+				Yii::log('waitForRestoreAction: ' . $backup->sstProvisioningMode . ', ' . $backup->sstProvisioningState, 'profile', 'vmController');
+				if ('unretainedSmallFiles' === $backup->sstProvisioningMode) {
+					if (0 == $backup->sstProvisioningState) {
+						$vm = $backup->vm;
+						$vmpool = $vm->vmpool;
+						$backupconf = $vmpool->getConfigurationBackup();
+						$dir = 'vm-' . ('persistent' === $vm->sstVirtualMachineType ? 'persistent' : ('template' === $vm->sstVirtualMachineType ? 'templates' : '???'));
+						$ldiffile = substr($backupconf->sstBackupRetainDirectory, 7) . '/' . $dir . '/' . $vmpool->storagepools[0]->ou . '/' . $vm->sstVirtualMachine . '/' . $backup->ou . '/' .
+							$vm->sstVirtualMachine . '.ldif.' .  $backup->ou;
+						Yii::log('waitForRestoreAction: ' . $ldiffile, 'profile', 'vmController');
+						if (file_exists($ldiffile)) {
+							$json = array('err' => false, 'msg' => Yii::t('vm', 'Should restore of Vm start?'));
+						}
+						else {
+							$json = array('err' => true, 'msg' => Yii::t('vm', 'Error finding LDIF file'));
+						}
+					}
+					else {
+						$json = array('err' => true, 'msg' => Yii::t('vm', 'Error unretaining files'));
+					}
+				}
+				else {
+					$json = array('err' => true, 'msg' => Yii::t('vm', 'Waiting for data'), 'refresh' => true);
+				}
+			}
+			else {
+				$json = array('err' => true, 'msg' => Yii::t('vm', 'Backup with dn=\'{dn}\' not found!', array('{dn}' => $_GET['dn'])));
+			}
+		}
+		$this->sendJsonAnswer($json);
+	}
+	
+	public function actionStartRestoreAction() {
+		$this->disableWebLogRoutes();
+		Yii::log('startRestoreAction: ' . $_GET['dn'], 'profile', 'vmController');
+		if (isset($_GET['dn'])) {
+			$backup = LdapVmSingleBackup::model()->findByDn($_GET['dn']);
+			if (!is_null($backup)) {
+				$vm = $backup->vm;
+				$vmpool = $vm->vmpool;
+				$backupconf = $vmpool->getConfigurationBackup();
+				$dir = 'vm-' . ('persistent' === $vm->sstVirtualMachineType ? 'persistent' : ('template' === $vm->sstVirtualMachineType ? 'templates' : '???'));
+				$ldiffile = substr($backupconf->sstBackupRetainDirectory, 7) . '/' . $dir . '/' . $vm->vmpool->storagepools[0]->ou . '/' . $vm->sstVirtualMachine . '/' . $backup->ou . '/' .
+						$vm->sstVirtualMachine . '.ldif.' .  $backup->ou;
+				$ldiftofile = substr($backupconf->sstBackupRetainDirectory, 7) . '/' . $dir . '/' . $vm->vmpool->storagepools[0]->ou . '/' . $vm->sstVirtualMachine . '/' . $backup->ou . '/' .
+						$vm->sstVirtualMachine . '.ldif';
+				if (copy($ldiffile, $ldiftofile)) {
+					$backup->setOverwrite(true);
+					$backup->sstProvisioningMode = 'unretainLargeFiles';
+					$backup->sstProvisioningState = '0';
+					$backup->save(true, array('sstProvisioningMode', 'sstProvisioningState'));
+						
+					$json = array('err' => false, 'msg' => Yii::t('vm', 'Restore started'));
+				}
+				else {
+					$json = array('err' => true, 'msg' => Yii::t('vm', 'Error copying LDIF file'));
+				}
+			}
+			else {
+				$json = array('err' => true, 'msg' => Yii::t('vm', 'Backup with dn=\'{dn}\' not found!', array('{dn}' => $_GET['dn'])));
+			}
+		}
+		$this->sendJsonAnswer($json);
+	}
+					
+	public function actionCancelRestoreAction() {
+		$this->disableWebLogRoutes();
+		Yii::log('cancelRestoreAction: ' . $_GET['dn'], 'profile', 'vmController');
+		if (isset($_GET['dn'])) {
+			$backup = LdapVmSingleBackup::model()->findByDn($_GET['dn']);
+			if (!is_null($backup)) {
+				$backup->setOverwrite(true);
+				$backup->sstProvisioningMode = 'finished';
+				$backup->sstProvisioningState = '0';
+				$backup->save(true, array('sstProvisioningMode', 'sstProvisioningState'));
+		
+				$json = array('err' => false, 'msg' => Yii::t('vm', 'Canceled'));
+			}
+			else {
+				$json = array('err' => true, 'msg' => Yii::t('vm', 'Backup with dn=\'{dn}\' not found!', array('{dn}' => $_GET['dn'])));
+			}
+		}
+		$this->sendJsonAnswer($json);
+		}
+	
+	public function actionGetRestoreAction() {
+		Yii::log('getRestoreAction: ' . $_POST['dn'], 'profile', 'vmController');
+		if (isset($_POST['dn'])) {
+			$backup = LdapVmSingleBackup::model()->findByDn($_POST['dn']);
+			if (!is_null($backup)) {
+				$vm = LdapVm::model()->findByDn(CLdapRecord::getParentDn(CLdapRecord::getParentDn($backup->getDn())));
+				$backupconf = $vm->backup;
+				if (!isset($backupconf->sstBackupRetainDirectory)) {
+					$backupconf = $vm->vmpool->backup;
+					if (is_null($backupconf) || !isset($backupconf->sstBackupRetainDirectory)) {
+						$backupconf = LdapConfigurationBackup::model()->findByDn('ou=backup,ou=configuration,ou=virtualization,ou=services');
+					}
+				}
+				$dir = 'vm-' . ('persistent' === $vm->sstVirtualMachineType ? 'persistent' : ('template' === $vm->sstVirtualMachineType ? 'templates' : '???'));
+				$ldiffile = substr($backupconf->sstBackupRetainDirectory, 7) . '/' . $dir . '/' . $vm->vmpool->storagepools[0]->ou . '/' . $vm->sstVirtualMachine . '/' . $backup->ou . '/' .
+						$vm->sstVirtualMachine . '.ldif.' .  $backup->ou;
+
+		echo $dir . '<br/>';
+		echo $ldiffile . '<br/>';
+			}
+			else {
+				$json = array('err' => true, 'msg' => Yii::t('vm', 'Backup with dn=\'{dn}\' not found!', array('{dn}' => $_GET['dn'])));
+			}
+		}
+?>
+<form action="#">
+	Test1: <input type="text" size="12" />
+</form>
+<?php
+	}
+	
+	public function actionHandleRestoreAction() {
 	}
 }

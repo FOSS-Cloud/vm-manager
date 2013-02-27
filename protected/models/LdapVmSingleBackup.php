@@ -41,6 +41,22 @@ class LdapVmSingleBackup extends CLdapRecord {
 	protected $_dnAttributes = array('ou');
 	protected $_objectClasses = array('sstProvisioning', 'organizationalUnit', 'top');
 
+	public function relations()
+	{
+		return array(
+			// __construct($name,$attribute,$className,$foreignAttribute,$options=array())
+			'vm' => array(self::BELONGS_TO_DN, '~2', 'LdapVm', 'dn'),
+		);
+	}
+
+	/**
+	 * Returns the static model of the specified LDAP class.
+	 * @return CLdapRecord the static model class
+	 */
+	public static function model($className=__CLASS__)
+	{
+		return parent::model($className);
+	}
 
 	/**
 	 * @return array customized attribute labels (name=>label)
