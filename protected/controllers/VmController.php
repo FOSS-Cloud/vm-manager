@@ -1289,9 +1289,9 @@ EOS;
 		if (isset($_GET['dn'])) {
 			$backup = LdapVmSingleBackup::model()->findByDn($_GET['dn']);
 			if (!is_null($backup)) {
-				Yii::log('waitForRestoreAction: ' . $backup->sstProvisioningMode . ', ' . $backup->sstProvisioningState, 'profile', 'vmController');
+				Yii::log('waitForRestoreAction: ' . $backup->sstProvisioningMode . ', ' . $backup->sstProvisioningReturnValue, 'profile', 'vmController');
 				if ('unretainedSmallFiles' === $backup->sstProvisioningMode) {
-					if (0 == $backup->sstProvisioningState) {
+					if (0 == $backup->sstProvisioningReturnValue) {
 						$vm = $backup->vm;
 						$vmpool = $vm->vmpool;
 						$backupconf = $vmpool->getConfigurationBackup();
