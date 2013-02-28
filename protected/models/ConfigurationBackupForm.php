@@ -41,7 +41,8 @@ class ConfigurationBackupForm extends CFormModel {
 	public function rules()
 	{
 		return array(
-			array('sstBackupNumberOfIterations, sstVirtualizationVirtualMachineForceStart, sstCronMinute, sstCronHour, sstCronDayOfWeek, sstCronActive, cronTime', 'safe')
+			array('sstVirtualizationVirtualMachineForceStart, sstCronMinute, sstCronHour, sstCronDayOfWeek, sstCronActive, cronTime', 'safe'),
+			array('sstBackupNumberOfIterations', 'numerical', 'integerOnly' => true, 'min' => 0, 'allowEmpty' => false),
 		);
 	}
 

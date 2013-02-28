@@ -35,6 +35,15 @@ class ConfigurationController extends Controller
 		$retval = parent::beforeAction($action);
 		if ($retval) {
 			$this->activesubmenu = 'config';
+			
+			if ('backup' === $action->id) {
+				$cs=Yii::app()->clientScript;
+				$cs->scriptMap['jquery.js'] = false;
+				
+				Yii::app()->getclientScript()->registerCssFile($this->cssBase . '/jquery/osbd/jquery-ui.custom.css');
+				Yii::app()->clientScript->registerScriptFile('jquerynew.js', CClientScript::POS_BEGIN);
+				Yii::app()->clientScript->registerScriptFile('jqueryuinew.js', CClientScript::POS_BEGIN);
+			}
 		}
 		return $retval;
 	}
@@ -57,12 +66,7 @@ class ConfigurationController extends Controller
 		);
 	}
 
-	public function init() {
-		Yii::app()->getclientScript()->registerCssFile($this->cssBase . '/jquery/osbd/jquery-ui.custom.css');
-		Yii::app()->clientScript->registerScriptFile('jquerynew.js');
-		Yii::app()->clientScript->registerScriptFile('jqueryuinew.js');
-	}
-	
+
 	/**
 	 * Specifies the access control rules.
 	 * This method is used by the 'accessControl' filter.
