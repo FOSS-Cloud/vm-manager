@@ -101,7 +101,7 @@ class LdapVmPool extends CLdapRecord {
 
 	public function getConfigurationBackup() {
 		$backupConf = $this->backup;
-		if (is_null($backupConf)) {
+		if (is_null($backupConf) || '' == $backupConf->sstBackupRetainDirectory) {
 			$backupConf = $this->defaultBackupConfiguration;
 		}
 		return $backupConf;
