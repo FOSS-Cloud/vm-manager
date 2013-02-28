@@ -41,6 +41,15 @@ class VmPoolController extends Controller
 		$retval = parent::beforeAction($action);
 		if ($retval) {
 			$this->activesubmenu = 'vmpool';
+
+			if ('update' === $action->id || 'create' === $action->id) {
+				$cs=Yii::app()->clientScript;
+				$cs->scriptMap['jquery.js'] = false;
+				
+				Yii::app()->getclientScript()->registerCssFile($this->cssBase . '/jquery/osbd/jquery-ui.custom.css');
+				Yii::app()->clientScript->registerScriptFile('jquerynew.js', CClientScript::POS_BEGIN);
+				Yii::app()->clientScript->registerScriptFile('jqueryuinew.js', CClientScript::POS_BEGIN);
+			}
 		}
 		return $retval;
 	}

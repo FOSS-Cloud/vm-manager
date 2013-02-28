@@ -81,9 +81,8 @@ class Controller extends CController
 	 * @return void
 	 */
 	public function init() {
+		Yii::app()->getClientScript()->registerCoreScript('jquery');
 		Yii::app()->getclientScript()->registerCssFile($this->cssBase . '/jquery/osbd/jquery-ui.custom.css');
-		Yii::app()->clientScript->registerScriptFile('jquery.js');
-		Yii::app()->clientScript->registerScriptFile('jqueryui.js');
 	}
 
 	/**

@@ -57,6 +57,12 @@ class ConfigurationController extends Controller
 		);
 	}
 
+	public function init() {
+		Yii::app()->getclientScript()->registerCssFile($this->cssBase . '/jquery/osbd/jquery-ui.custom.css');
+		Yii::app()->clientScript->registerScriptFile('jquerynew.js');
+		Yii::app()->clientScript->registerScriptFile('jqueryuinew.js');
+	}
+	
 	/**
 	 * Specifies the access control rules.
 	 * This method is used by the 'accessControl' filter.
