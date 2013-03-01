@@ -577,7 +577,7 @@ function restoreVm(evt)
 					minWidth: 330,
 					modal: false,
 					open: function( event, ui ) {
-						$("#vmdialog ~ .ui-dialog-buttonpane :button").button({disabled: true}); //.attr('disabled', 'disabled');
+						$("#vmdialog ~ .ui-dialog-buttonpane button").button({disabled: true}); //.attr('disabled', 'disabled');
 					},
 					buttons: {
 						OK: function() {
@@ -585,6 +585,8 @@ function restoreVm(evt)
 								url: "{$startrestoreactionurl}",
 								data: 'dn=' + waitForRestoreActionDn,
 								success: function(data) {
+									timeoutid = -1;
+									$('#{$gridid}_grid').trigger('reloadGrid');
 								},
 								dataType: 'json'
 							});
@@ -595,6 +597,8 @@ function restoreVm(evt)
 								url: "{$cancelrestoreactionurl}",
 								data: 'dn=' + waitForRestoreActionDn,
 								success: function(data) {
+									timeoutid = -1;
+									$('#{$gridid}_grid').trigger('reloadGrid');
 								},
 								dataType: 'json'
 							});
@@ -604,7 +608,7 @@ function restoreVm(evt)
 				});
 //				alert("NOW");
 				waitForRestoreActionDn = evt.data.backupDn;
-				timeoutid = setTimeout(waitForRestoreAction, 5000);
+				timeoutid = setTimeout(waitForRestoreAction, 3000);
 			}
 			
 			$('#{$gridid}_grid').trigger('reloadGrid');
@@ -624,10 +628,13 @@ function waitForRestoreAction()
 				if (undefined != data['refresh'] && data['refresh']) {
 					timeoutid = setTimeout(waitForRestoreAction, 5000);
 				}
+				else {
+					$("#vmdialog ~ .ui-dialog-buttonpane button").button({disabled: false});
+				}
 			}
 			else {
 				$("#vmdialogtext").html(data['msg']);
-				$("#vmdialog ~ .ui-dialog-buttonpane :button").button({disabled: false});
+				$("#vmdialog ~ .ui-dialog-buttonpane button").button({disabled: false});
 				clearTimeout(timeoutid);
 				timeoutid = -1;
 //				timeoutid = setTimeout(getRestoreAction, 100);
