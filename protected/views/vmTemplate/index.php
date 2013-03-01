@@ -45,6 +45,10 @@ $finishurl = $this->createUrl('vmTemplate/finish');
 $finishdynurl = $this->createUrl('vmTemplate/finishDynamic');
 $nodeurl = $this->createUrl('node/view');
 $restoreurl = $this->createUrl('vm/restoreVm');
+$waitforrestoreactionurl = $this->createUrl('vmTemplate/waitForRestoreAction');
+$getrestoreactionurl = $this->createUrl('vmTemplate/getRestoreAction');
+$startrestoreactionurl = $this->createUrl('vmTemplate/startRestoreAction');
+$cancelrestoreactionurl = $this->createUrl('vmTemplate/cancelRestoreAction');
 
 $actrefreshtime = Yii::app()->getSession()->get('vm_refreshtime', 10000);
 
@@ -239,7 +243,7 @@ function refreshNextVm()
 				//timeoutid = setTimeout(refreshVms, refreshTimeout);
 			}
 			if (0 < refreshDns.length) {
-				setTimeout(refreshNextVm, 100);
+				timeoutid = setTimeout(refreshNextVm, 100);
 			}
 			else {
 				timeoutid = setTimeout(refreshVms, refreshTimeout);
@@ -252,7 +256,7 @@ function refreshNextVm()
 			}
 			//window.alert(status);
 			if (0 < refreshDns.length) {
-				setTimeout(refreshNextVm, 100);
+				timeoutid = setTimeout(refreshNextVm, 100);
 			}
 			else {
 				timeoutid = setTimeout(refreshVms, refreshTimeout);
@@ -452,6 +456,8 @@ function toogleBoot(id, device)
 }
 function restoreVm(evt)
 {
+	clearTimeout(timeoutid);
+	timeoutid = -1;
 	$.ajax({
 		url: "{$restoreurl}",
 		data: 'dn=' + evt.data.backupDn,
@@ -463,15 +469,95 @@ function restoreVm(evt)
 					resizable: true,
 					modal: true,
 					buttons: {
-						schließen: function() {
+						Cancel: function() {
 							$(this).dialog('close');
 						}
 					}
 				});
 			}
+			else {
+				$("#vmdialogtext").html(data['msg']);
+				$("#vmdialog").dialog({
+					title: 'Restore Vm',
+					resizable: true,
+					minWidth: 330,
+					modal: false,
+					open: function( event, ui ) {
+						$("#vmdialog ~ .ui-dialog-buttonpane button").button({disabled: true}); //.attr('disabled', 'disabled');
+					},
+					buttons: {
+						OK: function() {
+							$.ajax({
+								url: "{$startrestoreactionurl}",
+								data: 'dn=' + waitForRestoreActionDn,
+								success: function(data) {
+									timeoutid = -1;
+									$('#{$gridid}_grid').trigger('reloadGrid');
+								},
+								dataType: 'json'
+							});
+							$(this).dialog('close');
+						},
+						Cancel: function() {
+							$.ajax({
+								url: "{$cancelrestoreactionurl}",
+								data: 'dn=' + waitForRestoreActionDn,
+								success: function(data) {
+									timeoutid = -1;
+									$('#{$gridid}_grid').trigger('reloadGrid');
+								},
+								dataType: 'json'
+							});
+						$(this).dialog('close');
+						}
+					}
+				});
+//				alert("NOW");
+				waitForRestoreActionDn = evt.data.backupDn;
+				timeoutid = setTimeout(waitForRestoreAction, 3000);
+			}
+			
 			$('#{$gridid}_grid').trigger('reloadGrid');
 		},
 		dataType: 'json'
+	});
+}
+var waitForRestoreActionDn = null;
+function waitForRestoreAction()
+{
+	$.ajax({
+		url: "{$waitforrestoreactionurl}",
+		data: 'dn=' + waitForRestoreActionDn,
+		success: function(data) {
+			if (data['err']) {
+				$("#vmdialogtext").html(data['msg']);
+				if (undefined != data['refresh'] && data['refresh']) {
+					timeoutid = setTimeout(waitForRestoreAction, 5000);
+				}
+				else {
+					$("#vmdialog ~ .ui-dialog-buttonpane button").button({disabled: false});
+				}
+			}
+			else {
+				$("#vmdialogtext").html(data['msg']);
+				clearTimeout(timeoutid);
+				$("#vmdialog ~ .ui-dialog-buttonpane button").button({disabled: false});
+				timeoutid = -1;
+//				timeoutid = setTimeout(getRestoreAction, 100);
+			}
+		},
+		dataType: 'json'
+	});
+}
+function getRestoreAction()
+{
+	$("#vmdialogtext").load("{$getrestoreactionurl}", {'dn': waitForRestoreActionDn}, function(response, status, xhr) {
+		var a = 12;
+		if (status == "error") {
+		}
+		else {
+			//timeoutid = setTimeout(refreshVms, 1000);
+		}
 	});
 }
 EOS
@@ -789,7 +875,7 @@ EOS
 				var node = '<a href="${nodeurl}?node=' + row['node'] + '">' + row['node'] + '</a>';
 				$('#{$gridid}_grid').setRowData(ids[i],{'displayname': row['name'], 'act': act, 'statusact': statusact, 'node': node});
 			}
-			//if (-1 == timeoutid)
+			if (-1 == timeoutid)
 			{
 				clearTimeout(timeoutid);
 				timeoutid = setTimeout(refreshVms, 1000);
@@ -888,6 +974,10 @@ EOS
 		'cssFile' => 'singleselect.css',
 	));
 ?>
+<div id="vmdialog" title="" style="display: none;">
+	<span class="ui-icon ui-icon-notice" style="float:left; margin:0 7px 0 0;"></span>
+	<div id="vmdialogtext"></div>
+</div>
 <div style="display: none;">
 	<a id="startStaticPool" href="#selectStaticPool">start finish</a>
 	<div id="selectStaticPool">
