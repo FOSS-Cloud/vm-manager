@@ -34,25 +34,25 @@ return array(
 		'log'=>array(
 			'routes'=>array(
 				// uncomment the following to log messages for ldap actions
-				array(
-					'class' => 'CFileLogRoute',
-					'levels' => 'profile',
-					'categories' => 'ext.ldaprecord.*',
-					'logFile' => 'ldaprecord.log'
-				),
+//				array(
+//					'class' => 'CFileLogRoute',
+//					'levels' => 'profile',
+//					'categories' => 'ext.ldaprecord.*',
+//					'logFile' => 'ldaprecord.log'
+//				),
 				// uncomment the following to log messages for libvirt actions
-				array(
-					'class' => 'CFileLogRoute',
-					'levels' => 'profile',
-					'categories' => 'phplibvirt',
-					'logFile' => 'phplibvirt.log'
-				),
+//				array(
+//					'class' => 'CFileLogRoute',
+//					'levels' => 'profile',
+//					'categories' => 'phplibvirt',
+//					'logFile' => 'phplibvirt.log'
+//				),
 				array(
 					'class'=>'ext.ESysLogRoute',
 					'logName'=>'vm-manager',
 					'logFacility'=>LOG_LOCAL0,
-					'levels'=>'profile',
-					'categories' => 'ext.ldaprecord.*',
+					'levels'=>'warning',
+					'categories' => 'ext.ldaprecord.* phplibvirt.log',
 				),
 			),
 		),
