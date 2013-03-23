@@ -615,7 +615,7 @@ class VmPoolController extends Controller
 			$nodes = array();
 			foreach($ldapnodes as $node) {
 				if ($node->isType('VM-Node')) {
-					$nodes[$node->sstNode] = $node->sstNode;
+					$nodes[$node->sstNode] = false;
 				}
 			}
 
@@ -915,11 +915,12 @@ class VmPoolController extends Controller
 			$pools = CLdapRecord::model('LdapStoragePool')->findAll(array('attr'=>array()));
 			$storagepools = $this->createDropdownFromLdapRecords($pools, 'sstStoragePool', 'sstDisplayName');
 
-			$ldapnodes = CLdapRecord::model('LdapNode')->findAll(array('attr'=>array()));
+			$ldapnodes = LdapNode::model()->findAll(array('attr'=>array()));
 			$nodes = array();
 			foreach($ldapnodes as $node) {
 				if ($node->isType('VM-Node')) {
-					$nodes[$node->sstNode] = $node->sstNode;
+					$vms = LdapVm::model()->findAll(array('attr'=>array('sstNode' => $node->sstNode, 'sstVirtualMachinePool' => $pool->sstVirtualMachinePool)));
+					$nodes[$node->sstNode] = 0 < count($vms);
 				}
 			}
 			$this->render('update',array(

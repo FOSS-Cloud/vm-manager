@@ -126,6 +126,37 @@ else {
 	echo CHtml::textField('storagepool', $model->storagepool, array('size'=>40, 'disabled'=>"disabled")) . '<span style="font-size: 70%;"> (readonly)</span><br/>';
 	echo $form->hiddenField($model, 'storagepool');
 }
+
+$nodesjs = 'var nodes = new Array();';
+$nodevalues = array();
+$nodeparams = array();
+$i = 0;
+foreach($nodes as $name => $hasVms) {
+	$nodesjs .= 'nodes["' . $name . '"]=' . ($hasVms ? 'true' : 'false') . ';';
+	$nodevalues[$name] = $name;
+	$nodeparams[$name] = array('label' => $name);
+	if ($hasVms) {
+		$nodevalues[$name] = '&raquo; ' . $name;
+		$nodeparams[$name]['style'] = 'font-style: italic;';
+	}
+	$i++;
+}
+
+if (!is_null($model->dn)) {
+	Yii::app()->clientScript->registerScript('nodes', <<<EOS
+	{$nodesjs}
+	$("#VmPoolForm_nodes").change(function() {
+		var options = $("#VmPoolForm_nodes option:not(:selected)");
+		options.each(function (idx) {
+			var val = $(this).val();
+			if (undefined != nodes[val] && nodes[val]) {
+				$(this).attr('selected', true);
+			}
+		});
+	});			
+EOS
+, CClientScript::POS_READY);
+}
 ?>
 		</div>
 		<div class="row">
@@ -140,7 +171,11 @@ else {
 		</div>
 		<div class="row">
 			<?php echo $form->labelEx($model,'nodes'); ?>
-			<?php echo $form->listBox($model,'nodes',$nodes,array('multiple'=>'multiple')); ?>
+			<?php echo $form->listBox($model,'nodes',$nodevalues,array('encode' => false, 'multiple'=>'multiple', 'style' => 'float: left;' , 'options' => $nodeparams));
+				if (!is_null($model->dn)) {
+					echo '<div style="float: left; vertical-align: top; margin-left: 10px; font-size: 70%;">(<span style="font-style: italic;"> &raquo; Node:</span> has VMs assigned to this VM Pool <br /> and must stay selected!)</div><br/>';
+				}
+			?>
 			<?php echo $form->error($model,'nodes'); ?>
 		</div>
 		<div class="row">
