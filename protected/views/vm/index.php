@@ -214,6 +214,7 @@ function refreshNextVm()
 				}
 
 				spice = data[row['uuid']]['spice'];
+				$('#{$gridid}_grid').setCell(id, 'spice', spice);
 				if ('green' == state) {
 					mem = data[row['uuid']]['mem'];
 					cpu = data[row['uuid']]['cpu'];
