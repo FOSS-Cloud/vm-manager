@@ -59,16 +59,19 @@ class CPhpLibvirt {
 	public static $VIR_DOMAIN_SHUTOFF	= 	5; // the domain is shut off
 	public static $VIR_DOMAIN_CRASHED	= 	6; // the domain is crashed
 
-	public static $VIR_MIGRATE_LIVE              =   1; // live migration
-	public static $VIR_MIGRATE_PEER2PEER         =   2; // direct source -> dest host control channel Note the less-common spelling that we're stuck with: VIR_MIGRATE_TUNNELLED should be VIR_MIGRATE_TUNNELED
-	public static $VIR_MIGRATE_TUNNELLED         =   4; // tunnel migration data over libvirtd connection
-	public static $VIR_MIGRATE_PERSIST_DEST      =   8; // persist the VM on the destination
-	public static $VIR_MIGRATE_UNDEFINE_SOURCE   =  16; // undefine the VM on the source
-	public static $VIR_MIGRATE_PAUSED            =  32; // pause on remote side
-	public static $VIR_MIGRATE_NON_SHARED_DISK   =  64; // migration with non-shared storage with full disk copy
-	public static $VIR_MIGRATE_NON_SHARED_INC    = 128; // migration with non-shared storage with incremental copy (same base image shared between source and destination)
-	public static $VIR_MIGRATE_CHANGE_PROTECTION = 256; //protect for changing domain configuration through the whole migration process; this will be used automatically when supported
-	public static $VIR_MIGRATE_UNSAFE            = 512; // force migration even if it is considered unsafe
+	public static $VIR_MIGRATE_LIVE              =    1; // live migration
+	public static $VIR_MIGRATE_PEER2PEER         =    2; // direct source -> dest host control channel Note the less-common spelling that we're stuck with: VIR_MIGRATE_TUNNELLED should be VIR_MIGRATE_TUNNELED
+	public static $VIR_MIGRATE_TUNNELLED         =    4; // tunnel migration data over libvirtd connection
+	public static $VIR_MIGRATE_PERSIST_DEST      =    8; // persist the VM on the destination
+	public static $VIR_MIGRATE_UNDEFINE_SOURCE   =   16; // undefine the VM on the source
+	public static $VIR_MIGRATE_PAUSED            =   32; // pause on remote side
+	public static $VIR_MIGRATE_NON_SHARED_DISK   =   64; // migration with non-shared storage with full disk copy
+	public static $VIR_MIGRATE_NON_SHARED_INC    =  128; // migration with non-shared storage with incremental copy (same base image shared between source and destination)
+	public static $VIR_MIGRATE_CHANGE_PROTECTION =  256; //protect for changing domain configuration through the whole migration process; this will be used automatically when supported
+	public static $VIR_MIGRATE_UNSAFE            =  512; // force migration even if it is considered unsafe
+	public static $VIR_MIGRATE_OFFLINE           = 1024; // offline migrate
+	public static $VIR_MIGRATE_COMPRESSED        = 2048; // compress data during migration
+	
 
 	private $connections = array();
 
@@ -158,39 +161,6 @@ class CPhpLibvirt {
 		$xmllibvirt = libvirt_domain_get_xml_desc($domain, NULL);
 		Yii::log('migrateVm: orig XML: ' . $xmllibvirt, 'profile', 'phplibvirt');
 		$xml = $this->replaceXML($xmllibvirt, $data);
-// 		$spicePort = $data['spiceport'];
-// 		$listen = $data['newlisten'];
-// 		$xml = $xmllibvirt;
-// 		$pos1 = strpos($xml, '<graphics');
-// 		if (false !== $pos1) {
-// 			$pos2 = strpos($xml, "</graphics>", $pos1 + 1);
-// 			if (false !== $pos2)  {
-// 				$pos3 = strpos($xml, "port='", $pos1 + 1);
-// 				if (false !== $pos3 && $pos3 < $pos2) {
-// 					$start = $pos3 + 6;
-// 					$end = strpos($xml, "'", $start);
-// 					if (false !== $end) {
-// 						$xml = substr_replace($xml, $spicePort, $start, $end - $start);
-// 					}
-// 				}
-// 				$pos3 = strpos($xml, "listen='", $pos1 + 1);
-// 				if (false !== $pos3 && $pos3 < $pos2) {
-// 					$start = $pos3 + 8;
-// 					$end = strpos($xml, "'", $start);
-// 					if (false !== $end) {
-// 						$xml = substr_replace($xml, $listen, $start, $end - $start);
-// 					}
-// 				}
-// 				$pos3 = strpos($xml, "address='", $pos1 + 1);
-// 				if (false !== $pos3 && $pos3 < $pos2) {
-// 					$start = $pos3 + 9;
-// 					$end = strpos($xml, "'", $start);
-// 					if (false !== $end) {
-// 						$xml = substr_replace($xml, $listen, $start, $end - $start);
-// 					}
-// 				}
-// 			}
-// 		}
 		Yii::log('migrateVm:  new XML: ' . $xml, 'profile', 'phplibvirt');
 				
 		$flags = self::$VIR_MIGRATE_LIVE | self::$VIR_MIGRATE_UNDEFINE_SOURCE | self::$VIR_MIGRATE_PEER2PEER | self::$VIR_MIGRATE_TUNNELLED | self::$VIR_MIGRATE_PERSIST_DEST | self::$VIR_MIGRATE_UNSAFE;
@@ -259,7 +229,6 @@ class CPhpLibvirt {
 
 	public function getLastError() {
 		$retval = libvirt_get_last_error();
-		Yii::log('getVmStatus: libvirt_get_last_error (): ' . $retval, 'profile', 'phplibvirt');
 		return $retval;
 	}
 
@@ -485,31 +454,27 @@ class CPhpLibvirt {
 		return $retval;
 	}
 
-	public function createStoragePool($host, $basepath) {
+	public function createStoragePool($host, $uuid, $path) {
 		$data = array();
-		$data['uuid'] = $this->generateUUID();
+		$data['uuid'] = $uuid;
 		$data['name'] = $data['uuid'];
-
-		$data['path'] = $basepath . '/' . $data['uuid'];
+		$data['path'] = $path;
 		$xml = $this->getStoragePoolXML($data);
-		Yii::log('createStoragePool: libvirt_storagepool_define_xml(' . $host . ', ' . $xml . ')', 'profile', 'phplibvirt');
-
+		
 		$retval = false;
 		$con = $this->getConnection($host);
 		if (!is_null($con)) {
 			Yii::log('createStoragePool: connection ok', 'profile', 'phplibvirt');
+			Yii::log('createStoragePool: libvirt_storagepool_define_xml(' . $host . ', ' . $xml . ')', 'profile', 'phplibvirt');
 			$pool = libvirt_storagepool_define_xml($con, $xml, 0);
 			if (!is_null($pool)) {
 				Yii::log('createStoragePool: pool defined', 'profile', 'phplibvirt');
 				if (libvirt_storagepool_build($pool)) {
 					Yii::log('createStoragePool: pool build', 'profile', 'phplibvirt');
-					if (libvirt_storagepool_create($pool)) {
+					if (libvirt_storagepool_undefine($pool)) {
+						Yii::log('deleteStoragePool: pool undefined', 'profile', 'phplibvirt');
+						$retval = true;
 						Yii::log('createStoragePool: pool created', 'profile', 'phplibvirt');
-						if (libvirt_storagepool_set_autostart($pool, true)) {
-							Yii::log('createStoragePool: pool set autostart', 'profile', 'phplibvirt');
-							$retval = true;
-							Yii::log('createStoragePool: pool created', 'profile', 'phplibvirt');
-						}
 					}
 				}
 			}
@@ -519,26 +484,103 @@ class CPhpLibvirt {
 		}
 		return $retval;
 	}
-
-	public function deleteStoragePool($host, $basepath, $uuid) {
-		Yii::log('deleteStoragePool: ' . $host . ', ' . $basepath . ', ' . $uuid, 'profile', 'phplibvirt');
-
-		$con = $this->getConnection($host);
-		$pool = libvirt_storagepool_lookup_by_uuid_string($con, $uuid);
+	
+	public function deleteStoragePool($host, $uuid, $path) {
+		$data = array();
+		$data['uuid'] = $uuid;
+		$data['name'] = $data['uuid'];
+		$data['path'] = $path;
+		$xml = $this->getStoragePoolXML($data);
+		
 		$retval = false;
-		if (!is_null($pool)) {
-			if (0 == libvirt_storagepool_set_autostart($pool, 0)) { // make sure the pool is not autostarted again, just in case we get interrupted
-				if (libvirt_storagepool_destroy($pool)) { // stops the pool (but it is still defined)
-					$this->rmdir($basepath . '/' . $uuid);
-					if (0 == libvirt_storagepool_undefine($pool)) {
+		$con = $this->getConnection($host);
+		if (!is_null($con)) {
+			Yii::log('deleteStoragePool: connection ok', 'profile', 'phplibvirt');
+			Yii::log('deleteStoragePool: libvirt_storagepool_define_xml(' . $host . ', ' . $xml . ')', 'profile', 'phplibvirt');
+			$pool = libvirt_storagepool_define_xml($con, $xml, 0);
+			if (!is_null($pool)) {
+				Yii::log('deleteStoragePool: pool defined', 'profile', 'phplibvirt');
+				if (libvirt_storagepool_delete($pool)) {
+					Yii::log('deleteStoragePool: pool deleted', 'profile', 'phplibvirt');
+					if (libvirt_storagepool_undefine($pool)) {
+						Yii::log('deleteStoragePool: pool undefined', 'profile', 'phplibvirt');
 						$retval = true;
-						Yii::log('deleteStoragePool: pool created', 'profile', 'phplibvirt');
+						Yii::log('deleteStoragePool: pool deleted', 'profile', 'phplibvirt');
 					}
 				}
 			}
 		}
+		if (!$retval) {
+			Yii::log('deleteStoragePool: error: ' . libvirt_get_last_error(), 'profile', 'phplibvirt');
+		}
 		return $retval;
 	}
+		
+	public function assignStoragePoolToNode($host, $uuid, $path) {
+		$data = array();
+		$data['uuid'] = $uuid;
+		$data['name'] = $data['uuid'];
+		$data['path'] = $path;
+		$xml = $this->getStoragePoolXML($data);
+		
+		$retval = false;
+		$con = $this->getConnection($host);
+		if (!is_null($con)) {
+			Yii::log('assignStoragePoolToNode: connection ok', 'profile', 'phplibvirt');
+			$pool = libvirt_storagepool_lookup_by_uuid_string($con, $uuid);
+			if (is_null($pool)) {
+				Yii::log('assignStoragePoolToNode: libvirt_storagepool_define_xml(' . $host . ', ' . $xml . ')', 'profile', 'phplibvirt');
+				$pool = libvirt_storagepool_define_xml($con, $xml, 0);
+				if (!is_null($pool)) {
+					Yii::log('assignStoragePoolToNode: pool defined', 'profile', 'phplibvirt');
+					if (libvirt_storagepool_create($pool)) {
+						Yii::log('assignStoragePoolToNode: pool created', 'profile', 'phplibvirt');
+						if (libvirt_storagepool_set_autostart($pool, true)) {
+							Yii::log('assignStoragePoolToNode: pool set autostart', 'profile', 'phplibvirt');
+							$retval = true;
+							Yii::log('assignStoragePoolToNode: pool assigned', 'profile', 'phplibvirt');
+						}
+					}
+				}
+			}
+			else {
+				$retval = true;
+			}
+		}
+		if (!$retval) {
+			Yii::log('assignStoragePoolToNode: error: ' . libvirt_get_last_error(), 'profile', 'phplibvirt');
+		}
+		return $retval;
+	}
+	
+	public function removeStoragePoolToNodeAssignment($host, $uuid) {
+		$retval = false;
+		$con = $this->getConnection($host);
+		if (!is_null($con)) {
+			Yii::log('removeStoragePoolToNodeAssignment: connection ok', 'profile', 'phplibvirt');
+			Yii::log('removeStoragePoolToNodeAssignment: libvirt_storagepool_lookup_by_uuid_string(' . $host . ', ' . $uuid . ')', 'profile', 'phplibvirt');
+			$pool = libvirt_storagepool_lookup_by_uuid_string($con, $uuid);
+			if (!is_null($pool)) {
+				Yii::log('removeStoragePoolToNodeAssignment: pool found', 'profile', 'phplibvirt');
+				if (libvirt_storagepool_set_autostart($pool, 0)) { // make sure the pool is not autostarted again, just in case we get interrupted
+					Yii::log('removeStoragePoolToNodeAssignment: pool autostart removed', 'profile', 'phplibvirt');
+					if (libvirt_storagepool_destroy($pool)) { // stops the pool (but it is still defined)
+						Yii::log('removeStoragePoolToNodeAssignment: pool destroyed', 'profile', 'phplibvirt');
+						if (libvirt_storagepool_undefine($pool)) {
+							Yii::log('removeStoragePoolToNodeAssignment: pool undefined', 'profile', 'phplibvirt');
+							$retval = true;
+							Yii::log('removeStoragePoolToNodeAssignment: pool assignment removed', 'profile', 'phplibvirt');
+						}
+					}
+				}
+			}
+		}
+		if (!$retval) {
+			Yii::log('removeStoragePoolToNodeAssignment: error: ' . libvirt_get_last_error(), 'profile', 'phplibvirt');
+		}
+		return $retval;
+	}
+	
 
 	private static $xmlVolumeTemplate = '
 <volume>

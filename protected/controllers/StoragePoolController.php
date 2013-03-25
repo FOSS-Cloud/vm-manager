@@ -35,7 +35,7 @@
  * @version: 1.0
  */
 
-class StoragePoolController extends WizardController
+class StoragePoolController extends Controller
 {
 	public function beforeAction($action) {
 		$retval = parent::beforeAction($action);
@@ -222,7 +222,18 @@ class StoragePoolController extends WizardController
 			$dn = urldecode(Yii::app()->getRequest()->getPost('dn'));
 			$pool = CLdapRecord::model('LdapStoragePool')->findByDn($dn);
 			if (!is_null($pool)) {
-				$pool->delete(true);
+				$ldapnodes = LdapNode::model()->findAll(array('attr'=>array()));
+				foreach($ldapnodes as $node) {
+					if ($node->isType('VM-Node')) {
+						break;
+					}
+				}					
+				if (!CPhpLibvirt::getInstance()->deleteStoragePool($node->getLibvirtUri(), $pool->sstStoragePool, substr($pool->sstStoragePoolURI, 7))) {
+					$this->sendAjaxAnswer(array('error' => 1, 'message' => CPhpLibvirt::getInstance()->getLastError()));
+				}
+				else {
+					$pool->delete(true);
+				}
 			}
 			else {
 				$this->sendAjaxAnswer(array('error' => 1, 'message' => 'StoragePool \'' . $_POST['dn'] . '\' not found!'));
@@ -245,24 +256,37 @@ class StoragePoolController extends WizardController
 
 			$pool = new LdapStoragePool();
 			$pool->sstStoragePool = CPhpLibvirt::getInstance()->generateUUID();
-			$pool->sstStoragePoolURI = $pooldefinition->sstStoragePoolURI . '/' . $pool->sstStoragePool;
+			$pool->sstStoragePoolURI = $pooldefinition->sstStoragePoolURI . $pool->sstStoragePool;
 			$pool->sstDisplayName = $model->sstDisplayName;
 			$pool->description = $model->description;
 			$pool->sstStoragePoolType = $pooldefinition->sstStoragePoolType;
 			$pool->sstBelongsToCustomerUID = Yii::app()->user->customerUID;
 			$pool->sstBelongsToResellerUID = Yii::app()->user->resellerUID;
-			$pool->save();
 
-			//echo '<pre>' . print_r($pool, true) . '</pre>';
-			$this->redirect(array('index'));
+			$ldapnodes = LdapNode::model()->findAll(array('attr'=>array()));
+			foreach($ldapnodes as $node) {
+				if ($node->isType('VM-Node')) {
+					break;
+				}
+			}					
+			if (!CPhpLibvirt::getInstance()->createStoragePool($node->getLibvirtUri(), $pool->sstStoragePool, substr($pool->sstStoragePoolURI, 7))) {
+				$hasError = true;
+				$errorText = CPhpLibvirt::getInstance()->getLastError();
+			}
+			else {
+				$pool->save();
+				//echo '<pre>' . print_r($pool, true) . '</pre>';
+				$this->redirect(array('index'));
+			}
 		}
-		else {
+		if (!isset($_POST['StoragePoolForm']) || $hasError) {
 			$pools = CLdapRecord::model('LdapStoragePoolDefinition')->findAll(array('attr'=>array('sstSelfService'=>'TRUE')));
 			$pooltypes = $this->createDropdownFromLdapRecords($pools, 'ou', 'ou');
 
 			$this->render('create',array(
 				'model' => $model,
 				'pooltypes' => array_merge(array('' => ''), $pooltypes),
+				'error' => $hasError ? $errorText : false,
 			));
 
 		}

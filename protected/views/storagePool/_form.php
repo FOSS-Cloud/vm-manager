@@ -42,6 +42,7 @@
 	<p class="note">Fields with <span class="required">*</span> are required.</p>
 	<div id="errormessage" class="errorMessage">
 		<?php echo $form->errorSummary($model); ?>
+		<?php if (false !== $error) echo $error; ?>
 	</div>
 	<div class="column" style="padding: 5px;">
 		<?php if ($create) : ?>

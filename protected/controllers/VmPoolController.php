@@ -463,7 +463,6 @@ class VmPoolController extends Controller
 				$saveattrs[] = 'sstVirtualizationVirtualMachineForceStart';
 			}
 			
-				
 			if ('GLOBAL' !== $model->poolCronActive) {
 				$poolbackup->sstCronActive = $model->poolCronActive;
 				if ('TRUE' === $model->poolCronActive) {
@@ -540,8 +539,7 @@ class VmPoolController extends Controller
 				$data['sstBelongsToResellerUID'] = array(Yii::app()->user->resellerUID);
 				$dn2 = 'ou=' . $nodename . ',' . $dn;
 				$server->add($dn2, $data);
-
-				if (false === $libvirt->createStoragePool($node->getLibvirtUri(), $basepath)) {
+				if (false === $libvirt->assignStoragePoolToNode($node->getLibvirtUri(), $storagepool->sstStoragePool, substr($storagepool->sstStoragePoolURI, 7))) {
 					echo "ERRORRRRRRRRRRRRRRRRR";
 				}
 			}
@@ -688,12 +686,52 @@ class VmPoolController extends Controller
 				$pool->removeAttributesByObjectClass('sstVirtualMachinePoolDynamicObjectClass');
 			}
 			$pool->save();
-			$pool->deleteNodes();
+			$oldnodes = array();
+			foreach($pool->nodes as $node) {
+				$oldnodes[] = $node->ou;
+			}
+			$newnodes = array();
+			foreach($model->nodes as $nodename) {
+				$newnodes[] = $nodename;
+			}
+			//$pool->deleteNodes();
+			foreach($pool->nodes as $nodenameless) {
+				$key = array_search($nodenameless->ou, $newnodes);
+				if($key !== false) {
+					unset($newnodes[$key]);
+				}
+				else {
+					$lastpool = true;
+					$vmpools = LdapVmPool::model()->findAll(array('attr'=>array()));
+					foreach($vmpools as $vmpool) {
+						if ($pool->getDn() == $vmpool->getDn()) continue;
+						foreach($vmpool->storagepools as $stpools) {
+							if ($stpools->ou == $storagepool->sstStoragePool) {
+								foreach($vmpool->nodes as $nodes) {
+									if ($nodenameless->ou == $nodes->ou) {
+										$lastpool = false;
+										break;
+									}
+								}
+								if (!$lastpool) break;
+							}
+						}
+						if (!$lastpool) break;
+					}
+					if ($lastpool) {
+						$node = LdapNode::model()->findByAttributes(array('attr'=>array('sstNode'=>$nodenameless->ou)));
+						if (false === $libvirt->removeStoragePoolToNodeAssignment($node->getLibvirtUri(), $storagepool->sstStoragePool)) {
+							echo "ERRORRRRRRRRRRRRRRRRR 1";
+						}
+					}
+					$nodenameless->delete();
+				}
+			}
 
 			$server = CLdapServer::getInstance();
 			$dn = 'ou=nodes,' . $pool->dn;
 			$basepath = substr($storagepool->sstStoragePoolURI, 7);
-			foreach($model->nodes as $nodename) {
+			foreach($newnodes as $nodename) {
 				$data = array();
 				$data['objectClass'] = array('top', 'organizationalUnit', 'labeledURIObject', 'sstRelationship');
 				$data['ou'] = $nodename;
@@ -706,10 +744,9 @@ class VmPoolController extends Controller
 				$dn2 = 'ou=' . $nodename . ',' . $dn;
 				$server->add($dn2, $data);
 
-				if (false === $libvirt->createStoragePool($node->getLibvirtUri(), $basepath)) {
-					echo "ERRORRRRRRRRRRRRRRRRR";
+				if (false === $libvirt->assignStoragePoolToNode($node->getLibvirtUri(), $storagepool->sstStoragePool, substr($storagepool->sstStoragePoolURI, 7))) {
+					echo "ERRORRRRRRRRRRRRRRRRR 2";
 				}
-
 			}
 			if (!is_null($model->range)) {
 				$pool->deleteRanges();
@@ -726,6 +763,7 @@ class VmPoolController extends Controller
 				$dn2 = 'ou=' . $model->range . ',' . $dn;
 				$server->add($dn2, $data);
 			}
+
 			$globalbackup = LdapConfigurationBackup::model()->findByDn('ou=backup,ou=configuration,ou=virtualization,ou=services');
 			$poolbackupfound = true;
 			$poolbackup = $pool->backup;

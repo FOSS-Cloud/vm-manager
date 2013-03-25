@@ -35,4 +35,4 @@ $this->breadcrumbs=array(
 $this->title = Yii::t('storagepool', 'Create Storage Pool');
 //$this->helpurl = Yii::t('help', 'createUser');
 
-echo $this->renderPartial('_form', array('model'=>$model,'pooltypes'=>$pooltypes,'create'=>true,'submittext'=>Yii::t('user','Create')));
+echo $this->renderPartial('_form', array('model'=>$model,'pooltypes'=>$pooltypes,'error'=>$error,'create'=>true,'submittext'=>Yii::t('user','Create')));
