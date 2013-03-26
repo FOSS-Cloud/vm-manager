@@ -884,7 +884,7 @@ EOS;
 //								$vm->delete(true);
 							}
 							else {
-								$data[$vm->sstVirtualMachine] = array_merge($answer, array('status' => 'stopped'));
+								$data[$vm->sstVirtualMachine] = array_merge($answer, array('status' => 'stopped', 'spice' => $vm->getSpiceUri()));
 							}
 						}
 						else {
