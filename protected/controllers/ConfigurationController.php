@@ -39,6 +39,7 @@ class ConfigurationController extends Controller
 			if ('backup' === $action->id) {
 				$cs=Yii::app()->clientScript;
 				$cs->scriptMap['jquery.js'] = false;
+				$cs->scriptMap['jquery.min.js'] = false;
 				
 				Yii::app()->getclientScript()->registerCssFile($this->cssBase . '/jquery/osbd/jquery-ui.custom.css');
 				Yii::app()->clientScript->registerScriptFile('jquerynew.js', CClientScript::POS_BEGIN);
