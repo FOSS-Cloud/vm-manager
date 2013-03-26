@@ -1395,7 +1395,7 @@ EOS;
 						$data[$vm->sstVirtualMachine] = array('status' => ($status['active'] ? 'running' : 'stopped'), 'mem' => $memory . ' / ' . $maxmemory, 'node' => $vm->sstNode, 'spice' => $vm->getSpiceUri());
 					}
 					else {
-						$data[$vm->sstVirtualMachine] = array_merge($answer, array('status' => 'stopped'));
+						$data[$vm->sstVirtualMachine] = array_merge($answer, array('status' => 'stopped', 'spice' => $vm->getSpiceUri()));
 					}
 				}
 				else {
