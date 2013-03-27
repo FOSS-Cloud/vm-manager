@@ -40,6 +40,7 @@ if(Yii::app()->user->hasFlash('notice')) {
 }
 
 $gridid = 'nodes';
+$baseurl = Yii::app()->baseUrl;
 
 Yii::app()->clientScript->registerScript('rowEdit', <<<EOS
 var {$gridid}_lastsel=-1;
@@ -79,6 +80,26 @@ function deleteRow(id)
 		}
 	}});
 }
+function maintainRow(id, maintain)
+{
+	var row = $('#{$gridid}_grid').getRowData(id);
+	$.ajax({
+		url: "{$baseurl}/node/maintainVmNode",
+		cache: false,
+		dataType: 'xml',
+		data: 'dn=' + row['dn'] + '&maintain=' + maintain,
+		success: function(xml){
+			var err = $(xml).find('error');
+			err = err.text();
+			if (0 == err) {
+			}
+			else {
+				alert($(xml).find('message').text());
+			}
+  		}
+	});
+	$('#{$gridid}_grid').trigger("reloadGrid");
+}
 EOS
 , CClientScript::POS_END);
 
@@ -102,12 +123,13 @@ $this->widget('ext.zii.CJqGrid', array(
 		'url'=>Yii::app()->baseUrl . '/node/getNodes',
 		'datatype'=>'xml',
 		'mtype'=>'GET',
-		'colNames'=>array('No.','DN', 'Node', 'State', 'IP', 'VM Pools', 'Action'),
+		'colNames'=>array('No.','DN', 'Node', 'State', 'VmNodeMaintain', 'IP', 'VM Pools', 'Action'),
 		'colModel'=>array(
 			array('name'=>'no','index'=>'no','width'=>30,'align'=>'right','editable'=>false,'resizable'=>false,'sortable'=>false,'search'=>false,'classes'=>'valigntop'),
 			array('name'=>'dn','index'=>'dn','hidden'=>true),
 			array('name'=>'node','index'=>'sstNode',/*'width'=>300,*/'editable'=>false,'sortable'=>true,'search'=>true,'classes'=>'valigntop'),
 			array('name'=>'status','index'=>'status','editable'=>false,'sortable'=>true,'search'=>false,'classes'=>'valigntop'),
+			array('name'=>'vmnodemaintain','index'=>'vmnodemaintain','editable'=>false,'sortable'=>true,'search'=>false,'hidden'=>true),
 			array('name'=>'ip','index'=>'ip','width'=>80,'editable'=>false,'sortable'=>false,'search'=>false,'classes'=>'valigntop'),
 			array('name'=>'vmpools','index'=>'vmpools','editable'=>false,'sortable'=>false,'search'=>false,'classes'=>'valigntop'),
 			array ('name' => 'act','index' => 'act','width' => 18 * 3,'editable'=>false,'resizable'=>false,'sortable'=>false,'search' =>false,'classes'=>'valigntop')
@@ -139,6 +161,12 @@ $this->widget('ext.zii.CJqGrid', array(
 				{
 					act += '<img src="{$imagesurl}/node_del_n.png" alt="" title="delete Node" class="action" />';
 				}
+				if ('false' == row['vmnodemaintain']) {
+					act += '<img id="node_maintain_' + ids[i] + '" src="{$imagesurl}/node_maintain.png" alt="" title="put Node in maintenance" class="action" />';
+				}
+				else if ('true' == row['vmnodemaintain']) {
+					act += '<img id="node_maintain_' + ids[i] + '" src="{$imagesurl}/node_active.png" alt="" title="end maintenance" class="action" />';
+				}
 				$('#{$gridid}_grid').setRowData(ids[i],{'act': act});
 
 				if ('' == row['vmpools'])
@@ -146,6 +174,16 @@ $this->widget('ext.zii.CJqGrid', array(
 					$('#node_del_' + ids[i]).css({cursor: 'pointer'});
 					var did = ids[i];
 					$('#node_del_' + ids[i]).click(function(event) {event.stopPropagation(); deleteRow(did);});
+				}
+				if ('false' == row['vmnodemaintain']) {
+					$('#node_maintain_' + ids[i]).css({cursor: 'pointer'});
+					var did = ids[i];
+					$('#node_maintain_' + ids[i]).click(function(event) {event.stopPropagation(); maintainRow(did, true);});
+				}
+				else if ('true' == row['vmnodemaintain']) {
+					$('#node_maintain_' + ids[i]).css({cursor: 'pointer'});
+					var did = ids[i];
+					$('#node_maintain_' + ids[i]).click(function(event) {event.stopPropagation(); maintainRow(did, false);});
 				}
 			}
 		}

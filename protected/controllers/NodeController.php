@@ -103,7 +103,7 @@ class NodeController extends WizardController
 	{
 		return array(
 			array('allow', // allow authenticated user to perform 'create' and 'update' actions
-				'actions'=>array('index', 'view', 'getNodes', 'getPoolInfo', 'getVms', 'delete', 'viewVms',
+				'actions'=>array('index', 'view', 'getNodes', 'getPoolInfo', 'getVms', 'delete', 'viewVms','maintainVmNode',
 					'wizard', 'handleWizardAction'),
 		        	'users'=>array('@'),
 				'expression'=>'Yii::app()->user->isAdmin'
@@ -232,29 +232,23 @@ class NodeController extends WizardController
 			$s .= '<cell>'. $i++ ."</cell>\n";
 			$s .= '<cell>'. $node->dn ."</cell>\n";
 			$s .= '<cell>'. $node->sstNode ."</cell>\n";
-/*
-			$vms = '';
-			foreach($node->vms as $vm) {
-				if ('' != $vms) {
-					$vms .= ';<br/>';
-				}
-				$vms .= $vm->sstDisplayName;
-			}
-			foreach($node->vmtemplates as $vm) {
-				if ('' != $vms) {
-					$vms .= ';<br/>';
-				}
-				$vms .= '<i>' . $vm->sstDisplayName . '</i>';
-			}
-*/
+			$vmnodemaintain = null;
 			$running = CPhpLibvirt::getInstance()->checkNode($node->getLibvirtUri());
 			$types = false === $running ? 'stopped' : 'running';
 			if ($node->types) {
 				foreach($node->types as $type) {
+					if ('VM-Node' === $type->sstNodeType) {
+						$vmnodemaintain = 'maintenance' === $type->sstNodeState;
+					}
 					if ('' != $types) {
 						$types .= ';<br/>';
 					}
-					$types .= $type->sstNodeType . ': ' . $type->sstNodeState;
+					$types .= $type->sstNodeType . ': ';
+					switch($type->sstNodeState) {
+						case 'active': $types .= '<span style="color: green;">active</span>'; break;
+						case 'maintenance': $types .= '<span style="color: orange;">maintenance</span>'; break;
+						default: $types .= '<span style="color: red;">' . $type->sstNodeState . '</span>'; break;
+					}
 				}
 			}
 			$vmpools = array();
@@ -265,7 +259,8 @@ class NodeController extends WizardController
 				$vmpools[] = $vmpool->sstDisplayName;
 			}
 			//echo '<pre>' . print_r($vmpools, true) . '</pre>';
-			$s .= '<cell><![CDATA['. $types ."]]></cell>\n";
+			$s .= '<cell><![CDATA['. $types . "]]></cell>\n";
+			$s .= '<cell>' . (is_null($vmnodemaintain) ? 'null' : ($vmnodemaintain ? 'true' : 'false'))  . "</cell>\n";
 			$s .= '<cell>'. $node->getVLanIP('pub') ."</cell>\n";
 			$s .= '<cell><![CDATA['. implode(';<br/>', $vmpools) ."]]></cell>\n";
 			$s .= "<cell></cell>\n";
@@ -406,7 +401,32 @@ class NodeController extends WizardController
 		header('Content-Length: ' . strlen($s));
 		echo $s;
 	}
-
+	
+	public function actionMaintainVmNode() {
+		$this->disableWebLogRoutes();
+		if (isset($_GET['dn'])) {
+			$node = LdapNode::model()->findByDn($_GET['dn']);
+			if (!is_null($node)) {
+				$maintain = Yii::app()->getRequest()->getParam('maintain', null);
+				if (!is_null($maintain)) {
+					$type = $node->getType('VM-Node');
+					$type->setOverwrite(true);
+					$type->sstNodeState = 'true' == $maintain ? 'maintenance' : 'active';
+					$type->save(false);
+				} 
+				else {
+					$this->sendAjaxAnswer(array('error' => 1, 'maintainVmNode: Parameter maintain not found!'));
+				}
+			}
+			else {
+				$this->sendAjaxAnswer(array('error' => 1, 'maintainVmNode: Node \'' . $_GET['dn'] . '\' not found!'));
+			}
+		}
+		else {
+			$this->sendAjaxAnswer(array('error' => 1, 'maintainVmNode: Parameter dn not found!'));
+		}
+	}
+	
 	/**
 	 * Node Wizard
 	 */

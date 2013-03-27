@@ -111,6 +111,17 @@ class LdapNode extends CLdapRecord {
 		return $retval;
 	}
 
+	public function getType($typeName) {
+		$retval = null;
+		foreach($this->types as $type) {
+			if ($type->sstNodeType == $typeName) {
+				$retval = $type;
+				break;
+			}
+		}
+		return $retval;
+	}
+
 	public function search()
 	{
 		$criteria = array(
