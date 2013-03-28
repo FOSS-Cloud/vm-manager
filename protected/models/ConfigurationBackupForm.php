@@ -37,6 +37,7 @@ class ConfigurationBackupForm extends CFormModel {
 	public $sstCronDayOfWeek;
 	public $sstCronActive;
 	public $cronTime;
+	public $everyDay;
 	
 	public function rules()
 	{
@@ -56,6 +57,7 @@ class ConfigurationBackupForm extends CFormModel {
 			'sstVirtualizationVirtualMachineForceStart' => Yii::t('configuration', 'vm force start'),
 			'sstCronActiveFalse' => Yii::t('configuration', 'no schedule'),
 			'sstCronActiveTrue' => Yii::t('configuration', 'at'),
+			'everyDayTrue' => Yii::t('configuration', 'every day'),
 		);
 	}
 }

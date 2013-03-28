@@ -140,7 +140,12 @@ class ConfigurationController extends Controller
 			list($hour, $minute) = explode(':', $model->cronTime);
 			$globalBackup->sstCronMinute = (int) $minute;
 			$globalBackup->sstCronHour = (int) $hour;
-			$globalBackup->sstCronDayOfWeek = $model->sstCronDayOfWeek;
+			if ('TRUE' == $model->everyDay) {
+				$globalBackup->sstCronDayOfWeek = '*';
+			}
+			else {
+				$globalBackup->sstCronDayOfWeek = implode(',', $model->sstCronDayOfWeek);
+			}
 			$globalBackup->sstCronActive = $model->sstCronActive;
 			$globalBackup->save(false, array('sstBackupNumberOfIterations', 'sstVirtualizationVirtualMachineForceStart', 'sstCronMinute', 'sstCronHour', 'sstCronDayOfWeek', 'sstCronActive'));
 			//echo '<pre>' . print_r($globalBackup, true) . '</pre>';
@@ -151,7 +156,13 @@ class ConfigurationController extends Controller
 				
 			$model->sstCronMinute = $globalBackup->sstCronMinute;
 			$model->sstCronHour = $globalBackup->sstCronHour;
-			$model->sstCronDayOfWeek = $globalBackup->sstCronDayOfWeek;
+			$model->sstCronDayOfWeek = explode(',', $globalBackup->sstCronDayOfWeek);
+			if ('*' == $model->sstCronDayOfWeek) {
+				$model->everyDay = 'TRUE';
+			}
+			else {
+				$model->everyDay = 'FALSE';
+			}
 			$model->sstCronActive = $globalBackup->sstCronActive;
 			$model->cronTime = $model->sstCronHour . ':' . $model->sstCronMinute;
 			
