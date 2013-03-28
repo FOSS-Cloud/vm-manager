@@ -172,18 +172,15 @@ $this->widget('ext.zii.CJqGrid', array(
 				if ('' == row['vmpools'])
 				{
 					$('#node_del_' + ids[i]).css({cursor: 'pointer'});
-					var did = ids[i];
-					$('#node_del_' + ids[i]).click(function(event) {event.stopPropagation(); deleteRow(did);});
+					$('#node_del_' + ids[i]).click({did: ids[i]}, function(event) {event.stopPropagation(); deleteRow(event.data.did);});
 				}
 				if ('false' == row['vmnodemaintain']) {
 					$('#node_maintain_' + ids[i]).css({cursor: 'pointer'});
-					var did = ids[i];
-					$('#node_maintain_' + ids[i]).click(function(event) {event.stopPropagation(); maintainRow(did, true);});
+					$('#node_maintain_' + ids[i]).click({did: ids[i]}, function(event) {event.stopPropagation(); maintainRow(event.data.did, true);});
 				}
 				else if ('true' == row['vmnodemaintain']) {
 					$('#node_maintain_' + ids[i]).css({cursor: 'pointer'});
-					var did = ids[i];
-					$('#node_maintain_' + ids[i]).click(function(event) {event.stopPropagation(); maintainRow(did, false);});
+					$('#node_maintain_' + ids[i]).click({did: ids[i]}, function(event) {event.stopPropagation(); maintainRow(event.data.did, false);});
 				}
 			}
 		}
