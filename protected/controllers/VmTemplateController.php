@@ -505,7 +505,23 @@ class VmTemplateController extends Controller
 				$this->sendAjaxAnswer(array('error' => 1, 'message' => Yii::t('vmtemplate', 'No storagepool found for selected vmpool!')));
 				return;
 			}
-
+			$poolNodes = $vmpool->nodes;
+			$usedNode = null;
+			foreach($poolNodes as $poolNode) {
+				$node = LdapNode::model()->findByAttributes(array('attr'=>(array('sstNode' => $poolNode->ou))));
+				if (!is_null($node)) {
+					$nodetype = $node->getType('VM-Node');
+					if (!is_null($nodetype) && 'maintenance' != $nodetype->sstNodeState) {
+						$usedNode = $node;
+						break;
+					}
+				}
+			}
+			if (is_null($usedNode)) {
+				$this->sendAjaxAnswer(array('error' => 1, 'message' => Yii::t('vmtemplate', 'No active node found for selected vmpool!')));
+				return;
+			}
+				
 			// 'save' devices before
 			$rdevices = $result->devices;
 			/* Create a copy to be sure that we will write a new record */
@@ -520,6 +536,7 @@ class VmTemplateController extends Controller
 			$vm->sstVirtualMachineType = 'persistent';
 			$vm->sstVirtualMachineSubType = $_GET['subtype'];
 			$vm->sstVirtualMachinePool = $vmpool->sstVirtualMachinePool;
+			$vm->sstNode = $usedNode->sstNode;
 			/* Delete all objectclasses and let the LdapVM set them */
 			$vm->removeAttribute(array('objectClass', 'member'));
 			$vm->setBranchDn('ou=virtual machines,ou=virtualization,ou=services');
@@ -631,7 +648,23 @@ class VmTemplateController extends Controller
 				$this->sendAjaxAnswer(array('error' => 1, 'message' => 'No storagepool found for selected vmpool!'));
 				return;
 			}
-
+			$poolNodes = $vmpool->getNodes();
+			$usedNode = null;
+			foreach($poolNodes as $poolNode) {
+				$node = LdapNode::model()->findByAttributes(array('attr'=>(array('sstNode' => $poolNode->ou))));
+				if (!is_null($node)) {
+					$nodetype = $node->getType('VM-Node');
+					if (!is_null($nodetype) && 'maintenance' != $nodetype->sstNodeState) {
+						$usedNode = $node;
+						break;
+					}
+				}
+			}
+			if (is_null($usedNode)) {
+				$this->sendAjaxAnswer(array('error' => 1, 'message' => Yii::t('vmtemplate', 'No active node found for selected vmpool!')));
+				return;
+			}
+				
 			// 'save' devices before
 			$rdevices = $result->devices;
 			/* Create a copy to be sure that we will write a new record */
@@ -651,6 +684,7 @@ class VmTemplateController extends Controller
 				$vm->sstDisplayName = $_GET['name'];
 			}
 			$vm->sstVirtualMachinePool = $vmpool->sstVirtualMachinePool;
+			$vm->sstNode = $usedNode->sstNode;
 			/* Delete all objectclasses and let the LdapVM set them */
 			$vm->removeAttribute(array('objectClass', 'member'));
 			$vm->setBranchDn('ou=virtual machines,ou=virtualization,ou=services');
@@ -1084,14 +1118,15 @@ EOS;
 		$this->disableWebLogRoutes();
 		$narray = array();
 		$vm = CLdapRecord::model('LdapVmFromTemplate')->findByDn($_GET['dn']);
-		$nodes = CLdapRecord::model('LdapNode')->findAll(array('attr'=>array()));
-		foreach ($nodes as $node) {
-			if ($node->sstNode != $vm->sstNode && $node->isType('VM-Node')) {
+		$vmpool = $vm->vmpool;
+		foreach ($vmpool->nodes as $poolnode) {
+			$node = LdapNode::model()->findByAttributes(array('attr'=>array('sstNode' => $poolnode->ou)));
+			if (!is_null($node) && $node->sstNode != $vm->sstNode && $node->isType('VM-Node') && 'maintenance' !== $node->getType('VM-Node')->sstNodeState) {
 				$narray[$node->dn] = array('name' => $node->sstNode);
 			}
 		}
 		ob_start();
-		echo '<div class="ui-widget-header ui-corner-all" style="padding: 0.4em 1em; margin-bottom: 0.7em;"><span class="">' . Yii::t('vm', 'Migrate VM "{name}"', array('{name}' => $vm->sstDisplayName)) . '</span></div>';
+		echo '<div class="ui-widget-header ui-corner-all" style="padding: 0.4em 1em; margin-bottom: 0.7em;"><span class="">' . Yii::t('vmtemplate', 'Migrate VM Template "{name}"', array('{name}' => $vm->sstDisplayName)) . '</span></div>';
 		$dual = $this->createWidget('ext.zii.CJqSingleselect', array(
 			'id' => 'nodeSelection',
 			'values' => $narray,
@@ -1106,15 +1141,24 @@ EOS;
 			'cssFile' => 'singleselect.css',
 		));
 		$dual->run();
+		$showbutton = '';
+		$showerror = 'display: none;';
+		$errormsg = '';
+		if (0 == count($narray)) {
+			$showbutton = 'display: none;';
+			$showerror = '';
+			$errormsg = Yii::t('vmtemplate', 'No node found to migrate to');
+		}
 ?>
 		<br/>
-		<button id="migrateNode" style="margin-top: 10px; float: left;"></button>
-		<div id="errorNode" class="ui-state-error ui-corner-all" style="display: none; margin-top: 10px; margin-left: 20px; padding: 0pt 0.7em; float: right;">
-			<p style="margin: 0.3em 0pt ; "><span style="float: left; margin-right: 0.3em;" class="ui-icon ui-icon-alert"></span><span id="errorNodeMsg" style="display: block;"></span></p>
+		<button id="migrateNode" style="margin-top: 10px; float: left; <?php echo $showbutton?>"></button>
+		<div id="errorNode" class="ui-state-error ui-corner-all" style="<?php echo $showerror;?>  width: 160px; margin-top: 10px; margin-left: 20px; padding: 0pt 0.7em; float: right;">
+			<p style="margin: 0.3em 0pt ; "><span style="float: left; margin-right: 0.3em;" class="ui-icon ui-icon-alert"></span><span id="errorNodeMsg" style="display: block;"><?php echo $errormsg;?></span></p>
 		</div>
 		<div id="infoNode" class="ui-state-highlight ui-corner-all" style="display: none; margin-top: 10px; margin-left: 20px; padding: 0pt 0.7em; float: right;">
 			<p style="margin: 0.3em 0pt ; "><span style="float: left; margin-right: 0.3em;" class="ui-icon ui-icon-info"></span><span id="infoNodeMsg"></span></p>
 		</div>
+		<br style="clear: both;"/><br/><br/><br/>&nbsp;
 <?php
 		$dual = ob_get_contents();
 		ob_end_clean();

@@ -665,9 +665,10 @@ EOS;
 		$this->disableWebLogRoutes();
 		$narray = array();
 		$vm = CLdapRecord::model('LdapVm')->findByDn($_GET['dn']);
-		$nodes = CLdapRecord::model('LdapNode')->findAll(array('attr'=>array()));
-		foreach ($nodes as $node) {
-			if ($node->sstNode != $vm->sstNode && $node->isType('VM-Node')) {
+		$vmpool = $vm->vmpool;
+		foreach ($vmpool->nodes as $poolnode) {
+			$node = LdapNode::model()->findByAttributes(array('attr'=>array('sstNode' => $poolnode->ou)));
+			if (!is_null($node) && $node->sstNode != $vm->sstNode && $node->isType('VM-Node') && 'maintenance' !== $node->getType('VM-Node')->sstNodeState) {
 				$narray[$node->dn] = array('name' => $node->sstNode);
 			}
 		}
@@ -687,15 +688,24 @@ EOS;
 			'cssFile' => 'singleselect.css',
 		));
 		$dual->run();
+		$showbutton = '';
+		$showerror = 'display: none;';
+		$errormsg = '';
+		if (0 == count($narray)) {
+			$showbutton = 'display: none;';
+			$showerror = '';
+			$errormsg = Yii::t('vmtemplate', 'No node found to migrate to');
+		}
 ?>
 		<br/>
-		<button id="migrateNode" style="margin-top: 10px; float: left;"></button>
-		<div id="errorNode" class="ui-state-error ui-corner-all" style="display: none; width: 160px; margin-top: 10px; margin-left: 20px; padding: 0pt 0.7em; float: right;">
-			<p style="margin: 0.3em 0pt ; "><span style="float: left; margin-right: 0.3em;" class="ui-icon ui-icon-alert"></span><span id="errorNodeMsg" style="display: block;"></span></p>
+		<button id="migrateNode" style="margin-top: 10px; float: left; <?php echo $showbutton?>"></button>
+		<div id="errorNode" class="ui-state-error ui-corner-all" style="<?php echo $showerror;?>  width: 160px; margin-top: 10px; margin-left: 20px; padding: 0pt 0.7em; float: right;">
+			<p style="margin: 0.3em 0pt ; "><span style="float: left; margin-right: 0.3em;" class="ui-icon ui-icon-alert"></span><span id="errorNodeMsg" style="display: block;"><?php echo $errormsg;?></span></p>
 		</div>
 		<div id="infoNode" class="ui-state-highlight ui-corner-all" style="display: none; margin-top: 10px; margin-left: 20px; padding: 0pt 0.7em; float: right;">
 			<p style="margin: 0.3em 0pt ; "><span style="float: left; margin-right: 0.3em;" class="ui-icon ui-icon-info"></span><span id="infoNodeMsg"></span></p>
 		</div>
+		<br style="clear: both;"/><br/><br/><br/>&nbsp;
 <?php
 		$dual = ob_get_contents();
 		ob_end_clean();
