@@ -796,7 +796,13 @@ class VmPoolController extends Controller
 					list($hour, $minute) = explode(':', $model->cronTime);
 					$poolbackup->sstCronMinute = (int) $minute;
 					$poolbackup->sstCronHour = (int) $hour;
-					$poolbackup->sstCronDayOfWeek = $model->sstCronDayOfWeek;
+					if ('TRUE' == $model->everyDay) {
+						$poolbackup->sstCronDayOfWeek = '*';
+					}
+					else {
+						$poolbackup->sstCronDayOfWeek = implode(',', $model->sstCronDayOfWeek);
+					}
+					
 					$saveattrs[] = 'sstCronMinute';
 					$saveattrs[] = 'sstCronHour';
 					$saveattrs[] = 'sstCronDayOfWeek';
@@ -948,7 +954,13 @@ class VmPoolController extends Controller
 			
 			$model->sstCronMinute = $backup->sstCronMinute;
 			$model->sstCronHour = $backup->sstCronHour;
-			$model->sstCronDayOfWeek = $backup->sstCronDayOfWeek;
+			$model->sstCronDayOfWeek = explode(',', $backup->sstCronDayOfWeek);
+			if ('*' == $model->sstCronDayOfWeek) {
+				$model->everyDay = 'TRUE';
+			}
+			else {
+				$model->everyDay = 'FALSE';
+			}
 			$model->cronTime = $model->sstCronHour . ':' . $model->sstCronMinute;
 			
 			$pools = CLdapRecord::model('LdapStoragePool')->findAll(array('attr'=>array()));

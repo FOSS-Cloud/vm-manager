@@ -63,13 +63,13 @@ $this->title = Yii::t('configuration', 'Backup');
   		</div>
 		<h2><?php echo Yii::t('configuration', 'Schedule')?></h2>
   		<div class="row">
-  			<?php echo $form->radioButton($model,'sstCronActive', array('value' => 'FALSE', 'uncheckValue' => null)); ?>
+  			<?php echo $form->radioButton($model,'sstCronActive', array('id' => 'ConfigurationBackupForm_cronActiveFalse', 'value' => 'FALSE', 'uncheckValue' => null)); ?>
   			<?php echo $form->labelEx($model, 'sstCronActiveFalse', array('style' => 'display: inline;')); ?>
   		</div>
   		<div class="row">
-  			<?php echo $form->radioButton($model,'sstCronActive', array('value' => 'TRUE', 'style' => 'float: left;', 'uncheckValue' => null)); ?>
+  			<?php echo $form->radioButton($model,'sstCronActive', array('id' => 'ConfigurationBackupForm_cronActiveTrue', 'value' => 'TRUE', 'style' => 'float: left;', 'uncheckValue' => null)); ?>
   			<?php echo $form->labelEx($model, 'sstCronActiveTrue', array('style' => 'display: inline; float: left;')); ?>
-  			<div style="float: left; margin-left: 15px;">
+  			<div id="globalcron" style="float: left; margin-left: 15px;">
   				<?php echo $form->hiddenField($model, 'sstCronHour'); ?>
   				<?php echo $form->hiddenField($model, 'sstCronMinute'); ?>
   				<?php echo $form->textField($model, 'cronTime', array('size' => 4)); ?>&nbsp;<span>(24h)</span><br/>&nbsp;
@@ -78,7 +78,7 @@ $this->title = Yii::t('configuration', 'Backup');
   					<?php echo $form->labelEx($model, 'everyDayTrue', array('style' => 'display: inline; float: left;')); ?><br style="clear: both;" />
    					<?php echo $form->radioButton($model,'everyDay', array('value' => 'FALSE', 'style' => 'float: left;', 'uncheckValue' => null)); ?>
    					
-   				<?php echo $form->checkBoxList($model,'sstCronDayOfWeek', CLocale::getInstance(Yii::t('app', 'locale'))->getWeekDayNames('abbreviated'), 
+   					<?php echo $form->checkBoxList($model,'sstCronDayOfWeek', CLocale::getInstance(Yii::t('app', 'locale'))->getWeekDayNames('abbreviated'), 
    						array('separator' => '&nbsp;&nbsp;', 'uncheckValue' => null, 'labelOptions' => array('style' => 'display: inline-block;'))); ?>
 				</div>
 			</div>
@@ -119,6 +119,19 @@ $.widget( "ui.timespinner", $.ui.spinner, {
 $("#ConfigurationBackupForm_sstBackupNumberOfIterations").spinner({min: 1, max: 20});
 $("#vmforcestart").buttonset();
 $("#ConfigurationBackupForm_cronTime").timespinner();
+ 		
+ $("#ConfigurationBackupForm_cronActiveFalse").click(function() {
+	$("#ConfigurationBackupForm_cronTime").timespinner('disable');
+	$("#globalcron input[type=radio]").attr('disabled', true);
+ 	$("#dayofweek input[type=checkbox]").attr('disabled', true);
+});
+$("#ConfigurationBackupForm_cronActiveTrue").click(function() {
+	$("#ConfigurationBackupForm_cronTime").timespinner('enable');
+	$("#globalcron input[type=radio]").attr('disabled', false);
+ 	$("#dayofweek input[type=checkbox]").attr('disabled', false);
+});
+$("#ConfigurationBackupForm_cronActiveFalse:checked").click();
+ 		
 EOS
 , CClientScript::POS_READY);
 ?>

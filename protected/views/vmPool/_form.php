@@ -176,6 +176,7 @@ EOS
 					echo '<div style="float: left; vertical-align: top; margin-left: 10px; font-size: 70%;">(<span style="font-style: italic;"> &raquo; Node:</span> has VMs assigned to this VM Pool <br /> and must stay selected!)</div><br/>';
 				}
 			?>
+			<br style="clear: both;" />
 			<?php echo $form->error($model,'nodes'); ?>
 		</div>
 		<div class="row">
@@ -215,8 +216,9 @@ else {
 		</div>
 	</div>
 	<div class="column span-7">
-		<h2><?php echo Yii::t('configuration', 'Backup')?></h2>
-  		<div class="row">
+		<fieldset style="position: relative; margin-bottom: 20px;">
+		<label><span style="display:block;position:absolute;top:-10px;left:10px; background-color: white;"><?php echo Yii::t('configuration', 'Backup')?>&nbsp;</span></label>
+		<div class="row">
   			<?php echo $form->radioButton($model,'poolBackupActive', array('id' => 'VmPoolForm_backupActiveFalse', 'value' => 'FALSE', 'style' => 'float: left;', 'uncheckValue' => null)); ?>
   			<?php echo $form->labelEx($model, 'poolBackupActiveFalse', array('style' => 'display: inline;')); ?>
   		</div>
@@ -236,8 +238,10 @@ else {
 	  			<?php echo $form->error($model,'sstVirtualizationVirtualMachineForceStart'); ?>
 	  		</div>
   		</div>
-		<h2><?php echo Yii::t('configuration', 'Schedule')?></h2>
-  		<div class="row">
+  		</fieldset>
+		<fieldset style="position: relative; margin-bottom: 20px;">
+  		<label><span style="display:block;position:absolute;top:-10px;left:10px; background-color: white;"><?php echo Yii::t('configuration', 'Schedule')?>&nbsp;</span></label>
+		<div class="row">
   			<?php echo $form->radioButton($model,'poolCronActive', array('id' => 'VmPoolForm_globalCronActive', 'value' => 'GLOBAL', 'style' => 'float: left;', 'uncheckValue' => null)); ?>
   			<?php echo $form->labelEx($model, 'poolCronActive', array('style' => 'display: inline;')); ?>
   		</div>
@@ -252,7 +256,18 @@ else {
   			<div id="poolcron" style="clear: both; margin-left: 15px;">
   				<?php echo $form->hiddenField($model, 'sstCronHour'); ?>
   				<?php echo $form->hiddenField($model, 'sstCronMinute'); ?>
-   				<div id="dayofweek1" style="float: right;">
+   				<div id="dayofweek">
+   					<?php echo $form->radioButton($model,'everyDay', array('value' => 'TRUE', 'style' => 'float: left;', 'uncheckValue' => null)); ?>
+  					<?php echo $form->labelEx($model, 'everyDayTrue', array('style' => 'display: inline; float: left;')); ?><br style="clear: both;" />
+   					<?php echo $form->radioButton($model,'everyDay', array('value' => 'FALSE', 'style' => 'float: left;', 'uncheckValue' => null)); ?>
+   					<div style="float: left;">
+   					<?php echo $form->checkBoxList($model,'sstCronDayOfWeek', CLocale::getInstance(Yii::t('app', 'locale'))->getWeekDayNames('abbreviated'), 
+   						array('separator' => '&nbsp;&nbsp;', 'uncheckValue' => null, 'labelOptions' => array('style' => 'display: inline-block;'))); ?>
+   					</div>
+				</div>
+ 			
+<?php /*?>   				
+  				<div id="dayofweek1" style="float: right;">
    				<?php 
    					$localedays = CLocale::getInstance(Yii::t('app', 'locale'))->getWeekDayNames('abbreviated');
    					$days = array_merge(array('*' => Yii::t('configuration', 'every day')), array_slice($localedays, 0, 1));
@@ -278,9 +293,12 @@ else {
    					echo $form->radioButtonList($model,'sstCronDayOfWeek', $days, 
    						array('separator' => '', 'uncheckValue' => null, 'labelOptions' => array('style' => 'display: inline-block;'))); ?>
 				</div>
+<?php */ ?>
 			</div>
    		</div>
-		<h2><?php echo Yii::t('vmpool', 'interfaces')?></h2>
+   		</fieldset>
+		<fieldset style="position: relative;">
+		<label><span style="display:block;position:absolute;top:-10px;left:10px; background-color: white;"><?php echo Yii::t('vmpool', 'interfaces')?>&nbsp;</span></label>
 		<div class="row">
 			<?php echo $globalSound ? $form->labelEx($model,'allowSoundTrue') : $form->labelEx($model,'allowSoundFalse'); ?>
 			<?php echo $form->checkbox($model, 'poolSound', array('style' => 'float: left; margin-top: 10px;'))?>
@@ -301,6 +319,7 @@ else {
 			</div>
 			<?php echo $form->error($model,'allowUsb'); ?>
 		</div>
+		</fieldset>
 	</div>
 		<div style="clear: both;" class="row buttons">
 			<?php echo CHtml::submitButton($submittext, array('id' => 'submit')); ?>
@@ -337,41 +356,9 @@ $.widget( "ui.timespinner", $.ui.spinner, {
 });
 $("#VmPoolForm_sstBackupNumberOfIterations").spinner({min: 1, max: 20});
 $("#vmforcestart").buttonset();
-var el, val;
-el = $("#dayofweek2 #VmPoolForm_sstCronDayOfWeek_2");
-val = parseInt(el.val()) + 1;
-$("#dayofweek2 label[for=VmPoolForm_sstCronDayOfWeek_2]").attr('for', 'VmPoolForm_sstCronDayOfWeek_' + val);
-el.attr('id', 'VmPoolForm_sstCronDayOfWeek_' + val);
-
-el = $("#dayofweek2 #VmPoolForm_sstCronDayOfWeek_1");
-val = parseInt(el.val()) + 1;
-$("#dayofweek2 label[for=VmPoolForm_sstCronDayOfWeek_1]").attr('for', 'VmPoolForm_sstCronDayOfWeek_' + val);
-el.attr('id', 'VmPoolForm_sstCronDayOfWeek_' + val);
-
-el = $("#dayofweek2 #VmPoolForm_sstCronDayOfWeek_0");
-val = parseInt(el.val()) + 1;
-$("#dayofweek2 label[for=VmPoolForm_sstCronDayOfWeek_0]").attr('for', 'VmPoolForm_sstCronDayOfWeek_' + val);
-el.attr('id', 'VmPoolForm_sstCronDayOfWeek_' + val);
-
-el = $("#dayofweek3 #VmPoolForm_sstCronDayOfWeek_2");
-val = parseInt(el.val()) + 1;
-$("#dayofweek3 label[for=VmPoolForm_sstCronDayOfWeek_2]").attr('for', 'VmPoolForm_sstCronDayOfWeek_' + val);
-el.attr('id', 'VmPoolForm_sstCronDayOfWeek_' + val);
-
- el = $("#dayofweek3 #VmPoolForm_sstCronDayOfWeek_1");
-val = parseInt(el.val()) + 1;
-$("#dayofweek3 label[for=VmPoolForm_sstCronDayOfWeek_1]").attr('for', 'VmPoolForm_sstCronDayOfWeek_' + val);
-el.attr('id', 'VmPoolForm_sstCronDayOfWeek_' + val);
-
-el = $("#dayofweek3 #VmPoolForm_sstCronDayOfWeek_0");
-val = parseInt(el.val()) + 1;
-$("#dayofweek3 label[for=VmPoolForm_sstCronDayOfWeek_0]").attr('for', 'VmPoolForm_sstCronDayOfWeek_' + val);
-el.attr('id', 'VmPoolForm_sstCronDayOfWeek_' + val);
-
+$("#VmPoolForm_sstCronDayOfWeek_3").before('<br />');
+$("#VmPoolForm_sstCronDayOfWeek_6").before('<br />');
 $("#VmPoolForm_cronTime").timespinner();
-$("#dayofweek1").buttonset();
-$("#dayofweek2").buttonset();
-$("#dayofweek3").buttonset();
 $("#soundsettings").buttonset();
 $("#usbsettings").buttonset();
  		
@@ -391,21 +378,18 @@ $("#VmPoolForm_backupActiveFalse:checked").click();
  		
 $("#VmPoolForm_globalCronActive").click(function() {
 	$("#VmPoolForm_cronTime").timespinner('disable');
-	$("#dayofweek1").buttonset('disable');
-	$("#dayofweek2").buttonset('disable');
-	$("#dayofweek3").buttonset('disable');
+	$("#poolcron input[type=radio]").attr('disabled', true);
+ 	$("#dayofweek input[type=checkbox]").attr('disabled', true);
 });
 $("#VmPoolForm_cronActiveFalse").click(function() {
 	$("#VmPoolForm_cronTime").timespinner('disable');
-	$("#dayofweek1").buttonset('disable');
-	$("#dayofweek2").buttonset('disable');
-	$("#dayofweek3").buttonset('disable');
+	$("#poolcron input[type=radio]").attr('disabled', true);
+ 	$("#dayofweek input[type=checkbox]").attr('disabled', true);
 });
 $("#VmPoolForm_cronActiveTrue").click(function() {
 	$("#VmPoolForm_cronTime").timespinner('enable');
- 	$("#dayofweek1").buttonset('enable');
-	$("#dayofweek2").buttonset('enable');
-	$("#dayofweek3").buttonset('enable');
+	$("#poolcron input[type=radio]").attr('disabled', false);
+ 	$("#dayofweek input[type=checkbox]").attr('disabled', false);
 });
 $("#VmPoolForm_globalCronActive:checked").click();
 $("#VmPoolForm_cronActiveFalse:checked").click();
@@ -421,7 +405,6 @@ $("#VmPoolForm_poolSound").change(function() {
 if (!$("#VmPoolForm_poolSound").prop('checked')) {
 	$("#soundsettings").buttonset('disable');
 }
-
 
 $("#VmPoolForm_poolUsb").change(function() {
 	if (this.checked) {

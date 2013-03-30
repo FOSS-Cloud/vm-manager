@@ -54,6 +54,7 @@ class VmPoolForm extends CFormModel {
 	public $sstCronDayOfWeek;
 	//public $sstCronActive;
 	public $cronTime;
+	public $everyDay;
 	
 	public function rules()
 	{
@@ -87,6 +88,7 @@ class VmPoolForm extends CFormModel {
 			'poolCronActive' => Yii::t('vmpool', 'global cron'),
 			'sstCronActiveFalse' => Yii::t('configuration', 'no schedule'),
 			'sstCronActiveTrue' => Yii::t('configuration', 'at'),
+			'everyDayTrue' => Yii::t('vmpool', 'every day'),
 			'poolSound' => Yii::t('vmpool', 'poolSound'),
 			'allowSoundTrue' => Yii::t('vmpool', 'allowSound (gloabal: YES)'),
 			'allowSoundFalse' => Yii::t('vmpool', 'allowSound (gloabal: NO)'),
