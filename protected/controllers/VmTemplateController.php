@@ -648,7 +648,7 @@ class VmTemplateController extends Controller
 				$this->sendAjaxAnswer(array('error' => 1, 'message' => 'No storagepool found for selected vmpool!'));
 				return;
 			}
-			$poolNodes = $vmpool->getNodes();
+			$poolNodes = $vmpool->nodes;
 			$usedNode = null;
 			foreach($poolNodes as $poolNode) {
 				$node = LdapNode::model()->findByAttributes(array('attr'=>(array('sstNode' => $poolNode->ou))));
