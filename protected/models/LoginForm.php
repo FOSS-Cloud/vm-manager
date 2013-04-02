@@ -40,7 +40,7 @@ class LoginForm extends CFormModel
 	public $password;
 	public $rememberMe;
 
-	private $_identity;
+	private $_identity = null;
 
 	/**
 	 * Declares the validation rules.
@@ -60,7 +60,7 @@ class LoginForm extends CFormModel
 			// username needs to be checked
 			array('username', 'checkUser'),
 			// password needs to be authenticated
-			array('password', 'authenticate', 'skipOnError' => true),
+			//array('password', 'checkPassword', 'skipOnError' => true),
 		);
 	}
 
@@ -91,15 +91,23 @@ class LoginForm extends CFormModel
 		}
 	}
 
-	/**
-	 * Authenticates the password.
-	 * This is the 'authenticate' validator as declared in rules().
-	 */
-	public function authenticate($attribute, $params)
+	public function checkPassword($attribute, $params)
 	{
+		Yii::log("LoginForm::checkPassword", 'profile', 'authentication');
+		$this->authenticate();
+	}
+
+
+	/**
+	 * Authenticates the realm, the user and the password.
+	 */
+	public function authenticate()
+	{
+		Yii::log("LoginForm::authenticate", 'profile', 'authentication');
+
 		$this->_identity = new LdapUserIdentity($this->username, $this->password, $this->realm);
 		$this->_identity->authenticate();
-		Yii::log("authenticate: errorCode " . var_export($this->_identity->errorCode, true), 'profile', 'LoginForm');
+		Yii::log("LoginForm::authenticate: errorCode " . var_export($this->_identity->errorCode, true), 'profile', 'authentication');
 		switch($this->_identity->errorCode) {
 			case LdapUserIdentity::ERROR_USERNAME_INVALID:
 				$this->addError('username',Yii::t('site', 'Incorrect username.'));
@@ -120,12 +128,11 @@ class LoginForm extends CFormModel
 	 */
 	public function login()
 	{
-		if($this->_identity === null)
+		if(is_null($this->_identity))
 		{
-			$this->_identity = new LdapUserIdentity($this->username, $this->password, $this->realm);
-			$this->_identity->authenticate();
+			$this->authenticate();
 		}
-		Yii::log("login: errorCode " . var_export($this->_identity->errorCode, true), 'profile', 'LoginForm');
+		Yii::log("LoginForm::login: errorCode " . var_export($this->_identity->errorCode, true), 'profile', 'authentication');
 		if($this->_identity->errorCode === LdapUserIdentity::ERROR_NONE)
 		{
 			$duration = $this->rememberMe ? 3600*24*30 : 0; // 30 days

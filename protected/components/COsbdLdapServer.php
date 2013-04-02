@@ -94,11 +94,13 @@ final class COsbdLdapServer extends CLdapServer {
 		$parts = explode(':', $uri);
 		$server = $parts[0] . ':' . $parts[1];
 		$port = $parts[2];
+		Yii::log('COsbdLdapServer::authorizeUserExtern: connect ' . $uri, 'profile', 'authentication');
 		$connection = @ldap_connect($server, $port) or die('LDAP connect failed!');
 		if ($connection === false) {
 			throw new CLdapException(Yii::t('LdapComponent.server', 'ldap_connect to {server} failt', array('{server}'=>$uri)));
 		}
 		ldap_set_option($connection, LDAP_OPT_PROTOCOL_VERSION, 3);
+		Yii::log('COsbdLdapServer::authorizeUserExtern: bind ' . sprintf($userauth->sstLDAPAuthUserBindDn, $uid), 'profile', 'authentication');
 		$ldapbind = @ldap_bind($connection, sprintf($userauth->sstLDAPAuthUserBindDn, $uid), $passwd);
 		if ($ldapbind === false) {
 			return false;

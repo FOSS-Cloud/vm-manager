@@ -66,7 +66,7 @@ class LdapUserIdentity extends CUserIdentity
 	 */
 	public function authenticate()
 	{
-		Yii::log("authenticate", 'profile', 'LdapUserIdentity');
+		Yii::log('LdapUserIdentity::authenticate', 'profile', 'authentication');
 
 		$server = CLdapServer::getInstance();
 		$realm = CLdapRecord::model('LdapRealm')->findByAttributes(array('attr'=>array('ou'=>$this->realm)));
@@ -95,7 +95,7 @@ class LdapUserIdentity extends CUserIdentity
 				$branchDn = $usersearch->sstLDAPBaseDn;
 				$filter = sprintf($usersearch->sstLDAPFilter, $this->username);
 //echo "branchDn: $branchDn; filter: $filter<br/>";
-				Yii::log('authenticate: checkUser ' . $branchDn . ', ' . $filter, 'profile', 'LdapUserIdentity');
+				Yii::log('LdapUserIdentity::authenticate: checkUser ' . $branchDn . ', ' . $filter, 'profile', 'authentication');
 				$result = @ldap_search($connection, $branchDn, $filter);
 				if ($result === false) {
 					throw new CLdapException(Yii::t('LdapComponent.server', 'ldap_search failt ({errno}): {message}',
@@ -109,6 +109,7 @@ class LdapUserIdentity extends CUserIdentity
 //echo '<pre>' . print_r($entries, true) . '</pre>';
 
 				if (1 == $entries['count']) {
+					Yii::log('LdapUserIdentity::authenticate: checkUser found!', 'profile', 'authentication');
 					$staticAttrName = $usersearch->sstLDAPForeignStaticAttribute;
 					//echo $staticAttrName . '; ';
 					if (isset($entries[0][$staticAttrName])) {
@@ -127,7 +128,7 @@ class LdapUserIdentity extends CUserIdentity
 					$mapping = array();
 					if (isset($usersearch->sstLDAPInternalForeignMapping)) {
 						foreach($usersearch->sstLDAPInternalForeignMapping as $intext) {
-							list($intern, $foreign) = preg_split(':', $intext);
+							list($intern, $foreign) = preg_split('/:/', $intext);
 							if ('' == $foreign) {
 								$mapping[$intern] = '';
 							}
@@ -141,15 +142,16 @@ class LdapUserIdentity extends CUserIdentity
 					$userauth = $realm->userauth;
 					$authOk = $server->authorizeUserExtern($realm->labeledURI, $userauth, $staticAttr, $this->password);
 					if (!$authOk) {
+						Yii::log('LdapUserIdentity::authenticate: extern ERROR', 'profile', 'authentication');
 						$this->errorCode = self::ERROR_PASSWORD_INVALID;
 					}
 					else {
-						Yii::log('authenticate: extern OK', 'profile', 'LdapUserIdentity');
+						Yii::log('LdapUserIdentity::authenticate: extern OK', 'profile', 'authentication');
 						$usergroupsearch = $realm->usergroupsearch;
 						$branchDn = $usergroupsearch->sstLDAPBaseDn;
 						$filter = sprintf($usergroupsearch->sstLDAPFilter, $staticAttr);
 //echo "branchDn: $branchDn; filter: $filter<br/>";
-						Yii::log('authenticate: getGroups ' . $branchDn . ', ' . $filter, 'profile', 'LdapUserIdentity');
+						Yii::log('LdapUserIdentity::authenticate: getGroups ' . $branchDn . ', ' . $filter, 'profile', 'authentication');
 						
 						$result = @ldap_search($connection, $branchDn, $filter);
 						if ($result === false) {
@@ -222,6 +224,7 @@ class LdapUserIdentity extends CUserIdentity
 						$this->setState('admin', false);
 						$this->setState('customeruid', $realm->sstBelongsToCustomerUID);
 						$this->setState('reselleruid', $realm->sstBelongsToResellerUID);
+						$this->setState('lang', $user->preferredLanguage);
 						
 						ldap_unbind($connection);
 					}
@@ -233,7 +236,7 @@ class LdapUserIdentity extends CUserIdentity
 					$usergroupsearch = LdapNameless::model()->findByDn('ou=User Group Search,ou=internal searches,ou=configuration,ou=virtualization,ou=services');
 
 					$this->authenticateIntern($realm, $usersearch, $userauth, $usergroupsearch);
-					Yii::log("authenticate: " . var_export($_SESSION, true), 'profile', 'LdapUserIdentity');
+					Yii::log("LdapUserIdentity::authenticate: " . var_export($_SESSION, true), 'profile', 'authentication');
 
 				}
 			}
@@ -241,13 +244,13 @@ class LdapUserIdentity extends CUserIdentity
 		else {
 			$this->errorCode = self::ERROR_REALM_INVALID;
 		}
-		Yii::log("authenticate: errorCode " . var_export($this->errorCode, true), 'profile', 'LdapUserIdentity');
+		Yii::log("LdapUserIdentity::authenticate: errorCode " . var_export($this->errorCode, true), 'profile', 'authentication');
 		return self::ERROR_NONE === $this->errorCode;
 	}
 
 	private function authenticateIntern($realm, $usersearch, $userauth, $usergroupsearch)
 	{
-		Yii::log("authenticateIntern", 'profile', 'ext.ldaprecord.UserIdentity');
+		Yii::log("LdapUserIdentity::authenticateIntern", 'profile', 'authentication');
 
 		$server = CLdapServer::getInstance();
 		//$usersearch = $realm->usersearch;
@@ -317,7 +320,7 @@ class LdapUserIdentity extends CUserIdentity
 						}
 						$this->setState('lang', $lang);
 						
-						Yii::log('authenticationIntern: ' . var_export($_SESSION, true), 'profile', 'ext.ldaprecord.UserIdentity');
+						Yii::log('LdapUserIdentity::authenticationIntern: ' . var_export($_SESSION, true), 'profile', 'authentication');
 					}
 					else {
 						$this->errorCode = self::ERROR_REALM_INVALID;
@@ -367,7 +370,7 @@ class LdapUserIdentity extends CUserIdentity
 
 	public static function checkRealm($realm)
 	{
-		Yii::log("checkRealm: $realm", 'profile', 'ext.ldaprecord.UserIdentity');
+		Yii::log("LdapUserIdentity::checkRealm: $realm", 'profile', 'authentication');
 
 		$server = CLdapServer::getInstance();
 		$realm = CLdapRecord::model('LdapRealm')->findByAttributes(array('attr'=>array('ou'=>$realm)));
@@ -376,7 +379,7 @@ class LdapUserIdentity extends CUserIdentity
 
 	public static function checkUser($username, $realm)
 	{
-		Yii::log("checkUser: $username, $realm", 'profile', 'LdapUserIdentity');
+		Yii::log("LdapUserIdentity::checkUser: $username, $realm", 'profile', 'authentication');
 
 		$checkIntern = false;
 		$server = CLdapServer::getInstance();
@@ -403,7 +406,7 @@ class LdapUserIdentity extends CUserIdentity
 				$branchDn = $usersearch->sstLDAPBaseDn;
 				$filter = sprintf($usersearch->sstLDAPFilter, $username);
 //echo "branchDn: $branchDn; filter: $filter<br/>";
-				Yii::log('checkUser: userSearch ' . $branchDn . ', ' . $filter, 'profile', 'LdapUserIdentity');
+				Yii::log('LdapUserIdentity::checkUser: userSearch ' . $branchDn . ', ' . $filter, 'profile', 'authentication');
 				$result = @ldap_search($connection, $branchDn, $filter);
 				if ($result === false) {
 					throw new CLdapException(Yii::t('LdapComponent.server', 'ldap_search failt ({errno}): {message}',
@@ -424,7 +427,7 @@ class LdapUserIdentity extends CUserIdentity
 					$checkIntern = true;
 				}
 			}
-			Yii::log("checkUser: intern? " . var_export('TRUE' !== $realm->sstLDAPExternalDirectory || $checkIntern, true), 'profile', 'LdapUserIdentity');
+			Yii::log("LdapUserIdentity::checkUser: intern? " . var_export('TRUE' !== $realm->sstLDAPExternalDirectory || $checkIntern, true), 'profile', 'authentication');
 			if ('TRUE' !== $realm->sstLDAPExternalDirectory || $checkIntern) {
 				$usersearch = $realm->usersearch;
 				$usersearch = LdapNameless::model()->findByDn('ou=User Search,ou=internal searches,ou=configuration,ou=virtualization,ou=services');
