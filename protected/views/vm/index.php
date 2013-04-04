@@ -191,7 +191,7 @@ function refreshNextVm()
 				refreshVmButtons(id, buttons);
 				if (buttons['vm_edit'])
 				{
-					name = '<a href="${updateurl}?dn=' + row['dn'] + '" title="created: ' + row['cts'];
+					name = '<a href="${updateurl}?dn=' + row['dn']  + '&vmtype=' + row['type'] + '" title="created: ' + row['cts'];
 					if ('' != row['user']) {
 						name += '; user: ' + row['user'];
 					}
