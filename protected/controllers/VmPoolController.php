@@ -955,7 +955,7 @@ class VmPoolController extends Controller
 			$model->sstCronMinute = $backup->sstCronMinute;
 			$model->sstCronHour = $backup->sstCronHour;
 			$model->sstCronDayOfWeek = explode(',', $backup->sstCronDayOfWeek);
-			if ('*' == $model->sstCronDayOfWeek) {
+			if ('*' == $backup->sstCronDayOfWeek) {
 				$model->everyDay = 'TRUE';
 			}
 			else {

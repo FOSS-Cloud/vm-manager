@@ -157,7 +157,7 @@ class ConfigurationController extends Controller
 			$model->sstCronMinute = $globalBackup->sstCronMinute;
 			$model->sstCronHour = $globalBackup->sstCronHour;
 			$model->sstCronDayOfWeek = explode(',', $globalBackup->sstCronDayOfWeek);
-			if ('*' == $model->sstCronDayOfWeek) {
+			if ('*' == $globalBackup->sstCronDayOfWeek) {
 				$model->everyDay = 'TRUE';
 			}
 			else {

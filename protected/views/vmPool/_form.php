@@ -257,9 +257,9 @@ else {
   				<?php echo $form->hiddenField($model, 'sstCronHour'); ?>
   				<?php echo $form->hiddenField($model, 'sstCronMinute'); ?>
    				<div id="dayofweek">
-   					<?php echo $form->radioButton($model,'everyDay', array('value' => 'TRUE', 'style' => 'float: left;', 'uncheckValue' => null)); ?>
+   					<?php echo $form->radioButton($model,'everyDay', array('id' => 'VmPoolForm_everyDayTrue', 'value' => 'TRUE', 'style' => 'float: left;', 'uncheckValue' => null)); ?>
   					<?php echo $form->labelEx($model, 'everyDayTrue', array('style' => 'display: inline; float: left;')); ?><br style="clear: both;" />
-   					<?php echo $form->radioButton($model,'everyDay', array('value' => 'FALSE', 'style' => 'float: left;', 'uncheckValue' => null)); ?>
+   					<?php echo $form->radioButton($model,'everyDay', array('id' => 'VmPoolForm_everyDayFalse', 'value' => 'FALSE', 'style' => 'float: left;', 'uncheckValue' => null)); ?>
    					<div style="float: left;">
    					<?php echo $form->checkBoxList($model,'sstCronDayOfWeek', CLocale::getInstance(Yii::t('app', 'locale'))->getWeekDayNames('abbreviated'), 
    						array('separator' => '&nbsp;&nbsp;', 'uncheckValue' => null, 'labelOptions' => array('style' => 'display: inline-block;'))); ?>
@@ -391,9 +391,16 @@ $("#VmPoolForm_cronActiveTrue").click(function() {
 	$("#poolcron input[type=radio]").attr('disabled', false);
  	$("#dayofweek input[type=checkbox]").attr('disabled', false);
 });
+$("#VmPoolForm_everyDayTrue").click(function() {
+ 	$("#dayofweek input[type=checkbox]").attr('disabled', true);
+});
+$("#VmPoolForm_everyDayFalse").click(function() {
+ 	$("#dayofweek input[type=checkbox]").attr('disabled', false);
+});
 $("#VmPoolForm_globalCronActive:checked").click();
 $("#VmPoolForm_cronActiveFalse:checked").click();
-
+$("#VmPoolForm_everyDayTrue:checked").click();
+ 		
 $("#VmPoolForm_poolSound").change(function() {
 	if (this.checked) {
  		$("#soundsettings").buttonset('enable');

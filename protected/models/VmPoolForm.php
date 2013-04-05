@@ -63,7 +63,7 @@ class VmPoolForm extends CFormModel {
 			array('dn', 'safe', 'on' => 'create'),
 			array('dn, storagepool, displayName, description, nodes, range', 'required', 'on' => 'update'),
 			array('type', 'safe', 'on' => 'update'),
-			array('brokerMin, brokerMax, brokerPreStart, nodes, range, poolSound, allowSound, poolUsb, allowUsb, poolBackupActive, sstBackupNumberOfIterations, sstVirtualizationVirtualMachineForceStart, poolCronActive, sstCronMinute, sstCronHour, sstCronDayOfWeek, cronTime', 'safe'),
+			array('brokerMin, brokerMax, brokerPreStart, nodes, range, poolSound, allowSound, poolUsb, allowUsb, poolBackupActive, sstBackupNumberOfIterations, sstVirtualizationVirtualMachineForceStart, poolCronActive, sstCronMinute, sstCronHour, sstCronDayOfWeek, cronTime, everyDay', 'safe'),
 		);
 	}
 

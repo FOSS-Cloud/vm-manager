@@ -74,9 +74,9 @@ $this->title = Yii::t('configuration', 'Backup');
   				<?php echo $form->hiddenField($model, 'sstCronMinute'); ?>
   				<?php echo $form->textField($model, 'cronTime', array('size' => 4)); ?>&nbsp;<span>(24h)</span><br/>&nbsp;
    				<div id="dayofweek">
-   					<?php echo $form->radioButton($model,'everyDay', array('value' => 'TRUE', 'style' => 'float: left;', 'uncheckValue' => null)); ?>
+   					<?php echo $form->radioButton($model,'everyDay', array('id' => 'ConfigurationBackupForm_everyDayTrue', 'value' => 'TRUE', 'style' => 'float: left;', 'uncheckValue' => null)); ?>
   					<?php echo $form->labelEx($model, 'everyDayTrue', array('style' => 'display: inline; float: left;')); ?><br style="clear: both;" />
-   					<?php echo $form->radioButton($model,'everyDay', array('value' => 'FALSE', 'style' => 'float: left;', 'uncheckValue' => null)); ?>
+   					<?php echo $form->radioButton($model,'everyDay', array('id' => 'ConfigurationBackupForm_everyDayFalse', 'value' => 'FALSE', 'style' => 'float: left;', 'uncheckValue' => null)); ?>
    					
    					<?php echo $form->checkBoxList($model,'sstCronDayOfWeek', CLocale::getInstance(Yii::t('app', 'locale'))->getWeekDayNames('abbreviated'), 
    						array('separator' => '&nbsp;&nbsp;', 'uncheckValue' => null, 'labelOptions' => array('style' => 'display: inline-block;'))); ?>
@@ -120,7 +120,7 @@ $("#ConfigurationBackupForm_sstBackupNumberOfIterations").spinner({min: 1, max: 
 $("#vmforcestart").buttonset();
 $("#ConfigurationBackupForm_cronTime").timespinner();
  		
- $("#ConfigurationBackupForm_cronActiveFalse").click(function() {
+$("#ConfigurationBackupForm_cronActiveFalse").click(function() {
 	$("#ConfigurationBackupForm_cronTime").timespinner('disable');
 	$("#globalcron input[type=radio]").attr('disabled', true);
  	$("#dayofweek input[type=checkbox]").attr('disabled', true);
@@ -131,6 +131,14 @@ $("#ConfigurationBackupForm_cronActiveTrue").click(function() {
  	$("#dayofweek input[type=checkbox]").attr('disabled', false);
 });
 $("#ConfigurationBackupForm_cronActiveFalse:checked").click();
+ 		
+$("#ConfigurationBackupForm_everyDayTrue").click(function() {
+ 	$("#dayofweek input[type=checkbox]").attr('disabled', true);
+});
+$("#ConfigurationBackupForm_everyDayFalse").click(function() {
+ 	$("#dayofweek input[type=checkbox]").attr('disabled', false);
+});
+$("#ConfigurationBackupForm_everyDayTrue:checked").click();
  		
 EOS
 , CClientScript::POS_READY);
