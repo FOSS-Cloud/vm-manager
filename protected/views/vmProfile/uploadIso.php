@@ -35,6 +35,9 @@ $this->breadcrumbs=array(
 $this->title = Yii::t('vmprofile', 'Upload Iso File');
 //$this->helpurl = Yii::t('help', 'uploadIso');
 
+$beforeunload = Yii::t('vmprofile', 'Unload message');
+$alternativetext = Yii::t('vmprofile', 'Alternative upload method');
+$alternativelink = Yii::t('vmprofile', 'Alternative upload method link');
 ?>
 <div class="form">
 <?php $form=$this->beginWidget('CActiveForm', array(
@@ -48,6 +51,9 @@ function(form, data, hasError) {
 	if (!hasError) {
 		$('#errormessage').html('');
 		$('#uploadinfo').slideDown(400);
+		$(window).bind('beforeunload', function() {
+			return "{$beforeunload}";
+		});
     	startTime = new Date();
 		stopTime = null;
 		infoUpdated = 0;
@@ -76,6 +82,7 @@ echo $form->hiddenField($model, 'upstatus');
 	<div id="errormessage" class="errorMessage">
 		<?php echo $form->errorSummary($model); ?>
 	</div>
+	<p><a href="<?php echo $alternativelink; ?>" target="_blank"><?php echo $alternativetext; ?></a></p>
 	<div class="row">
 		<?php echo $form->labelEx($model,'isofile');?>
 <?php
@@ -147,6 +154,7 @@ if ($upstatus) {
 		$('#isoestimated').html("took " + Math.round((stopTime.getTime() - startTime.getTime()) / 1000) + " seconds");
 		clearTimeout(cycleid);
 		$('#submit').removeAttr('disabled');
+		$(window).unbind('beforeunload');
 		$('#finished').dialog();
 	}
 	function error(message) {
@@ -178,7 +186,7 @@ EOS
 		<?php echo CHtml::submitButton(Yii::t('vmprofile','Upload'),($upstatus ? array('id' => 'submit') : array('id' => 'submit'))); ?>
 	</div>
 	<br class="clear"/>
-	<div id="finished" title="Finished" style="display: none;">
+	<div id="finished" title="<?php echo Yii::t('vmprofile','Upload finished title');?>" style="display: none;">
 		<p><?php echo Yii::t('vmprofile','Upload finished');?></p>
 	</div>
 <?php

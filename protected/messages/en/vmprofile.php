@@ -51,4 +51,8 @@ return array (
   'title' => 'Title',
   'Please use only a-z, A-Z, 0-9, the space and the _ character.' => '',
   'Upload finished' => 'Upload finished!',
+  'Upload finished title' => 'Finished',
+  'Unload message' => 'Note: If you leave this page the upload is stopped!\\nDo you want to stop the upload?',
+  'Alternative upload method' => '',
+  'Alternative upload method link' => 'http://www.foss-cloud.org/en/index.php/Upload_ISO-Files',
 );
