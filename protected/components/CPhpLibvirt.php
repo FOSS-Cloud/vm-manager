@@ -742,7 +742,7 @@ class CPhpLibvirt {
 	public function copyIsoFile($source, $dest) {
 		$pidfile = $dest . '.pid';
 		Yii::log('copyIsoFile: ' . $source . ' => ' . $dest, 'profile', 'phplibvirt');
-		exec(sprintf("cp %s %s > /dev/null 2>&1 & echo $! >> %s", $source, $dest, $pidfile));
+		exec(sprintf("cp \"%s\" \"%s\" > /dev/null 2>&1 & echo $! >> %s", $source, $dest, $pidfile));
 		//copy($disk->sstSourceFile, $sourcefile);
 		sleep(2);
 		$pid = file($pidfile);
