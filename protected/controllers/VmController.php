@@ -549,7 +549,7 @@ EOS;
 					echo '<img alt="" src="' . Yii::app()->baseUrl . '/images/backup_running.png" />';
 				}
 				echo '</td>';
-				$date = $formatter->formatDateTime($backup->ou);
+				$date = $formatter->formatDateTime(substr($backup->ou, 0, strlen($backup->ou)-1));
 				echo '<td style="white-space: nowrap;">' . $date . '</td><td style="text-align: center;">' . $backup->sstProvisioningMode . '</td><td>';
 				if (0 != $backup->sstProvisioningReturnValue) {
 					echo $backup->sstProvisioningReturnValue . ' (';	
