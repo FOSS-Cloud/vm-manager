@@ -716,8 +716,10 @@ class VmTemplateController extends Controller
 				if ('disk' == $disk->sstDevice) {
 					$persistentdir = substr($storagepool->sstStoragePoolURI, 7);
 					$copydata = CPhpLibvirt::getInstance()->copyVolumeFile($persistentdir, $disk);
+					$copydata['Dn'] = $vm->getDn();
 					$disk->sstVolumeName = $copydata['VolumeName'];
 					$disk->sstSourceFile = $copydata['SourceFile'];
+					$_SESSION['copyVolumeFile'] = $copydata;
 				}
 				$disk->setBranchDn($devices->dn);
 				$disk->save();
