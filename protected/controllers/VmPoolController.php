@@ -482,16 +482,16 @@ class VmPoolController extends Controller
 			}
 				
 			if (0 < count($saveattrs)) {
-				echo '<pre>' . print_r($saveattrs, true) . '</pre>';
-				if (!in_array('sstCronActive', $saveattrs)) {
-					// only sstVirtualizationBackupObjectClass needed
-					$poolbackup->removeAttributesByObjectClass('sstCronObjectClass');
-				}
-				if (!in_array('sstBackupNumberOfIterations', $saveattrs)) {
-					// only sstCronObjectClass needed
-					$poolbackup->removeAttributesByObjectClass('sstVirtualizationBackupObjectClass');
-				}
-				echo '<pre>' . print_r($poolbackup, true) . '</pre>';
+//				echo '<pre>' . print_r($saveattrs, true) . '</pre>';
+//				if (!in_array('sstCronActive', $saveattrs)) {
+//					// only sstVirtualizationBackupObjectClass needed
+//					$poolbackup->removeAttributesByObjectClass('sstCronObjectClass');
+//				}
+//				if (!in_array('sstBackupNumberOfIterations', $saveattrs)) {
+//					// only sstCronObjectClass needed
+//					$poolbackup->removeAttributesByObjectClass('sstVirtualizationBackupObjectClass');
+//				}
+//				echo '<pre>' . print_r($poolbackup, true) . '</pre>';
 
 				$poolbackup->save(false);
 			}
@@ -773,14 +773,13 @@ class VmPoolController extends Controller
 				$poolbackup = new LdapConfigurationBackup();
 				$poolbackup->attributes = $globalbackup->attributes;
 				$poolbackup->branchDn = $pool->getDn();
-				$poolbackup->setOverwrite(true);
 				$poolbackup->description = 'This sub tree contains the backup plan of the pool \'' . $pool->sstDisplayName . '\'';
 			}
 			else {
 				$poolbackup->setAsNew();
-				$poolbackup->setOverwrite(true);
 			}
-
+			$poolbackup->setOverwrite(true);
+				
 			$saveattrs = array();
 			if ('TRUE' === $model->poolBackupActive) {
 				$poolbackup->sstBackupNumberOfIterations = $model->sstBackupNumberOfIterations;
@@ -814,15 +813,14 @@ class VmPoolController extends Controller
 			}
 					
 			if (0 < count($saveattrs)) {
-				if (!in_array('sstCronActive', $saveattrs)) {
-					// only sstVirtualizationBackupObjectClass needed
-					$poolbackup->removeAttributesByObjectClass('sstCronObjectClass');
-				}
-				if (!in_array('sstBackupNumberOfIterations', $saveattrs)) {
-					// only sstCronObjectClass needed
-					$poolbackup->removeAttributesByObjectClass('sstVirtualizationBackupObjectClass');
-				}
-				//echo '<pre>' . print_r($poolbackup, true) . '</pre>';
+// 				if (!in_array('sstCronActive', $saveattrs)) {
+// 					// only sstVirtualizationBackupObjectClass needed
+// 					$poolbackup->removeAttributesByObjectClass('sstCronObjectClass');
+// 				}
+// 				if (!in_array('sstBackupNumberOfIterations', $saveattrs)) {
+// 					// only sstCronObjectClass needed
+// 					$poolbackup->removeAttributesByObjectClass('sstVirtualizationBackupObjectClass');
+// 				}
 				if ($poolbackupfound) {
 					CLdapServer::getInstance()->delete($poolbackup->getDn());
 				}
