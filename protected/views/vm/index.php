@@ -1029,6 +1029,7 @@ EOS
 					statusact += '<img src="{$imagesurl}/space.png" alt="" title="" class="action" />';
 					statusact += '<img src="{$imagesurl}/space.png" alt="" title="" class="action" />';
 					statusact += '<img id="vm_destroy_' + ids[i] + '" src="{$imagesurl}/vm_destroy_n.png" alt="" title="destroy VM" class="action" />';
+					statusact += '<img id="vm_migrate_' + ids[i] + '" src="{$imagesurl}/vm_migrate.png" alt="" title="migrate VM" class="action" onclick="selectNode(\'' + ids[i] + '\');" />';
 				}
 				var act = '';
 				if ('persistent' == row['type']) {
