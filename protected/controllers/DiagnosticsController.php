@@ -73,7 +73,7 @@ class DiagnosticsController extends Controller
 	{
 		return array(
 			array('allow', // allow authenticated user to perform 'create' and 'update' actions
-				'actions'=>array('index', 'vminfos', 'vmtemplateinfos', 'ldapattrtypes', 'ldapobjclasses'),
+				'actions'=>array('index', 'vminfos', 'vmtemplateinfos', 'ldapattrtypes', 'ldapobjclasses', 'vmcounter'),
 				'users'=>array('@'),
 				'expression'=>'Yii::app()->user->isAdmin'
 			),
@@ -138,5 +138,19 @@ class DiagnosticsController extends Controller
 		$server = CLdapServer::getInstance();
 		$schema = $server->getSchema();
 		$this->render('ldapattrtypes', array('attrtypes' => $schema->getAllAttributeTypes()));
+	}
+	
+	public function actionVmCounter() 
+	{
+		if (isset($_GET['print'])) {
+			$this->layout = 'application.views.layouts.osbdPrint';			
+		}
+		$criteria = array('attr'=>array('sstVirtualmachinePoolType' => 'template'));
+		$tpools = CLdapRecord::model('LdapVmPool')->findAll($criteria);
+		$criteria = array('attr'=>array('sstVirtualmachinePoolType' => 'persistent'));
+		$ppools = CLdapRecord::model('LdapVmPool')->findAll($criteria);
+		$criteria = array('attr'=>array('sstVirtualmachinePoolType' => 'dynamic'));
+		$dpools = CLdapRecord::model('LdapVmPool')->findAll($criteria);
+		$this->render('vmcounter', array('tpools' => $tpools, 'ppools' => $ppools, 'dpools' => $dpools));
 	}
 }
