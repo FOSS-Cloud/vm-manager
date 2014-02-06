@@ -271,7 +271,9 @@ class VmPoolController extends Controller
 			$retval['brokerMax'] = $config->sstBrokerMaximalNumberOfVirtualMachines;
 			$retval['brokerPreStart'] = $config->sstBrokerPreStartNumberOfVirtualMachines;
 		}
-
+		if ($config->hasAttribute('sstBrokerPreStartInterval')) {
+			$retval['brokerPreStartInterval'] = $config->sstBrokerPreStartInterval;
+		}
 		$this->sendJsonAnswer($retval);
 	}
 
@@ -441,6 +443,7 @@ class VmPoolController extends Controller
 				$pool->sstBrokerMinimalNumberOfVirtualMachines = $model->brokerMin;
 				$pool->sstBrokerMaximalNumberOfVirtualMachines = $model->brokerMax;
 				$pool->sstBrokerPreStartNumberOfVirtualMachines = $model->brokerPreStart;
+				$pool->sstBrokerPreStartInterval = $model->brokerPreStartInterval;
 			}
 			else {
 				$pool->removeAttributesByObjectClass('sstVirtualMachinePoolDynamicObjectClass');
@@ -496,6 +499,28 @@ class VmPoolController extends Controller
 				$poolbackup->save(false);
 			}
 				
+			if ('dynamic' === $pool->sstVirtualMachinePoolType) {
+				$poolshutdown = new LdapConfigurationShutdown();
+				$poolshutdown->branchDn = $pool->getDn();
+				$poolshutdown->setOverwrite(true);
+				$poolshutdown->description = 'This sub tree contains the shutdown plan of the pool \'' . $pool->sstDisplayName . '\'';
+				
+				$saveattrs = array();
+				$poolshutdown->sstCronActive = $model->poolShutdownActive;
+				if ('TRUE' === $model->poolShutdownActive) {
+					list($hour, $minute) = explode(':', $model->poolShutdownTime);
+					$poolshutdown->sstCronMinute = (int) $minute;
+					$poolshutdown->sstCronHour = (int) $hour;
+					$poolshutdown->sstCronDayOfWeek = $model->poolShutdownDayOfWeek;
+				}
+				else {
+					$poolshutdown->sstCronMinute = (int) 0;
+					$poolshutdown->sstCronHour = (int) 0;
+					$poolshutdown->sstCronDayOfWeek = '*';
+				}
+				$poolshutdown->save(false);
+			}
+
 			$settings = new LdapVmPoolConfigurationSettings();
 			$settings->setBranchDn($pool->dn);
 			$settings->ou = "settings";
@@ -682,6 +707,12 @@ class VmPoolController extends Controller
 				$pool->sstBrokerMinimalNumberOfVirtualMachines = $model->brokerMin;
 				$pool->sstBrokerMaximalNumberOfVirtualMachines = $model->brokerMax;
 				$pool->sstBrokerPreStartNumberOfVirtualMachines = $model->brokerPreStart;
+				if ('' === $model->brokerPreStartInterval) {
+					$pool->sstBrokerPreStartInterval = array();
+				}
+				else {
+					$pool->sstBrokerPreStartInterval = $model->brokerPreStartInterval;
+				}
 			}
 			else {
 				$pool->removeAttributesByObjectClass('sstVirtualMachinePoolDynamicObjectClass');
@@ -830,6 +861,40 @@ class VmPoolController extends Controller
 				$poolbackup->delete();
 			}
 			
+			$poolshutdown = $pool->shutdown;
+			echo $poolshutdown;
+			if (is_null($poolshutdown)) {
+				$poolshutdown = new LdapConfigurationShutdown();
+				$poolshutdown->ou = 'shutdown';
+				$poolshutdown->sstCronActive = $model->poolShutdownActive;
+				$poolshutdown->sstCronDay = '*';
+				$poolshutdown->sstCronMonth = '*';
+				
+				$poolshutdown->branchDn = $pool->getDn();
+				$poolshutdown->description = 'This sub tree contains the shutdown plan of the pool \'' . $pool->sstDisplayName . '\'';
+			}
+			else {
+				//$poolshutdown->setAsNew();
+			}
+			$poolshutdown->setOverwrite(true);
+			$poolshutdown->sstCronActive = $model->poolShutdownActive;
+			if ('TRUE' === $model->poolShutdownActive) {
+				list($hour, $minute) = explode(':', $model->poolShutdownTime);
+				$poolshutdown->sstCronMinute = (int) $minute;
+				$poolshutdown->sstCronHour = (int) $hour;
+				if ('TRUE' == $model->poolShutdownEveryDay) {
+					$poolshutdown->sstCronDayOfWeek = '*';
+				}
+				else {
+					$poolshutdown->sstCronDayOfWeek = implode(',', $model->poolShutdownDayOfWeek);
+				}
+				echo $poolshutdown;
+				$poolshutdown->save(false);
+			}
+			else if (!$poolshutdown->isNewEntry()) {
+				$poolshutdown->delete();
+			}
+			
 			$poolSound = $pool->settings->getSoundSetting();
 			if (0 == $model->poolSound) {
 				if (!is_null($poolSound)) {
@@ -907,6 +972,8 @@ class VmPoolController extends Controller
 				$model->brokerMin = $pool->sstBrokerMinimalNumberOfVirtualMachines;
 				$model->brokerMax = $pool->sstBrokerMaximalNumberOfVirtualMachines;
 				$model->brokerPreStart = $pool->sstBrokerPreStartNumberOfVirtualMachines;
+				$model->brokerPreStartInterval = $pool->sstBrokerPreStartInterval;
+				$model->poolShutdown = true;
 			}
 
 			//echo '<pre>GLOBAL:SOUND ' . var_export($pool->settings->defaultSettings->isSoundAllowed(), true) . '</pre>';
@@ -961,6 +1028,26 @@ class VmPoolController extends Controller
 			}
 			$model->cronTime = $model->sstCronHour . ':' . $model->sstCronMinute;
 			
+			$model->poolShutdownActive = 'FALSE';
+			$shutdown = $pool->shutdown;
+			if (!is_null($shutdown)) {
+				$model->poolShutdownActive = 'TRUE';
+				if (isset($shutdown->sstCronActive)) {
+					$model->poolShutdownActive = $shutdown->sstCronActive;
+				}
+			
+				$model->poolShutdownMinute = $shutdown->sstCronMinute;
+				$model->poolShutdownHour = $shutdown->sstCronHour;
+				$model->poolShutdownDayOfWeek = explode(',', $shutdown->sstCronDayOfWeek);
+				if ('*' == $shutdown->sstCronDayOfWeek) {
+					$model->poolShutdownEveryDay = 'TRUE';
+				}
+				else {
+					$model->poolShutdownEveryDay = 'FALSE';
+				}
+				$model->poolShutdownTime = $model->poolShutdownHour . ':' . $model->poolShutdownMinute;
+			}			
+				
 			$pools = CLdapRecord::model('LdapStoragePool')->findAll(array('attr'=>array()));
 			$storagepools = $this->createDropdownFromLdapRecords($pools, 'sstStoragePool', 'sstDisplayName');
 

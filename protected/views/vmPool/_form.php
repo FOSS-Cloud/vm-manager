@@ -87,17 +87,22 @@ function(data) {
 		$('#VmPoolForm_range_em_').html('No Range found! Please <a href="$subnetcreate">create</a> one.').show();
 	}
 	if ('dynamic' == data['type']) {
+		$('#shutdownschedule').show();
 		$('#VmPoolForm_brokerMin').val(data['brokerMin']);
 		$('#brokerMin').show();
 		$('#VmPoolForm_brokerMax').val(data['brokerMax']);
 		$('#brokerMax').show();
 		$('#VmPoolForm_brokerPreStart').val(data['brokerPreStart']);
 		$('#brokerPreStart').show();
+		$('#VmPoolForm_brokerPreStartInterval').val(data['brokerPreStartInterval']);
+		$('#brokerPreStartInterval').show();
 	}
 	else {
+		$('#shutdownschedule').hide();
 		$('#brokerMin').hide();
 		$('#brokerMax').hide();
 		$('#brokerPreStart').hide();
+		$('#brokerPreStartInterval').hide();
 	}
 }
 EOS
@@ -161,12 +166,12 @@ EOS
 		</div>
 		<div class="row">
 			<?php echo $form->labelEx($model,'displayName'); ?>
-			<?php echo $form->textField($model,'displayName',array('size'=>30)); ?>
+			<?php echo $form->textField($model,'displayName',array('size'=>40)); ?>
 			<?php echo $form->error($model,'displayName'); ?>
 		</div>
 		<div class="row">
 			<?php echo $form->labelEx($model,'description'); ?>
-			<?php echo $form->textField($model,'description',array('size'=>30)); ?>
+			<?php echo $form->textField($model,'description',array('size'=>40)); ?>
 			<?php echo $form->error($model,'description'); ?>
 		</div>
 		<div class="row">
@@ -214,6 +219,12 @@ else {
 			<div class="hint">minimal number of free VMs</div>
 			<?php echo $form->error($model,'brokerPreStart'); ?>
 		</div>
+		<div id="brokerPreStartInterval" class="row" <?php echo -1 == $model->brokerPreStartInterval ? 'style="display: none;"' : '';?>>
+			<?php echo $form->labelEx($model,'brokerPreStartInterval'); ?>
+			<?php echo $form->textField($model,'brokerPreStartInterval',array('size'=>5, 'style'=>'float: left;')); ?>
+			<div class="hint">delay between start of two VM's in Seconds;<br/>empty to start without interval</div>
+			<?php echo $form->error($model,'brokerPreStartInterval'); ?>
+		</div>
 	</div>
 	<div class="column span-7">
 		<fieldset style="position: relative; margin-bottom: 20px;">
@@ -238,9 +249,12 @@ else {
 	  			<?php echo $form->error($model,'sstVirtualizationVirtualMachineForceStart'); ?>
 	  		</div>
   		</div>
+<!-- 
   		</fieldset>
 		<fieldset style="position: relative; margin-bottom: 20px;">
   		<label><span style="display:block;position:absolute;top:-10px;left:10px; background-color: white;"><?php echo Yii::t('configuration', 'Schedule')?>&nbsp;</span></label>
+-->
+   		<h2 style="font-size: 1.1em; font-weight: bold; margin-bottom: 0.25em;"><?php echo Yii::t('configuration', 'Schedule')?></h2>
 		<div class="row">
   			<?php echo $form->radioButton($model,'poolCronActive', array('id' => 'VmPoolForm_globalCronActive', 'value' => 'GLOBAL', 'style' => 'float: left;', 'uncheckValue' => null)); ?>
   			<?php echo $form->labelEx($model, 'poolCronActive', array('style' => 'display: inline;')); ?>
@@ -294,6 +308,31 @@ else {
    						array('separator' => '', 'uncheckValue' => null, 'labelOptions' => array('style' => 'display: inline-block;'))); ?>
 				</div>
 <?php */ ?>
+			</div>
+   		</div>
+   		</fieldset>
+		<fieldset id="shutdownschedule" style="position: relative; margin-bottom: 20px; <?php echo !$model->poolShutdown ? 'display: none;' : '';?>">
+  		<label><span style="display:block;position:absolute;top:-10px;left:10px; background-color: white;"><?php echo Yii::t('configuration', 'Shutdown Schedule')?>&nbsp;</span></label>
+		<div class="row">
+  			<?php echo $form->radioButton($model,'poolShutdownActive', array('id' => 'VmPoolForm_poolShutdownActiveFalse', 'value' => 'FALSE', 'style' => 'float: left;', 'uncheckValue' => null)); ?>
+  			<?php echo $form->labelEx($model, 'poolShutdownActiveFalse', array('style' => 'display: inline;')); ?>
+  		</div>
+  		<div class="row">
+  			<?php echo $form->radioButton($model,'poolShutdownActive', array('id' => 'VmPoolForm_poolShutdownActiveTrue', 'value' => 'TRUE', 'style' => 'float: left; margin-top: 7px;', 'uncheckValue' => null)); ?>
+  			<?php echo $form->labelEx($model, 'poolShutdownActiveTrue', array('style' => 'display: inline; float: left; margin: 4px 6px 0 0;')); ?>
+ 			<?php echo $form->textField($model, 'poolShutdownTime', array('size' => 4, 'style' => 'display: inline; float: left;')); ?>&nbsp;<span>(24h)</span><br/>&nbsp;
+  			<div id="shutdowncron" style="clear: both; margin-left: 15px;">
+  				<?php echo $form->hiddenField($model, 'poolShutdownHour'); ?>
+  				<?php echo $form->hiddenField($model, 'poolShutdownMinute'); ?>
+   				<div id="shutdowndayofweek">
+   					<?php echo $form->radioButton($model,'poolShutdownEveryDay', array('id' => 'VmPoolForm_poolShutdownEveryDayTrue', 'value' => 'TRUE', 'style' => 'float: left;', 'uncheckValue' => null)); ?>
+  					<?php echo $form->labelEx($model, 'poolShutdownEveryDayTrue', array('style' => 'display: inline; float: left;')); ?><br style="clear: both;" />
+   					<?php echo $form->radioButton($model,'poolShutdownEveryDay', array('id' => 'VmPoolForm_poolShutdownEveryDayFalse', 'value' => 'FALSE', 'style' => 'float: left;', 'uncheckValue' => null)); ?>
+   					<div style="float: left;">
+   					<?php echo $form->checkBoxList($model,'poolShutdownDayOfWeek', CLocale::getInstance(Yii::app()->getUser()->getState('lang', 'en-GB'))->getWeekDayNames('abbreviated'), 
+   						array('separator' => '&nbsp;&nbsp;', 'uncheckValue' => null, 'labelOptions' => array('style' => 'display: inline-block;'))); ?>
+   					</div>
+				</div>
 			</div>
    		</div>
    		</fieldset>
@@ -359,6 +398,9 @@ $("#vmforcestart").buttonset();
 $("#VmPoolForm_sstCronDayOfWeek_3").before('<br />');
 $("#VmPoolForm_sstCronDayOfWeek_6").before('<br />');
 $("#VmPoolForm_cronTime").timespinner();
+$("#VmPoolForm_poolShutdownDayOfWeek_3").before('<br />');
+$("#VmPoolForm_poolShutdownDayOfWeek_6").before('<br />');
+$("#VmPoolForm_poolShutdownTime").timespinner();
 $("#soundsettings").buttonset();
 $("#usbsettings").buttonset();
  		
@@ -400,6 +442,25 @@ $("#VmPoolForm_everyDayFalse").click(function() {
 $("#VmPoolForm_globalCronActive:checked").click();
 $("#VmPoolForm_cronActiveFalse:checked").click();
 $("#VmPoolForm_everyDayTrue:checked").click();
+
+$("#VmPoolForm_poolShutdownActiveFalse").click(function() {
+	$("#VmPoolForm_poolShutdownTime").timespinner('disable');
+	$("#shutdowncron input[type=radio]").attr('disabled', true);
+ 	$("#shutdowndayofweek input[type=checkbox]").attr('disabled', true);
+});
+$("#VmPoolForm_poolShutdownActiveTrue").click(function() {
+	$("#VmPoolForm_poolShutdownTime").timespinner('enable');
+	$("#shutdowncron input[type=radio]").attr('disabled', false);
+ 	$("#shutdowndayofweek input[type=checkbox]").attr('disabled', false);
+});
+$("#VmPoolForm_poolShutdownEveryDayTrue").click(function() {
+ 	$("#shutdowndayofweek input[type=checkbox]").attr('disabled', true);
+});
+$("#VmPoolForm_poolShutdownEveryDayFalse").click(function() {
+ 	$("#shutdowndayofweek input[type=checkbox]").attr('disabled', false);
+});
+$("#VmPoolForm_poolShutdownActiveFalse:checked").click();
+$("#VmPoolForm_poolShutdownEveryDayTrue:checked").click();
  		
 $("#VmPoolForm_poolSound").change(function() {
 	if (this.checked) {

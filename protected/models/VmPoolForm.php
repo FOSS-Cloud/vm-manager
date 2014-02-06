@@ -38,6 +38,7 @@ class VmPoolForm extends CFormModel {
 	public $brokerMin = -1;
 	public $brokerMax = -1;
 	public $brokerPreStart = -1;
+	public $brokerPreStartInterval = -1;
 	public $type;
 	public $poolSound;
 	public $allowSound;
@@ -56,6 +57,14 @@ class VmPoolForm extends CFormModel {
 	public $cronTime;
 	public $everyDay;
 	
+	public $poolShutdown = false;			// show GUI part or not
+	public $poolShutdownActive;
+	public $poolShutdownMinute;
+	public $poolShutdownHour;
+	public $poolShutdownDayOfWeek;
+	public $poolShutdownTime;
+	public $poolShutdownEveryDay;
+	
 	public function rules()
 	{
 		return array(
@@ -63,7 +72,7 @@ class VmPoolForm extends CFormModel {
 			array('dn', 'safe', 'on' => 'create'),
 			array('dn, storagepool, displayName, description, nodes, range', 'required', 'on' => 'update'),
 			array('type', 'safe', 'on' => 'update'),
-			array('brokerMin, brokerMax, brokerPreStart, nodes, range, poolSound, allowSound, poolUsb, allowUsb, poolBackupActive, sstBackupNumberOfIterations, sstVirtualizationVirtualMachineForceStart, poolCronActive, sstCronMinute, sstCronHour, sstCronDayOfWeek, cronTime, everyDay', 'safe'),
+			array('brokerMin, brokerMax, brokerPreStart, brokerPreStartInterval, nodes, range, poolSound, allowSound, poolUsb, allowUsb, poolBackupActive, sstBackupNumberOfIterations, sstVirtualizationVirtualMachineForceStart, poolCronActive, sstCronMinute, sstCronHour, sstCronDayOfWeek, cronTime, everyDay, poolShutdown, poolShutdownActive, poolShutdownMinute, poolShutdownHour, poolShutdownDayOfWeek, poolShutdownTime, poolShutdownEveryDay', 'safe'),
 		);
 	}
 
@@ -81,6 +90,7 @@ class VmPoolForm extends CFormModel {
 			'brokerMin' => Yii::t('vmpool', 'brokerMin'),
 			'brokerMax' => Yii::t('vmpool', 'brokerMax'),
 			'brokerPreStart' => Yii::t('vmpool', 'brokerPreStart'),
+			'brokerPreStartInterval' => Yii::t('vmpool', 'brokerPreStartInterval'),
 			'poolBackupActiveFalse' => Yii::t('vmpool', 'global backup'),
 			'poolBackupActiveTrue' => Yii::t('vmpool', 'pool backup'),
 			'sstBackupNumberOfIterations' => Yii::t('configuration', 'no. of iterations'),
@@ -89,6 +99,10 @@ class VmPoolForm extends CFormModel {
 			'sstCronActiveFalse' => Yii::t('configuration', 'no schedule'),
 			'sstCronActiveTrue' => Yii::t('configuration', 'at'),
 			'everyDayTrue' => Yii::t('vmpool', 'every day'),
+			'poolShutdownActive' => Yii::t('vmpool', 'global cron'),
+			'poolShutdownActiveFalse' => Yii::t('configuration', 'no schedule'),
+			'poolShutdownActiveTrue' => Yii::t('configuration', 'at'),
+			'poolShutdownEveryDayTrue' => Yii::t('vmpool', 'every day'),
 			'poolSound' => Yii::t('vmpool', 'poolSound'),
 			'allowSoundTrue' => Yii::t('vmpool', 'allowSound (gloabal: YES)'),
 			'allowSoundFalse' => Yii::t('vmpool', 'allowSound (gloabal: NO)'),

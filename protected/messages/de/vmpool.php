@@ -42,6 +42,7 @@ return array (
   'brokerMax' => 'Broker Max',
   'brokerMin' => 'Broker Min',
   'brokerPreStart' => 'Broker Prestart',
+  'brokerPreStartInterval' => 'Broker Prestart Interval',
   'changes the selection of StoragePools and Ranges!' => 'verändert die Auswahl an Storage Pools und Ranges!',
   'displayName' => 'Name',
   'nodes' => 'Rechner',
