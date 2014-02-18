@@ -56,6 +56,7 @@ class LdapVmPool extends CLdapRecord {
 			'settings' => array(self::HAS_ONE, 'dn', 'LdapVmPoolConfigurationSettings', '$model->getDn()', array('ou' => 'settings')),
 			'backup' => array(self::HAS_ONE, 'dn', 'LdapConfigurationBackup', '$model->getDn()', array('ou' => 'backup')),
 			'defaultBackupConfiguration' => array(self::HAS_ONE, 'dn', 'LdapConfigurationBackup', '\'ou=configuration,ou=virtualization,ou=services\'', array('ou' => 'backup')),
+			'shutdown' => array(self::HAS_ONE, 'dn', 'LdapConfigurationShutdown', '$model->getDn()', array('ou' => 'shutdown')),
 		);
 	}
 
