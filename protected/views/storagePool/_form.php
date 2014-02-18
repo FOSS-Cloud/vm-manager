@@ -51,6 +51,12 @@
 			<?php echo $form->dropDownList($model, 'sstStoragePoolType', $pooltypes); ?>
 			<?php echo $form->error($model,'sstStoragePoolType'); ?>
 		</div>
+		<div class="row">
+			<?php echo $form->labelEx($model, 'directory'); ?>
+			<?php echo $form->dropDownList($model, 'directory', $directories); ?><br />
+			<div class="hint"><?php echo Yii::t('storagepool', 'if empty directory of sstStoragePoolType is used') ?></div>
+			<?php echo $form->error($model,'directory'); ?>
+		</div>
 		<?php else : ?>
 		<div class="row">
 			<?php echo $form->labelEx($model, 'sstStoragePoolType'); ?>

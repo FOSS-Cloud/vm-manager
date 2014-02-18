@@ -254,9 +254,21 @@ class StoragePoolController extends Controller
 			if($pooldefinition === null)
 				throw new CHttpException(404,'The requested page does not exist.');
 
+			$baseURI = '';
+			if ('' == $model->directory) {
+				$baseURI = $pooldefinition->sstStoragePoolURI;
+			}
+			else {
+				$basedefinition = CLdapRecord::model('LdapStoragePoolDefinition')->findByAttributes(array('attr'=>array('ou'=>'basedir')));
+				if($basedefinition === null)
+					throw new CHttpException(404,'The requested page does not exist.');
+				
+				$baseURI = $basedefinition->sstStoragePoolURI . $model->directory . '/';
+			}
+
 			$pool = new LdapStoragePool();
 			$pool->sstStoragePool = CPhpLibvirt::getInstance()->generateUUID();
-			$pool->sstStoragePoolURI = $pooldefinition->sstStoragePoolURI . $pool->sstStoragePool;
+			$pool->sstStoragePoolURI = $baseURI . $pool->sstStoragePool;
 			$pool->sstDisplayName = $model->sstDisplayName;
 			$pool->description = $model->description;
 			$pool->sstStoragePoolType = $pooldefinition->sstStoragePoolType;
@@ -282,10 +294,28 @@ class StoragePoolController extends Controller
 		if (!isset($_POST['StoragePoolForm']) || $hasError) {
 			$pools = CLdapRecord::model('LdapStoragePoolDefinition')->findAll(array('attr'=>array('sstSelfService'=>'TRUE')));
 			$pooltypes = $this->createDropdownFromLdapRecords($pools, 'ou', 'ou');
+			
+			$pooldefinition = CLdapRecord::model('LdapStoragePoolDefinition')->findByAttributes(array('attr'=>array('ou'=>'basedir')));
+			if($pooldefinition === null)
+				throw new CHttpException(404,'The requested page does not exist.');
+			
+			$directories = array();
+			$hiddendirs = array('vm-persistent', 'vm-dynamic', 'vm-templates', 'iso', 'iso-choosable', 'backup', 'tmp', 'retain');
+			$dir = substr($pooldefinition->sstStoragePoolURI, 7);
+			$dh = opendir($dir);
+			if (false !== $dh) {
+				while (false !== ($file = readdir($dh))) {
+					if (is_dir($dir . $file) && false === strpos($file, '.') && !in_array(strtolower($file), $hiddendirs)) {
+						$directories[$file] = $file;
+					}
+				}
+				closedir($dh);
+			}
 
 			$this->render('create',array(
 				'model' => $model,
 				'pooltypes' => array_merge(array('' => ''), $pooltypes),
+				'directories' => array_merge(array('' => ''), $directories),
 				'error' => $hasError ? $errorText : false,
 			));
 
@@ -294,6 +324,8 @@ class StoragePoolController extends Controller
 
 	public function actionUpdate() {
 		$model = new StoragePoolForm('update');
+		$hasError = false;
+		$errorText = '';
 
 		$this->performAjaxValidation($model);
 
@@ -327,7 +359,9 @@ class StoragePoolController extends Controller
 
 			$this->render('update',array(
 				'model' => $model,
-				'pooltypes' => $pooltypes,
+				'pooltypes' => null,
+				'directories' => null,
+				'error' => $hasError ? $errorText : false,
 			));
 		}
 	}

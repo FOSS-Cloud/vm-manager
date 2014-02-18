@@ -22,4 +22,6 @@ return array (
   'sstDisplayName' => 'Name',
   'sstStoragePoolType' => 'Typ',
   'sstStoragePoolURI' => 'URI',
+  'directory' => 'Verzeichnis',
+  'if empty directory of sstStoragePoolType is used' => 'ist nichts ausgewählt, dann wird das Verzeichnis des Types genutzt',
 );

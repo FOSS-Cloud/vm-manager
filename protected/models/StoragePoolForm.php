@@ -34,12 +34,15 @@ class StoragePoolForm extends CFormModel {
 	public $description;
 	public $sstStoragePoolType;
 	public $sstStoragePoolURI;
+	public $directory;
 
 	public function rules()
 	{
 		return array(
 			array('sstDisplayName, description, sstStoragePoolType', 'required', 'on' => 'create'),
+			array('directory', 'safe', 'on' => 'create'),
 			array('sstDisplayName, description', 'required', 'on' => 'update'),
+			array('dn', 'safe', 'on' => 'update'),
 		);
 	}
 
@@ -53,6 +56,7 @@ class StoragePoolForm extends CFormModel {
 			'description' => Yii::t('storagepool', 'description'),
 			'sstStoragePoolURI' => Yii::t('storagepool', 'sstStoragePoolURI'),
 			'sstStoragePoolType' => Yii::t('storagepool', 'sstStoragePoolType'),
+			'directory' => Yii::t('storagepool', 'directory'),
 		);
 	}
 }

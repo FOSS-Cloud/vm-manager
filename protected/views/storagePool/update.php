@@ -36,4 +36,9 @@ $this->breadcrumbs=array(
 $this->title = Yii::t('vmpool', 'Edit Storage Pool "{name}"', array('{name}' => $model->sstDisplayName));
 //$this->helpurl = Yii::t('help', 'updateUser');
 
-echo $this->renderPartial('_form', array('model'=>$model,'error'=>$error,'create'=>false,'submittext'=>Yii::t('user','Save')));
+echo $this->renderPartial('_form', array(
+		'model'=>$model,
+		'directories'=>$directories,
+		'error'=>$error,
+		'create'=>false,
+		'submittext'=>Yii::t('user','Save')));
