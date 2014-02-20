@@ -36,6 +36,6 @@ $this->breadcrumbs=array(
 $this->title = 'Contact us';
 ?>
 <ul>
-<li><p>If you have business inquiries or other questions, you'll find the contact information <a target="blank" href="http://www.foss-group.com/en/home">here</a></p></li>
+<li><p>If you have business inquiries or other questions, you'll find the contact information <a target="blank" href="http://www.foss-group.com/en/contact/">here</a></p></li>
 <li><p>If you need support, you'll find the contact information <a target="blank" href="http://www.foss-cloud.org/en/wiki/Support">here</a></p></li>
 </ul>
