@@ -45,8 +45,8 @@ $this->title = 'About';
 </div>
 <div style="float: right;">
 <h2>Links</h2>
-<a target="blank" href="http://wiki.foss-cloud.org/">Documentation</a><br/>
-<a target="blank" href="http://www.foss-cloud.org/en/index.php/Spice-Client">Spice-Client (with protocol handler) download</a>
+<a target="blank" href="http://www.foss-cloud.org/">Documentation</a><br/>
+<a target="blank" href="http://www.foss-cloud.org/en/wiki/Spice-Client">Spice-Client (with protocol handler) download</a>
 </div> <br style="clear: both;" />
 <br/><br/>
 
@@ -96,12 +96,12 @@ $this->title = 'About';
 <td><b>Company</b></td><td><b>Informations</b></td>
 </tr>
 <tr>
-<td><a target="blank" href="http://www.FOSS-Group.ch">FOSS-Group</a></td><td>Location Basel (Switzerland) and Freiburg i.Br. (Germany)</td>
+<td><a target="blank" href="http://www.foss-group.com/en/home/">FOSS-Group</a></td><td>Location Switzerland and Germany</td>
 </tr>
 <tr>
-<td><a target="blank" href="http://www.stepping-stone.ch">stepping stone GmbH</a></td><td>Location Bern (Switzerland)</td>
+<td><a target="blank" href="http://www.devroom.de">devroom.de</a></td><td>Location Germany</td>
 </tr>
 <tr>
-<td><a target="blank" href="http://www.limbas.com">Limbas GmbH</a></td><td>Location Munich (Germany)</td>
+<td><a target="blank" href="http://www.limbas.com">Limbas GmbH</a></td><td>Location Germany</td>
 </tr>
 </table>

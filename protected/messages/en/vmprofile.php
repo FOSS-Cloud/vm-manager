@@ -54,5 +54,5 @@ return array (
   'Upload finished title' => 'Finished',
   'Unload message' => 'Note: If you leave this page the upload is stopped!\\nDo you want to stop the upload?',
   'Alternative upload method' => '',
-  'Alternative upload method link' => 'http://www.foss-cloud.org/en/index.php/Upload_ISO-Files',
+  'Alternative upload method link' => 'http://www.foss-cloud.org/en/wiki/Upload_ISO-Files',
 );
