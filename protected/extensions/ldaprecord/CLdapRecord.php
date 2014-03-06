@@ -63,6 +63,7 @@ abstract class CLdapRecord extends CModel {
 	protected $_filter = array();				// possible filter; used by reading
 	protected $_dnAttributes = array();			// attributes used to create DN; order important!
 	protected $_objectClasses = array();		// allowed object classes
+	protected $_objectClassesChanged = false;	// 
 	private $_md;								// meta data
 	protected $_attributes = null;				// array of actual attributes
 	protected $_related = array();				// attribute name => related objects
@@ -216,16 +217,6 @@ abstract class CLdapRecord extends CModel {
 		if(property_exists($this, $name)) {
 			return $this->$name;
 		}
-/*
-		else if ('attributes' == $name) {
-			$retval = array();
-			foreach($this->_attributes as $name => $info) {
-				if (isset($info['alias'])) continue;
-				$retval[$name] = $info['value'];
-			}
-			return $retval;
-		}
-*/
 		else if(array_key_exists($name, $this->_attributes) ||
 			array_key_exists(strtolower($name), $this->_attributes)) {
 			$name = strtolower($name);
@@ -869,8 +860,26 @@ abstract class CLdapRecord extends CModel {
 	public function hasObjectClass($objClassName) {
 		return in_array($objClassName, $this->_objectClasses);
 	}
+	
+	public function addObjectClass($objClassName) {
+		if (!$this->hasObjectClass($objClassName)) {
+			$schema = CLdapServer::getInstance()->getSchema();
+			$objClass = $schema->getObjectClass($objClassName);
+			if (null != $objClass) {
+				$this->_attributes = array_merge($this->_attributes, $objClass->getAttributes());
+			}
+			else {
+				throw new CLdapException(Yii::t('LdapComponent.record', 'Unknown objectClass "{class}"!', array('{class}' => $objClassName)));
+			}
+			if ('labeledURIObject' == $objClassName) {
+				$this->_attributes['member'] = array('mandatory' => false, 'type' => 'array', 'value' => null, 'origName' => 'member');
+			}
+			$this->_objectClasses[] = $objClassName;
+		}
+		$this->_objectClassesChanged = true;
+	}
 
-	public function removeAttributesByObjectClass($objClassName) {
+	public function removeAttributesByObjectClass($objClassName, $isChanged=false) {
 		if ($this->hasObjectClass($objClassName)) {
 			$schema = CLdapServer::getInstance()->getSchema();
 			$objClass = $schema->getObjectClass($objClassName);
@@ -879,6 +888,7 @@ abstract class CLdapRecord extends CModel {
 					unset($this->_attributes[$name]);
 				}
 				unset($this->_objectClasses[array_search($objClassName,$this->_objectClasses)]);
+				$this->_objectClassesChanged = $isChanged;
 			}
 		}
 		else {
@@ -943,7 +953,7 @@ abstract class CLdapRecord extends CModel {
 				}
 			}
 		}
-		if (!$isModify) {
+		if (!$isModify || $this->_objectClassesChanged) {
 			if (0 != count($this->_objectClasses)) {
 				$entry['objectclass'] = array();
 				foreach($this->_objectClasses as $class) {

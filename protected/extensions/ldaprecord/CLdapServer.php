@@ -258,7 +258,7 @@ class CLdapServer {
 		Yii::log("findAll: branchDn: $branchDn", 'profile', 'ext.ldaprecord.CLdapServer');
 		Yii::log("findAll: filter: $filter", 'profile', 'ext.ldaprecord.CLdapServer');
 		if (!is_null($model) && !$model instanceof LdapNameless) {
-			Yii::log("findAll: attrs: " . print_r($model->attributeNames(), true), 'profile', 'ext.ldaprecord.CLdapServer');
+			Yii::log("findAll: attrs: " . print_r($model->attributeNames(), true), 'info', 'ext.ldaprecord.CLdapServer');
 		}
 		if (isset($criteria['depth']) && $criteria['depth']) {
 			if (!is_null($model) && !$model instanceof LdapNameless) {
