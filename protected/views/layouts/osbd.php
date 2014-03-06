@@ -75,7 +75,7 @@
 		<div id="logo"><?php echo CHtml::encode(Yii::app()->name); ?></div>
 
 		<div id="languages">
-			<form action="<?php echo $this->createUrl('site/changeLanguage')?>" method="post">
+			<form action="<?php echo $this->createUrl('/site/changeLanguage')?>" method="post">
 			<?php echo $this->getLanguageSelector($lang); ?>
 			</form>
 		</div>

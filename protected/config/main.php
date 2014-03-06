@@ -65,12 +65,18 @@ return CMap::mergeArray(
 			'urlSuffix' => '.html',
 			'rules' => array(
 				'' => 'site/login',
+				'site/page/<view:\w+>'=>'site/page',
+						
+				'<module:\w+>/<controller:\w+>/<action:\w+>'=>'<module>/<controller>/<action>',
+				
 				'<controller:\w+>/<id:\d+>'=>'<controller>/view',
 				'<controller:\w+>/<action:\w+>/<id:\d+>'=>'<controller>/<action>',
 				'<controller:\w+>/<action:\w+>/<id:\d+>/<cid:\d+>'=>'<controller>/<action>',
-				'<controller:\w+>/<action:\w+>/<view:\w+>'=>'<controller>/<action>',
 				'<controller:\w+>/<action:\w+>'=>'<controller>/<action>',
 			),
+		'patchMessages' => array(
+				'class'=>'CPhpMessageSource',
+				'basePath'=>'protected/modules/patch/messages',
 		),
 		'errorHandler'=>array(
 			// use 'site/error' action to display errors
@@ -119,5 +125,7 @@ return CMap::mergeArray(
 	),
 	// Modules
 	'modules' => array(
+		'patch' => array(
+		)
 	),
 ));
