@@ -279,6 +279,11 @@ class Controller extends CController
 							'url' => array('/configuration/backup'),
 							'active' => ($this->id == 'configuration' && $action == 'backup'),
 						),
+						'patch' => array(
+							'label' => Yii::t('menu', 'Patch'),
+							'url' => array('/patch/patch/index'),
+							'active' => ($this->id == 'configuration' && $action == 'patch'),
+						),
 					),
 				),
 				'diag' => array(
