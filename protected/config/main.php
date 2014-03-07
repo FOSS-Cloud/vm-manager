@@ -74,6 +74,7 @@ return CMap::mergeArray(
 				'<controller:\w+>/<action:\w+>/<id:\d+>/<cid:\d+>'=>'<controller>/<action>',
 				'<controller:\w+>/<action:\w+>'=>'<controller>/<action>',
 			),
+		),
 		'patchMessages' => array(
 				'class'=>'CPhpMessageSource',
 				'basePath'=>'protected/modules/patch/messages',
