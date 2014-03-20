@@ -71,7 +71,8 @@ if (!is_null($profiles)) {
 			dataType: "json",
 			data: "dn=" + encodeURIComponent(e.target.value) + "&p=" + encodeURIComponent(e.target.id),
 			success: function(data){
-				$('#hidestep2').css('display', 'none');
+				$('#hidestep2').hide();
+				$("#step2").show();
 				if ('default' == data['type']) {
 					$('label[for="VmProfileForm_isofile"] > span').toggleClass('notrequired', false);
 					$('label[for="VmProfileForm_isofile"] > span').toggleClass('required', true);
@@ -126,9 +127,10 @@ if (!is_null($profiles)) {
 EOS
 	, CClientScript::POS_END);
 	Yii::app()->clientScript->registerScript('profiletree', <<<EOS
-	$('#hidestep2').height($('#step2').height());
+	//$('#hidestep2').height($('#step2').height());
 	$('#hidestep2').width($('#step2').width());
 	$('#hidestep2').offset($('#step2').offset());
+	$("#step2").hide();
 EOS
 	, CClientScript::POS_READY);
 
