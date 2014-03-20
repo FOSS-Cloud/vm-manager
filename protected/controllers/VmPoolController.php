@@ -499,25 +499,18 @@ class VmPoolController extends Controller
 				$poolbackup->save(false);
 			}
 				
-			if ('dynamic' === $pool->sstVirtualMachinePoolType) {
+			if ('dynamic' === $pool->sstVirtualMachinePoolType && 'TRUE' === $model->poolShutdownActive) {
 				$poolshutdown = new LdapConfigurationShutdown();
 				$poolshutdown->branchDn = $pool->getDn();
+				$poolshutdown->ou = 'shutdown';
 				$poolshutdown->setOverwrite(true);
 				$poolshutdown->description = 'This sub tree contains the shutdown plan of the pool \'' . $pool->sstDisplayName . '\'';
 				
-				$saveattrs = array();
 				$poolshutdown->sstCronActive = $model->poolShutdownActive;
-				if ('TRUE' === $model->poolShutdownActive) {
-					list($hour, $minute) = explode(':', $model->poolShutdownTime);
-					$poolshutdown->sstCronMinute = (int) $minute;
-					$poolshutdown->sstCronHour = (int) $hour;
-					$poolshutdown->sstCronDayOfWeek = $model->poolShutdownDayOfWeek;
-				}
-				else {
-					$poolshutdown->sstCronMinute = (int) 0;
-					$poolshutdown->sstCronHour = (int) 0;
-					$poolshutdown->sstCronDayOfWeek = '*';
-				}
+				list($hour, $minute) = explode(':', $model->poolShutdownTime);
+				$poolshutdown->sstCronMinute = (int) $minute;
+				$poolshutdown->sstCronHour = (int) $hour;
+				$poolshutdown->sstCronDayOfWeek = $model->poolShutdownDayOfWeek;
 				$poolshutdown->save(false);
 			}
 
@@ -804,6 +797,7 @@ class VmPoolController extends Controller
 				$poolbackup = new LdapConfigurationBackup();
 				$poolbackup->attributes = $globalbackup->attributes;
 				$poolbackup->branchDn = $pool->getDn();
+				$poolbackup->ou = 'backup';
 				$poolbackup->description = 'This sub tree contains the backup plan of the pool \'' . $pool->sstDisplayName . '\'';
 			}
 			else {
