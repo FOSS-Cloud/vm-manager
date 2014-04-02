@@ -454,9 +454,10 @@ class VmPoolController extends Controller
 
 			$globalbackup = LdapConfigurationBackup::model()->findByDn('ou=backup,ou=configuration,ou=virtualization,ou=services');
 			$poolbackup = new LdapConfigurationBackup();
-			$poolbackup->attributes = $globalbackup->attributes;
+			//$poolbackup->attributes = $globalbackup->attributes;
 			$poolbackup->branchDn = $pool->getDn();
 			$poolbackup->setOverwrite(true);
+			$poolbackup->ou = 'backup';
 			$poolbackup->description = 'This sub tree contains the backup plan of the pool \'' . $pool->sstDisplayName . '\'';
 			
 			$saveattrs = array();
@@ -474,9 +475,13 @@ class VmPoolController extends Controller
 					$poolbackup->sstCronMinute = (int) $minute;
 					$poolbackup->sstCronHour = (int) $hour;
 					$poolbackup->sstCronDayOfWeek = $model->sstCronDayOfWeek;
+					$poolbackup->sstCronDay = '*';
+					$poolbackup->sstCronMonth = '*';
 					$saveattrs[] = 'sstCronMinute';
 					$saveattrs[] = 'sstCronHour';
 					$saveattrs[] = 'sstCronDayOfWeek';
+					$saveattrs[] = 'sstCronDay';
+					$saveattrs[] = 'sstCronMonth';
 					$saveattrs[] = 'sstCronActive';
 				}
 				else {
@@ -485,17 +490,6 @@ class VmPoolController extends Controller
 			}
 				
 			if (0 < count($saveattrs)) {
-//				echo '<pre>' . print_r($saveattrs, true) . '</pre>';
-//				if (!in_array('sstCronActive', $saveattrs)) {
-//					// only sstVirtualizationBackupObjectClass needed
-//					$poolbackup->removeAttributesByObjectClass('sstCronObjectClass');
-//				}
-//				if (!in_array('sstBackupNumberOfIterations', $saveattrs)) {
-//					// only sstCronObjectClass needed
-//					$poolbackup->removeAttributesByObjectClass('sstVirtualizationBackupObjectClass');
-//				}
-//				echo '<pre>' . print_r($poolbackup, true) . '</pre>';
-
 				$poolbackup->save(false);
 			}
 				
@@ -511,6 +505,8 @@ class VmPoolController extends Controller
 				$poolshutdown->sstCronMinute = (int) $minute;
 				$poolshutdown->sstCronHour = (int) $hour;
 				$poolshutdown->sstCronDayOfWeek = $model->poolShutdownDayOfWeek;
+				$poolshutdown->sstCronDay = '*';
+				$poolshutdown->sstCronMonth = '*';
 				$poolshutdown->save(false);
 			}
 
@@ -773,14 +769,14 @@ class VmPoolController extends Controller
 					echo "ERRORRRRRRRRRRRRRRRRR 2";
 				}
 			}
+
 			if (!is_null($model->range)) {
 				$pool->deleteRanges();
 				$dn = 'ou=ranges,' . $pool->dn;
 				$data = array();
 				$data['objectClass'] = array('top', 'organizationalUnit', 'labeledURIObject', 'sstRelationship');
 				$data['ou'] = $model->range;
-				$range = CLdapRecord::model('LdapDhcpRange')->findByAttributes(array('attr'=>array('cn'=>$model->range)));
-
+				$range = CLdapRecord::model('LdapDhcpRange')->findByAttributes(array('attr'=>array('cn'=>$model->range), 'depth' => true));
 				$data['description'] = array('This entry links to the range ' . $model->range . '.');
 				$data['labeledURI'] = array('ldap:///' . $range->dn);
 				$data['sstBelongsToCustomerUID'] = array(Yii::app()->user->customerUID);
@@ -795,7 +791,6 @@ class VmPoolController extends Controller
 			if (is_null($poolbackup)) {
 				$poolbackupfound = false;
 				$poolbackup = new LdapConfigurationBackup();
-				$poolbackup->attributes = $globalbackup->attributes;
 				$poolbackup->branchDn = $pool->getDn();
 				$poolbackup->ou = 'backup';
 				$poolbackup->description = 'This sub tree contains the backup plan of the pool \'' . $pool->sstDisplayName . '\'';
@@ -812,7 +807,6 @@ class VmPoolController extends Controller
 				$saveattrs[] = 'sstBackupNumberOfIterations';
 				$saveattrs[] = 'sstVirtualizationVirtualMachineForceStart';
 			}
-
 			
 			if ('GLOBAL' !== $model->poolCronActive) {
 				$poolbackup->sstCronActive = $model->poolCronActive;
@@ -826,10 +820,14 @@ class VmPoolController extends Controller
 					else {
 						$poolbackup->sstCronDayOfWeek = implode(',', $model->sstCronDayOfWeek);
 					}
-					
+					$poolbackup->sstCronDay = '*';
+					$poolbackup->sstCronMonth = '*';
+
 					$saveattrs[] = 'sstCronMinute';
 					$saveattrs[] = 'sstCronHour';
 					$saveattrs[] = 'sstCronDayOfWeek';
+					$saveattrs[] = 'sstCronDay';
+					$saveattrs[] = 'sstCronMonth';
 					$saveattrs[] = 'sstCronActive';
 				}
 				else {
@@ -856,7 +854,6 @@ class VmPoolController extends Controller
 			}
 			
 			$poolshutdown = $pool->shutdown;
-			echo $poolshutdown;
 			if (is_null($poolshutdown)) {
 				$poolshutdown = new LdapConfigurationShutdown();
 				$poolshutdown->ou = 'shutdown';
@@ -867,9 +864,7 @@ class VmPoolController extends Controller
 				$poolshutdown->branchDn = $pool->getDn();
 				$poolshutdown->description = 'This sub tree contains the shutdown plan of the pool \'' . $pool->sstDisplayName . '\'';
 			}
-			else {
-				//$poolshutdown->setAsNew();
-			}
+
 			$poolshutdown->setOverwrite(true);
 			$poolshutdown->sstCronActive = $model->poolShutdownActive;
 			if ('TRUE' === $model->poolShutdownActive) {
@@ -882,7 +877,6 @@ class VmPoolController extends Controller
 				else {
 					$poolshutdown->sstCronDayOfWeek = implode(',', $model->poolShutdownDayOfWeek);
 				}
-				echo $poolshutdown;
 				$poolshutdown->save(false);
 			}
 			else if (!$poolshutdown->isNewEntry()) {
@@ -942,7 +936,10 @@ class VmPoolController extends Controller
 			$model->displayName = $pool->sstDisplayName;
 			$model->description = $pool->description;
 			//echo '<pre>' . print_r($pool->ranges, true) . '</pre>';
-			$model->range = $pool->ranges[0]->ou;
+			if (1 == count($pool->ranges)) {
+				$model->range = $pool->ranges[0]->ou;
+			}
+
 			$allRanges = array();
 			if (0 < count($pool->storagepools)) {
 				//echo '<pre>' . print_r($pool->storagepools, true) . '</pre>';
