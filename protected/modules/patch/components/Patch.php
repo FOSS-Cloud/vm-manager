@@ -85,7 +85,7 @@ class Patch extends CComponent
 		$finish = $xmlPatch->getElementsByTagName('finish')->item(0);
 		if (!is_null($finish)) {
 			$finishtype = $finish->getAttribute('type');
-			if ('remove' === $finishtype || 'archive' === $finishtype) {
+			if ('remove' === $finishtype || 'archive' === $finishtype || 'leave' === $finishtype) {
 				$this->finishtype = $finishtype;
 			}
 			else {
@@ -97,7 +97,7 @@ class Patch extends CComponent
 		}
 	}
 	
-	public function process($init=false) {
+	public function process() {
 		$session = Yii::app()->getSession();
 	
 		try {
@@ -107,20 +107,14 @@ class Patch extends CComponent
 					$this->actionName = '';
 					$this->actionProgress = 0;
 					array_shift($this->actions);
+					sleep(2);
 				}
 				else {
 					$action = $this->actions[0];
 					if (is_subclass_of($action, 'PatchAction')) {
 						Yii::log('Patch::process ' . $action->name, 'profile', 'patch.Action');
-						$data = $action->run($init);
-//						$data['totalvalue'] = ($action->order * 100 / $this->actionCount) *$data['partvalue'] / 100;
+						$data = $action->run(false);
 					}
-// 					else if (is_array($action) && method_exists($this, $this->actionName)) {
-// 						Yii::log('Patch::process ' . $action['name'], 'profile', 'patch.Action');
-// 						$method = $this->actionName;
-// 						$data = $this->$method($init, $action['params']);
-// 						$data['totalvalue'] = ($action['order'] * 100 / $this->actionCount) * $data['partvalue'] / 100;
-// 					}
 					$this->actionProgress = $data['partvalue'];
 				}
 			}
@@ -133,53 +127,48 @@ class Patch extends CComponent
 						Yii::log('Patch::process ' . $action->name, 'profile', 'patch.Action');
 						$this->actionName = $action->name;
 						$this->actionProgress = 0;
-						$data = $action->run($init);
-//						$data['totalvalue'] = ($action->order * 100 / $this->actionCount) * $data['partvalue'] / 100;
+						$data = $action->run(true);
 					}
-// 					else if (is_array($action) && method_exists($this, $action['name'])) {
-// 						Yii::log('Patch::process ' . $action['name'], 'profile', 'patch.Action');
-// 						$this->actionName = $action['name'];
-// 						$method = $this->actionName;
-// 						$this->actionProgress = 0;
-// 						$data = $this->$method($init, $action['params']);
-// 						$data['totalvalue'] = ($action['order'] * 100 / $this->actionCount) * $data['partvalue'] / 100;
-// 					}
 					$this->actionProgress = $data['partvalue'];
 				}
 			}
 		}
 		catch (PatchException $e) {
+			Yii::log('Patch::process Exception ' . $e->getTraceAsString(), 'profile', 'patch.Action');
 			$data['error'] = true;
 			$data['message'] = $e->getMessage();
 			$data['partvalue'] = 0;
 		}
 		
-		$data['totaltext'] = $this->description;
-		$data['partvalue'] = round($data['partvalue'], 1);
-		$data['totalvalue'] = round(($action->order * 100 / $this->actionCount) * $data['partvalue'] / 100, 1);
-		
-		if (100 <= $data['totalvalue']) {
-			if (!isset($data['message'])) {
-				$data['message'] = PatchModule::t('patch', 'finished: {actionCount} of {actionCount} actions processed!', array('{actionCount}' => $this->actionCount));
-			}
+		if (!isset($data['error']) || !$data['error']) {
+			$data['action'] = 'action' + $action->order;
+			$data['totaltext'] = $this->description;
+			$data['totalvalue'] = round(($action->order * 100 / $this->actionCount) * $data['partvalue'] / 100, 1);
+			$data['partvalue'] = round($data['partvalue'], 1);
 			
-			if ('archive' === $this->finishtype) {
-				$patchesDir = Yii::app()->runtimePath . DIRECTORY_SEPARATOR . 'patches';
-				$archiveDir = $patchesDir . DIRECTORY_SEPARATOR . 'archive';
-				if (!is_dir($archiveDir)) {
-					mkdir($archiveDir, fileperms(Yii::app()->runtimePath . DIRECTORY_SEPARATOR . 'patches'));
+			if (100 <= $data['totalvalue']) {
+				if (!isset($data['message'])) {
+					$data['message'] = PatchModule::t('patch', 'finished: {actionCount} of {actionCount} actions processed!', array('{actionCount}' => $this->actionCount));
 				}
-				if (false === @rename($patchesDir . DIRECTORY_SEPARATOR . $this->patchName, $archiveDir . DIRECTORY_SEPARATOR . $this->patchName)) {
-					$data['error'] = true;
-					$data['message'] = PatchModule::t('patch', 'Unable to move patch to archive!');
-				} 
-			}
-			else if ('remove' === $this->finishtype) {
-				$patchesDir = Yii::app()->runtimePath . DIRECTORY_SEPARATOR . 'patches';
-				if (false === $this->delTree($patchesDir . DIRECTORY_SEPARATOR . $this->patchName)) {
-					$data['error'] = true;
-					$data['message'] = PatchModule::t('patch', 'Unable to delete patch!');
-				} 
+				
+				if ('archive' === $this->finishtype) {
+					$patchesDir = Yii::app()->runtimePath . DIRECTORY_SEPARATOR . 'patches';
+					$archiveDir = $patchesDir . DIRECTORY_SEPARATOR . 'archive';
+					if (!is_dir($archiveDir)) {
+						mkdir($archiveDir, fileperms(Yii::app()->runtimePath . DIRECTORY_SEPARATOR . 'patches'));
+					}
+					if (false === @rename($patchesDir . DIRECTORY_SEPARATOR . $this->patchName, $archiveDir . DIRECTORY_SEPARATOR . $this->patchName)) {
+						$data['error'] = true;
+						$data['message'] = PatchModule::t('patch', 'Unable to move patch to archive!');
+					} 
+				}
+				else if ('remove' === $this->finishtype) {
+					$patchesDir = Yii::app()->runtimePath . DIRECTORY_SEPARATOR . 'patches';
+					if (false === $this->delTree($patchesDir . DIRECTORY_SEPARATOR . $this->patchName)) {
+						$data['error'] = true;
+						$data['message'] = PatchModule::t('patch', 'Unable to delete patch!');
+					} 
+				}
 			}
 		}
 

@@ -5,7 +5,6 @@ class PatchInlineAction extends PatchAction
 	
 	public function run($init) {
 		return $this->inlineObject->{$this->name}($init, $this->params);
-		//call_user_func($this->inlineCallback, $init, $this->params);
 	}
 	
 	public function checkParams() {
