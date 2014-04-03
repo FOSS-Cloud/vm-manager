@@ -54,6 +54,16 @@ class LdapVmDeviceDisk extends CLdapRecord {
 	}
 
 	/**
+	 * Returns the static model of the specified LDAP class.
+	 * @return CLdapRecord the static model class
+	 */
+	public static function model($className=__CLASS__)
+	{
+		return parent::model($className);
+	}
+
+	
+	/**
 	 * @return array customized attribute labels (name=>label)
 	 */
 	public function attributeLabels()
