@@ -3,9 +3,6 @@
 	<name>update</name>
 	<title>LDAP Update to 1.2.20</title>
 	<description>LDAP Update FOSS-Cloud version 1.2.10 to 1.2.20 </description>
-<!-- 
-	<version min="1.2.10" max="1.2.19"></version>
-  -->
 	<version min="*" max="*"></version>
 	<mainclass name="UpdateLdap">
 	</mainclass>
@@ -24,5 +21,5 @@
 	</actions>
 	<postactions>
 	</postactions>
-	<finish type="leave"></finish>
+	<finish type="archive"></finish>
 </patch>

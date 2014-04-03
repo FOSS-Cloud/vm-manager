@@ -15,6 +15,8 @@ class UpdateLdap extends Patch
 		$this->countVmPoolConfig = count($config);
 		Yii::log('Config: ' . $this->countVmPoolConfig, 'profile', 'patch.UpdateLdap');
 		$disks = LdapVmDeviceDisk::model()->findAll(array('branchDn' => 'ou=virtual machines,ou=virtualization,ou=services', 'attr' => array('sstDriverType' => 'qcow2'), 'depth' => true));
+		$disks2 = LdapVmDeviceDisk::model()->findAll(array('branchDn' => 'ou=virtual machine profiles,ou=virtualization,ou=services', 'attr' => array('sstDriverType' => 'qcow2'), 'depth' => true));
+		$disks = array_merge($disks, $disks2);
 		$this->countVmDisks = count($disks);
 		Yii::log('Disks: ' . $this->countVmDisks, 'profile', 'patch.UpdateLdap');
 	}
@@ -105,6 +107,8 @@ class UpdateLdap extends Patch
 		}
 		else {
 			$disks = LdapVmDeviceDisk::model()->findAll(array('branchDn' => 'ou=virtual machines,ou=virtualization,ou=services', 'attr' => array('sstDriverType' => 'qcow2'), 'depth' => true));
+			$disks2 = LdapVmDeviceDisk::model()->findAll(array('branchDn' => 'ou=virtual machine profiles,ou=virtualization,ou=services', 'attr' => array('sstDriverType' => 'qcow2'), 'depth' => true));
+			$disks = array_merge($disks, $disks2);
 			if (0 < count($disks)) {
 				//sleep(4);
 				$processed++;
