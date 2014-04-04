@@ -158,6 +158,10 @@ function refreshNextVm()
 						buttons = {'vm_start': true, 'vm_restart': false, 'vm_shutdown': false, 'vm_destroy': false, 'vm_migrate': true, 'vm_edit': true, 'vm_del': true, 'vm_login': false, 'vmtemplate_finish': true, 'vmtemplate_finishdyn': true};
 						state = 'red';
 						break;
+					case 'backup':
+						buttons = {'vm_start': false, 'vm_restart': false, 'vm_shutdown': false, 'vm_destroy': false, 'vm_migrate': false, 'vm_edit': false, 'vm_del': false, 'vm_login': false, 'vmtemplate_finish': false, 'vmtemplate_finishdyn': false};
+						state = 'red';
+						break;
 				}
 
 				refreshVmButtons(id, buttons);
@@ -601,49 +605,52 @@ EOS
 , CClientScript::POS_END);
 
 $selectStaticGuiUrl = $this->createUrl('vmTemplate/getStaticPoolGui');
-$selectStaticTxt = Yii::t('vm', 'Create persistent VM');
+$selectStaticTxt = Yii::t('vmtemplate', 'Create persistent VM');
+$selectStaticOkButtonTxt = Yii::t('vmtemplate', 'Create');
+$selectStaticCancelButtonTxt = Yii::t('vmtemplate', 'Cancel');
+
+$cancelButtonTxt = Yii::t('vmtemplate', 'Cancel');
 
 Yii::app()->clientScript->registerScript('finish', <<<EOS
-function finish(id, pooldn, name, subtype)
+//function finish(id, pooldn, name, subtype, domainname, hostname)
+function finish(id, formdata)
 {
-	$('#selectStaticButton').attr('disabled', 'disabled');
-	$('#selectStaticButton').addClass('ui-state-disabled');
+	$('#selectStaticOkButton').attr('disabled', 'disabled');
+	$('#selectStaticOkButton').addClass('ui-state-disabled');
 
 	var row = $('#{$gridid}_grid').getRowData(id);
 	buttons = {'vm_start': false, 'vm_restart': false, 'vm_shutdown': false, 'vm_destroy': false, 'vm_migrate': false};
 	refreshVmButtons(id, buttons);
-	$('#{$gridid}_grid').setCell(id, 'status', 'migrating', {'padding-left': '20px', background: 'url({$imagesurl}/loading.gif) no-repeat 3px 3px transparent'});
+	//$('#{$gridid}_grid').setCell(id, 'status', 'migrating', {'padding-left': '20px', background: 'url({$imagesurl}/loading.gif) no-repeat 3px 3px transparent'});
 	$('#errorSelectStatic').css('display', 'none');
 	$('#infoSelectStatic').css('display', 'block');
-	$('#infoSelectStaticMsg').html('<img src="{$imagesurl}/loading.gif" alt=""/> Create persistent VM');
+	$('#infoSelectStaticMsg').html('<img src="{$imagesurl}/loading.gif" alt=""/>{$selectStaticTxt}');
 	$.ajax({
+		type: "POST",
 		url: "{$baseurl}/vmTemplate/finish",
 		cache: false,
-		dataType: 'xml',
-		data: 'dn=' + row['dn'] + '&pool=' + pooldn + '&name=' + name + '&subtype=' + subtype,
-		success: function(xml){
-			var err = $(xml).find('error');
-			err = err.text();
-			if (0 != err) {
+		dataType: 'json',
+		//data: 'dn=' + row['dn'] + '&pool=' + pooldn + '&name=' + name + '&subtype=' + subtype + '&domainname=' + domainname + '&hostname=' + hostname,
+		data: 'dn=' + row['dn'] + '&' + formdata,
+		success: function(data) {
+			if (0 != data.error) {
 				$('#infoSelectStatic').css('display', 'none');
 				$('#errorSelectStatic').css('display', 'block');
-				$('#errorSelectStaticMsg').html($(xml).find('message').text());
-				if (2 == err) {
-					$('#selectStaticButton').removeAttr('disabled');
-					$('#selectStaticButton').removeClass('ui-state-disabled');
+				$('#errorSelectStaticMsg').html(data.message);
+				if (2 == data.error) {
+					$('#selectStaticOkButton').removeAttr('disabled');
+					$('#selectStaticOkButton').removeClass('ui-state-disabled');
 				}
 			}
 			else {
-				var message = $(xml).find('message');
-				message = message.text();
+				message = data.message;
 				if ('' != message) {
 					$('#errorSelectStatic').css('display', 'none');
 					$('#infoSelectStatic').css('display', 'block');
 					$('#infoSelectStaticMsg').html(message);
 				}
 				else {
-					var url = $(xml).find('url');
-					url = url.text();
+					var url = data.url;
 					window.location.replace(url);
 				}
 			}
@@ -654,88 +661,88 @@ function finish(id, pooldn, name, subtype)
 function selectStaticPool(id)
 {
 	var row = $('#{$gridid}_grid').getRowData(id);
-	$('#selectStaticPool').fancybox({
-		'modal'			: false,
-		'href'			: '{$selectStaticGuiUrl}?name=' + row['name'],
-		'type'			: 'inline',
-		'autoDimensions': true,
-		//'width'		: 320,
-		//'height'		: 320,
-		'scrolling'		: 'no',
-		'onComplete'	: function() {
-			$('#staticpoolSelection_singleselect').singleselect({
-				'sorted':true,
-				'header':'Pools',
-			});
+	$("#finishdialog").dialog({
+		resizable: true,
+		width: 'auto',
+		height: 'auto',
+		modal: true,
+		open: function(event, ui) {
+			$('#selectStaticOkButton').attr('disabled', 'disabled');
+			$('#selectStaticOkButton').addClass('ui-state-disabled');
+			$('#errorSelectStatic').css('display', 'none');
+			$('#infoSelectStatic').css('display', 'none');
 
-			$('#selectStaticButton').button({icons: {primary: "ui-icon-disk"}, label: '{$selectStaticTxt}'})
-			.click(function() {
-				var selected = $('#staticpoolSelection_singleselect').singleselect("values");
-				var subtype = '???';
-				if ( $('#radiosubtype1').attr('checked')) {
-					subtype = $('#radiosubtype1').val();
-				}
-				else if ( $('#radiosubtype2').attr('checked')) {
-					subtype = $('#radiosubtype2').val();
-				}
-				finish(id, selected[0], $('#displayname').val(), subtype);
-				//migrateVm(id, selected[0]);
-				//$.fancybox.close();
-			});
+			$("#finishId").val(id);
+			$("#finishPool").val("");
+			$("#finishNode").val("").empty();
+			$("#finishdisplayname").val(row['name']);
+			$('#selectStaticOkButton').removeAttr('disabled');
+			$('#selectStaticOkButton').removeClass('ui-state-disabled');
 		},
-		'onClosed'	: function() {
-			$('#selectStaticPool').hide();
-		}
+		buttons:  [
+			{
+				text: '{$selectStaticOkButtonTxt}',
+				id: 'selectStaticOkButton',
+				click: function() {
+					finish($("#finishId").val(), $("#finishForm").serialize());
+				}
+			},
+			{
+				text: '{$selectStaticCancelButtonTxt}',
+				click: function() {
+					$(this).dialog('close');
+				}
+			}
+		]
 	});
-	$('#selectStaticPool').trigger('click');
 }
 EOS
 , CClientScript::POS_END);
 
 $selectDynamicGuiUrl = $this->createUrl('vmTemplate/getDynamicPoolGui');
 $selectDynamicTxt = Yii::t('vm', 'Create dynamic VM');
+$selectDynamicOkButtonTxt = Yii::t('vmtemplate', 'Create');
+$selectDynamicCancelButtonTxt = Yii::t('vmtemplate', 'Cancel');
 
 Yii::app()->clientScript->registerScript('finishdyn', <<<EOS
-function finishDyn(id, pooldn, name, sysprep)
+function finishDyn(id, formdata)
 {
-	$('#selectDynamicButton').attr('disabled', 'disabled');
-	$('#selectDynamicButton').addClass('ui-state-disabled');
+	$('#selectDynamicOkButton').attr('disabled', 'disabled');
+	$('#selectDynamicOkButton').addClass('ui-state-disabled');
 
 	var row = $('#{$gridid}_grid').getRowData(id);
 	buttons = {'vm_start': false, 'vm_restart': false, 'vm_shutdown': false, 'vm_destroy': false, 'vm_migrate': false};
 	refreshVmButtons(id, buttons);
-	$('#{$gridid}_grid').setCell(id, 'status', 'migrating', {'padding-left': '20px', background: 'url({$imagesurl}/loading.gif) no-repeat 3px 3px transparent'});
+	//$('#{$gridid}_grid').setCell(id, 'status', 'migrating', {'padding-left': '20px', background: 'url({$imagesurl}/loading.gif) no-repeat 3px 3px transparent'});
 	$('#errorSelectDynamic').css('display', 'none');
 	$('#infoSelectDynamic').css('display', 'block');
-	$('#infoSelectDynamicMsg').html('<img src="{$imagesurl}/loading.gif" alt=""/> Create dynamic VM');
+	$('#infoSelectDynamicMsg').html('<img src="{$imagesurl}/loading.gif" alt=""/>{$selectDynamicTxt}');
 	$.ajax({
+		type: "POST",
 		url: "{$baseurl}/vmTemplate/finishDynamic",
 		cache: false,
-		dataType: 'xml',
-		data: 'dn=' + row['dn'] + '&pool=' + pooldn + '&name=' + name + '&sysprep=' + sysprep,
-		success: function(xml){
-			var err = $(xml).find('error');
-			err = err.text();
-			if (0 != err) {
+		dataType: 'json',
+		//data: 'dn=' + row['dn'] + '&pool=' + pooldn + '&name=' + name + '&sysprep=' + sysprep,
+		data: 'dn=' + row['dn'] + '&' + formdata,
+		success: function(data){
+			if (0 != data.error) {
 				$('#infoSelectDynamic').css('display', 'none');
 				$('#errorSelectDynamic').css('display', 'block');
-				$('#errorSelectDynamicMsg').html($(xml).find('message').text());
-				if (2 == err) {
+				$('#errorSelectDynamicMsg').html(data.message);
+				if (2 == data.error) {
 					$('#selectDynamicButton').removeAttr('disabled');
 					$('#selectDynamicButton').removeClass('ui-state-disabled');
 				}
 			}
 			else {
-				var message = $(xml).find('message');
-				message = message.text();
+				message = data.message;
 				if ('' != message) {
 					$('#errorSelectDynamic').css('display', 'none');
 					$('#infoSelectDynamic').css('display', 'block');
 					$('#infoSelectDynamicMsg').html(message);
 				}
 				else {
-					var url = $(xml).find('url');
-					url = url.text();
+					var url = data.url;
 					window.location.replace(url);
 				}
 			}
@@ -746,34 +753,41 @@ function finishDyn(id, pooldn, name, sysprep)
 function selectDynamicPool(id)
 {
 	var row = $('#{$gridid}_grid').getRowData(id);
-	$('#selectDynamicPool').fancybox({
-		'modal'			: false,
-		'href'			: '{$selectDynamicGuiUrl}?name=' + row['name'],
-		'type'			: 'inline',
-		'autoDimensions': true,
-		//'width'		: 340,
-		//'height'		: 320,
-		'scrolling'		: 'no',
-		'onComplete'	: function() {
-			$('#dynamicpoolSelection_singleselect').singleselect({
-				'sorted':true,
-				'header':'Pools',
-			});
-			//$( "#radiosysprep" ).buttonset();
+	$("#finishDynDialog").dialog({
+		resizable: true,
+		width: 'auto',
+		height: 'auto',
+		modal: true,
+		open: function(event, ui) {
+			$('#selectDynamicOkButton').attr('disabled', 'disabled');
+			$('#selectDynamicOkButton').addClass('ui-state-disabled');
+			$('#errorSelectDynamic').css('display', 'none');
+			$('#infoSelectDynamic').css('display', 'none');
 
-			$('#selectDynamicButton').button({icons: {primary: "ui-icon-disk"}, label: '{$selectDynamicTxt}'})
-			.click(function() {
-				var selected = $('#dynamicpoolSelection_singleselect').singleselect("values");
-				finishDyn(id, selected[0], $('#displayname').val(), $('#radiosysprep').attr('checked'));
-				//$.fancybox.close();
-			});
+			$("#finishDynId").val(id);
+			$("#finishDynPool").val("");
+			$("#finishDynDisplayname").val(row['name']);
+			$('#selectDynamicOkButton').removeAttr('disabled');
+			$('#selectDynamicOkButton').removeClass('ui-state-disabled');
 		},
-		'onClosed'	: function() {
-			$('#selectDynamicPool').hide();
-		}
+		buttons:  [
+			{
+				text: '{$selectDynamicOkButtonTxt}',
+				id: 'selectDynamicOkButton',
+				click: function() {
+					finishDyn($("#finishDynId").val(), $("#finishDynForm").serialize());
+				}
+			},
+			{
+				text: '{$selectDynamicCancelButtonTxt}',
+				click: function() {
+					$(this).dialog('close');
+				}
+			}
+		]
 	});
-	$('#selectDynamicPool').trigger('click');
 }
+
 EOS
 , CClientScript::POS_END);
 //Yii::app()->clientScript->registerScriptFile($baseurl . '/js/jquery.sparkline.min.js');
@@ -897,33 +911,27 @@ EOS
 	'themeUrl' => $this->cssBase . '/jquery',
 	'cssFile' => 'jquery-ui.custom.css',
 ));
-?>
-<div style="display: none;">
-<a id="startcheck" href="#checkCopy">checkcopy</a>
-<div id="checkCopy">
-</div>
-</div>
-<?php
 if (!is_null($copyaction)) {
-	$checkCopyGuiUrl = $this->createUrl('vmTemplate/getCheckCopyGui');
-	Yii::app()->clientScript->registerScript('checkCopy', <<<EOS
-	$('#startcheck').fancybox({
-		'modal'			: false,
-		'href'			: '{$checkCopyGuiUrl}?pid={$copyaction}',
-		'type'			: 'inline',
-		'autoDimensions': false,
-		'width'			: 450,
-		'height'		: 120,
-		'scrolling'		: 'no',
-		'hideOnOverlayClick' : false,
-		'onComplete'	: function() {
+Yii::app()->clientScript->registerScript('checkCopy', <<<EOS
+	$("#checkCopyDialog").dialog({
+		resizable: true,
+		width: 'auto',
+		height: 'auto',
+		modal: true,
+		open: function(event, ui) {
 			clearTimeout(timeoutid);
 			check();
 		},
-		'onClosed'		: function () {
-			clearTimeout(timeoutid);
-			timeoutid = setTimeout(refreshVms, 100);
-		}
+		buttons:  [
+			{
+				text: '{$cancelButtonTxt}',
+				click: function() {
+					$(this).dialog('close');
+					clearTimeout(timeoutid);
+					timeoutid = setTimeout(refreshVms, 100);
+				}
+			}
+		]
 	});
 	function check() {
 		$.ajax({
@@ -931,25 +939,22 @@ if (!is_null($copyaction)) {
 			data: 'pid={$copyaction}',
 			success: function(data) {
 				if (!data['err']) {
-					$('#running').css('display', 'none');
-					$('#errorAssignment').css('display', 'none');
-					$('#infoAssignment').css('display', 'block');
-					$('#infoMsg').html(data['msg']);
+					$('#checkCopyRunning').css('display', 'none');
+					$('#errorCheckCopy').css('display', 'none');
+					$('#infoCheckCopy').css('display', 'block');
+					$('#infoCheckCopyMsg').html(data['msg']);
 				}
 				else {
-//					$('#infoAssignment').css('display', 'none');
-//					$('#errorAssignment').css('display', 'block');
-//					$('#errorMsg').html(data['msg']);
+//					$('#infoCheckCopy').css('display', 'none');
+//					$('#errorCheckCopy').css('display', 'block');
+//					$('#errorCheckCopyMsg').html(data['msg']);
 					timeoutid = setTimeout(check, 4000);
 				}
-				//$('#checkCopy').hide();
-				//$.fancybox.close();
 			},
 			dataType: 'json'
 		});
 	}
 	clearTimeout(timeoutid);
-	dummy = setTimeout("$('#startcheck').trigger('click')", 250);
 EOS
 	, CClientScript::POS_END);
 }
@@ -979,46 +984,115 @@ EOS
 	<span class="ui-icon ui-icon-notice" style="float:left; margin:0 7px 0 0;"></span>
 	<div id="vmdialogtext"></div>
 </div>
-<div style="display: none;">
-	<a id="startStaticPool" href="#selectStaticPool">start finish</a>
-	<div id="selectStaticPool">
+<div id="finishdialog" title="<?php echo Yii::t('vm', 'Create persistent VM'); ?>" style="display: none;">
+<form id="finishForm">
+<?php 
+	Yii::app()->clientScript->registerScript('finishdialog', <<<EOS
+$("#finishPool").change(function() {
+	var value = $(this).val();
+	$("#finishNode").empty().append($('<option value=""></option>'));
+	if ('' != value) {
+	 	var nodes = persistentpools[value]['nodes'];
+	 	$.each(nodes, function(key, val) {
+			$("#finishNode").append($('<option value="' + key + '">' + val + '</option>'));
+		});
+ 	}
+});
+EOS
+, CClientScript::POS_READY);
+	
+	$ppools = CJSON::encode($persistentpools);
+	
+	Yii::app()->clientScript->registerScript('finishdialog2', <<<EOS
+	var persistentpools =  $.parseJSON('{$ppools}');
+EOS
+, CClientScript::POS_END);
+	
+	$parray = array();
+	foreach($persistentpools as $key => $pool) {
+		$parray[$key] = $pool['name'];
+	}
+?>
+		<?php echo CHtml::hiddenField('FinishForm[id]','', array('id' => 'finishId')); ?>
+		<div>
+			<label for="finishPool" style="width: 150px; float: left;">VM Pool </label>
+			<?php echo CHtml::dropDownList('FinishForm[pool]', '', $parray, array('prompt' => '', 'id' => 'finishPool')); ?>
+		</div>
+		<br/>
+		<div>
+			<label for="finishNode" style="width: 150px; float: left;">Node </label>
+			<?php echo CHtml::dropDownList('FinishForm[node]', '', array(), array('prompt' => '', 'id' => 'finishNode')); ?>
+		</div>
+		<br/>
+		<div>
+			<label for="displayname" style="width: 150px; float: left;">Name </label>
+			<input type="text" id="finishdisplayname" name="FinishForm[displayname]" value="" />
+		</div>
+		<br/>
+		<div id="radiosubtype" style="">
+			<label style="width: 150px; float: left;">Type </label>
+			<input type="radio" id="radiosubtype1" name="FinishForm[subtype]" value="Server" checked="checked" /><label for="radiosubtype1">Server</label>
+			<input type="radio" id="radiosubtype2" name="FinishForm[subtype]" value="Desktop" /><label for="radiosubtype2">Desktop</label>
+		</div>
+		<br/>
+		<div id="errorSelectStatic" class="ui-state-error ui-corner-all" style="display: none; width: 90%; margin-top: 10px; margin-left: 20px; padding: 0pt 0.7em; float: right;">
+			<p style="margin: 0.3em 0pt ; "><span style="float: left; margin-right: 0.3em;" class="ui-icon ui-icon-alert"></span><span id="errorSelectStaticMsg" style="display: block;"></span></p>
+		</div>
+		<div id="infoSelectStatic" class="ui-state-highlight ui-corner-all" style="display: none; width: 90%; margin-top: 10px; margin-left: 20px; padding: 0pt 0.7em; float: right;">
+			<p style="margin: 0.3em 0pt ; "><span style="float: left; margin-right: 0.3em;" class="ui-icon ui-icon-info"></span><span id="infoSelectStaticMsg"></span></p>
+		</div>
+</form>
+</div>
+<div id="finishDynDialog" title="<?php echo Yii::t('vm', 'Create dynamic VM'); ?>" style="display: none;">
+<form id="finishDynForm">
+<?php 
+	$dpools = CJSON::encode($dynamicpools);
+	
+	Yii::app()->clientScript->registerScript('finishDynDialog', <<<EOS
+	var dynamicpools =  $.parseJSON('{$dpools}');
+EOS
+, CClientScript::POS_END);
+
+	$darray = array();
+	foreach($dynamicpools as $key => $pool) {
+		$darray[$key] = $pool['name'];
+	}
+?>
+		<?php echo CHtml::hiddenField('FinishForm[id]','', array('id' => 'finishDynId')); ?>
+		<div>
+			<label for="finishDynPool" style="width: 150px; float: left;">VM Pool </label>
+			<?php echo CHtml::dropDownList('FinishForm[pool]', '', $darray, array('prompt' => '', 'id' => 'finishDynPool')); ?>
+		</div>
+		<br/>
+		<div>
+			<label for="displayname" style="width: 150px; float: left;">Name </label>
+			<input type="text" id="finishDynDisplayname" name="FinishForm[displayname]" value="" />
+		</div>
+		<br/>
+		<div>
+			<div style="width: 150px; float: left;">&nbsp;</div>
+			<input type="checkbox" id="radiosysprep" name="FinishForm[sysprep]" /><label for="radiosysprep">Sys Prep</label>
+		</div>
+		<br/>
+		<div id="errorSelectDynamic" class="ui-state-error ui-corner-all" style="display: none; width: 90%; margin-top: 10px; margin-left: 20px; padding: 0pt 0.7em; float: right;">
+			<p style="margin: 0.3em 0pt ; "><span style="float: left; margin-right: 0.3em;" class="ui-icon ui-icon-alert"></span><span id="errorSelectDynamicnMsg" style="display: block;"></span></p>
+		</div>
+		<div id="infoSelectDynamic" class="ui-state-highlight ui-corner-all" style="display: none; width: 90%; margin-top: 10px; margin-left: 20px; padding: 0pt 0.7em; float: right;">
+			<p style="margin: 0.3em 0pt ; "><span style="float: left; margin-right: 0.3em;" class="ui-icon ui-icon-info"></span><span id="infoSelectDynamicMsg"></span></p>
+		</div>
+</form>
+</div>
+<div id="checkCopyDialog" title="<?php echo Yii::t('vmtemplate', 'Check Volume Copy'); ?>" style="display: none;">
+	<div style="text-align: center;" ><img id="checkCopyRunning" src="<?php echo $imagesurl; ?>/loading.gif" alt="" /><br/></div>
+	<div id="errorCheckCopy" class="ui-state-error ui-corner-all" style="display: block; margin-top: 10px; padding: 0pt 0.7em;">
+		<p style="margin: 0.3em 0pt ; "><span style="float: left; margin-right: 0.3em;" class="ui-icon ui-icon-alert"></span>
+		<span id="errorCheckCopyMsg">
+		<?=Yii::t('vmtemplate', 'Copy of VM Template volume to VM volume still running!'); ?></span></p>
+	</div>
+	<div id="infoCheckCopy" class="ui-state-highlight ui-corner-all" style="display: none; margin-top: 10px; padding: 0pt 0.7em;">
+		<p style="margin: 0.3em 0pt ; "><span style="float: left; margin-right: 0.3em;" class="ui-icon ui-icon-info"></span><span id="infoCheckCopyMsg"></span></p>
 	</div>
 </div>
-<?php
-	$this->createwidget('ext.zii.CJqSingleselect', array(
-		'id' => 'staticpoolSelection',
-		'values' => array(),
-		'size' => 5,
-		'multiselect' => false,
-		'options' => array(
-			'sorted' => true,
-			'header' => Yii::t('vm', 'persistent VM Pools'),
-		),
-		'theme' => 'osbd',
-		'themeUrl' => $this->cssBase . '/jquery',
-		'cssFile' => 'singleselect.css',
-	));
-?>
-<div style="display: none;">
-	<a id="startDynamicPool" href="#selectDynamicPool">start finish dyn</a>
-	<div id="selectDynamicPool">
-	</div>
-</div>
-<?php
-	$this->createwidget('ext.zii.CJqSingleselect', array(
-		'id' => 'dynamicpoolSelection',
-		'values' => array(),
-		'size' => 5,
-		'multiselect' => false,
-		'options' => array(
-			'sorted' => true,
-			'header' => Yii::t('vm', 'dynamic VM Pools'),
-		),
-		'theme' => 'osbd',
-		'themeUrl' => $this->cssBase . '/jquery',
-		'cssFile' => 'singleselect.css',
-	));
-?>
 <?php
 $this->createWidget('ext.fancybox.EFancyBox');
 ?>

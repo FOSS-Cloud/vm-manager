@@ -107,7 +107,29 @@ class VmTemplateController extends Controller
 		);
 	}
 	public function actionIndex() {
-		$this->render('index', array('copyaction' => isset($_GET['copyaction']) ? $_GET['copyaction'] : null));
+		$persistentpools = array();
+		$ldappools = CLdapRecord::model('LdapVmPool')->findAll(array('attr'=>array('sstVirtualMachinePoolType'=>'persistent')));
+		foreach ($ldappools as $pool) {
+			$persistentpools[$pool->dn] = array();
+			$persistentpools[$pool->dn]['name'] = $pool->sstDisplayName;
+			$persistentpools[$pool->dn]['nodes'] = array();
+			foreach($pool->nodes as $poolnode) {
+				$node = LdapNode::model()->findByAttributes(array('attr'=>(array('sstNode' => $poolnode->ou))));
+				if (!is_null($node)) {
+					$nodetype = $node->getType('VM-Node');
+					if (!is_null($nodetype) && 'maintenance' != $nodetype->sstNodeState) {
+						$persistentpools[$pool->dn]['nodes'][$node->sstNode] = $node->sstNode;
+					}
+				}
+			}
+		}
+		$dynamicpools = array();
+		$ldappools = CLdapRecord::model('LdapVmPool')->findAll(array('attr'=>array('sstVirtualMachinePoolType'=>'dynamic')));
+		foreach ($ldappools as $pool) {
+			$dynamicpools[$pool->dn] = array();
+			$dynamicpools[$pool->dn]['name'] = $pool->sstDisplayName;
+		}
+		$this->render('index', array('persistentpools' => $persistentpools, 'dynamicpools' => $dynamicpools, 'copyaction' => isset($_GET['copyaction']) ? $_GET['copyaction'] : null));
 	}
 
 	public function actionView() {
@@ -484,60 +506,55 @@ class VmTemplateController extends Controller
 
 	public function actionFinish() {
 		$this->disableWebLogRoutes();
-		if (isset($_GET['dn']) && isset($_GET['pool'])) {
-			$result = CLdapRecord::model('LdapVmFromTemplate')->findByDn($_GET['dn']);
-			$result->setOverwrite(true);
-			$result->sstVirtualMachine = CPhpLibvirt::getInstance()->generateUUID();
-			//$pools = CLdapRecord::model('LdapVmPool')->findAll( array('attr'=>array()));
-			//$result->sstVirtualMachinePool = $pools[0]->sstVirtualMachinePool;
-
-			if ('undefined' == $_GET['pool']) {
-				$this->sendAjaxAnswer(array('error' => 2, 'message' => 'Please select a pool!'));
-				return;
+		if (isset($_POST['dn'])) {
+			$finishForm = $_POST['FinishForm'];
+			if (!isset($finishForm['pool']) || '' == $finishForm['pool']) {
+				$this->sendJsonAnswer(array('error' => 2, 'message' => Yii::t('vmtemplate', 'Please select a pool!')));
+				Yii::app()->end();
 			}
-			if ('undefined' == $_GET['subtype']) {
-				$this->sendAjaxAnswer(array('error' => 2, 'message' => 'Please select a type!'));
-				return;
+			if (!isset($finishForm['node']) || '' == $finishForm['node']) {
+				$this->sendJsonAnswer(array('error' => 2, 'message' => Yii::t('vmtemplate', 'Please select a node!')));
+				Yii::app()->end();
 			}
-			$vmpool = CLdapRecord::model('LdapVmPool')->findByDn($_GET['pool']);
+			if (!isset($finishForm['displayname']) || '' == $finishForm['displayname']) {
+				$this->sendJsonAnswer(array('error' => 2, 'message' => Yii::t('vmtemplate', 'Please insert a name!')));
+				Yii::app()->end();
+			}
+			$vmpool = LdapVmPool::model()->findByDn($finishForm['pool']);
+			if (is_null($vmpool)) {
+				$this->sendJsonAnswer(array('error' => 2, 'message' => Yii::t('vmtemplate', 'Pool not found!')));
+				Yii::app()->end();
+			}
 			$storagepool = $vmpool->getStoragePool();
 			if (is_null($storagepool)) {
-				$this->sendAjaxAnswer(array('error' => 1, 'message' => Yii::t('vmtemplate', 'No storagepool found for selected vmpool!')));
-				return;
+				$this->sendJsonAnswer(array('error' => 1, 'message' => Yii::t('vmtemplate', 'No storagepool found for selected vmpool!')));
+				Yii::app()->end();
 			}
-			$poolNodes = $vmpool->nodes;
-			$usedNode = null;
-			foreach($poolNodes as $poolNode) {
-				$node = LdapNode::model()->findByAttributes(array('attr'=>(array('sstNode' => $poolNode->ou))));
-				if (!is_null($node)) {
-					$nodetype = $node->getType('VM-Node');
-					if (!is_null($nodetype) && 'maintenance' != $nodetype->sstNodeState) {
-						$usedNode = $node;
-						break;
-					}
-				}
-			}
+			$usedNode = LdapNode::model()->findByAttributes(array('attr'=>(array('sstNode' => $finishForm['node']))));
 			if (is_null($usedNode)) {
-				$this->sendAjaxAnswer(array('error' => 1, 'message' => Yii::t('vmtemplate', 'No active node found for selected vmpool!')));
-				return;
+				$this->sendJsonAnswer(array('error' => 1, 'message' => Yii::t('vmtemplate', 'Node not found!')));
+				Yii::app()->end();
 			}
 				
+			$result = CLdapRecord::model('LdapVmFromTemplate')->findByDn($_POST['dn']);
+
 			// 'save' devices before
 			$rdevices = $result->devices;
 			/* Create a copy to be sure that we will write a new record */
 			$vm = new LdapVm();
 			/* Don't change the labeledURI; must refer to a default Profile */
 			$vm->attributes = $result->attributes;
-
 			$vm->setOverwrite(true);
-			if (isset($_GET['name']) && '' != $_GET['name']) {
-				$vm->sstDisplayName = $_GET['name'];
+			$vm->sstVirtualMachine = CPhpLibvirt::getInstance()->generateUUID();
+				
+			if (isset($finishForm['displayname']) && '' != $finishForm['displayname']) {
+				$vm->sstDisplayName = $finishForm['displayname'];
 			}
 			$vm->sstVirtualMachineType = 'persistent';
-			$vm->sstVirtualMachineSubType = $_GET['subtype'];
+			$vm->sstVirtualMachineSubType = $finishForm['subtype'];
 			$vm->sstVirtualMachinePool = $vmpool->sstVirtualMachinePool;
 			$vm->sstNode = $usedNode->sstNode;
-			/* Delete all objectclasses and let the LdapVM set them */
+			/* Delete all objectclasses and let LdapVm set them */
 			$vm->removeAttribute(array('objectClass', 'member'));
 			$vm->setBranchDn('ou=virtual machines,ou=virtualization,ou=services');
 
@@ -597,7 +614,7 @@ class VmTemplateController extends Controller
 			}
 			$dhcpvm = new LdapDhcpVm();
 			$dhcpvm->setBranchDn('ou=virtual machines,' . $range->subnet->dn);
-			$dhcpvm->cn = $result->sstVirtualMachine;
+			$dhcpvm->cn = $vm->sstVirtualMachine;
 			$dhcpvm->sstBelongsToCustomerUID = Yii::app()->user->customerUID;
 			$dhcpvm->sstBelongsToResellerUID = Yii::app()->user->resellerUID;
 			$dhcpvm->sstBelongsToPersonUID = Yii::app()->user->UID;
@@ -626,26 +643,29 @@ class VmTemplateController extends Controller
 			$server->add($dn, $data);
 		}
 		//$this->redirect(array('index', 'copyaction' => $copydata['pid']));
-		$this->sendAjaxAnswer(array('error' => 0, 'url' => $this->createUrl('index', array('copyaction' => $copydata['pid']))));
+		$this->sendJsonAnswer(array('error' => 0, 'message' => '', 'url' => $this->createUrl('index', array('copyaction' => $copydata['pid']))));
 	}
 
 	public function actionFinishDynamic() {
 		$this->disableWebLogRoutes();
-		if (isset($_GET['dn']) && isset($_GET['pool'])) {
-			$result = CLdapRecord::model('LdapVmFromTemplate')->findByDn($_GET['dn']);
-			$result->setOverwrite(true);
-			$result->sstVirtualMachine = CPhpLibvirt::getInstance()->generateUUID();
-			//$pools = CLdapRecord::model('LdapVmPool')->findAll( array('attr'=>array()));
-			//$result->sstVirtualMachinePool = $pools[0]->sstVirtualMachinePool;
-
-			if ('undefined' == $_GET['pool']) {
-				$this->sendAjaxAnswer(array('error' => 2, 'message' => 'Please select a pool!'));
-				return;
+		if (isset($_POST['dn'])) {
+			$finishForm = $_POST['FinishForm'];
+			if (!isset($finishForm['pool']) || '' == $finishForm['pool']) {
+				$this->sendJsonAnswer(array('error' => 2, 'message' => Yii::t('vmtemplate', 'Please select a pool!')));
+				Yii::app()->end();
 			}
-			$vmpool = CLdapRecord::model('LdapVmPool')->findByDn($_GET['pool']);
+			if (!isset($finishForm['displayname']) || '' == $finishForm['displayname']) {
+				$this->sendJsonAnswer(array('error' => 2, 'message' => Yii::t('vmtemplate', 'Please insert a name!')));
+				Yii::app()->end();
+			}
+			$vmpool = LdapVmPool::model()->findByDn($finishForm['pool']);
+			if (is_null($vmpool)) {
+				$this->sendJsonAnswer(array('error' => 2, 'message' => Yii::t('vmtemplate', 'Pool not found!')));
+				Yii::app()->end();
+			}
 			$storagepool = $vmpool->getStoragePool();
 			if (is_null($storagepool)) {
-				$this->sendAjaxAnswer(array('error' => 1, 'message' => 'No storagepool found for selected vmpool!'));
+				$this->sendJsonAnswer(array('error' => 1, 'message' => 'No storagepool found for selected vmpool!'));
 				return;
 			}
 			$poolNodes = $vmpool->nodes;
@@ -661,10 +681,12 @@ class VmTemplateController extends Controller
 				}
 			}
 			if (is_null($usedNode)) {
-				$this->sendAjaxAnswer(array('error' => 1, 'message' => Yii::t('vmtemplate', 'No active node found for selected vmpool!')));
+				$this->sendJsonAnswer(array('error' => 1, 'message' => Yii::t('vmtemplate', 'No active node found for selected vmpool!')));
 				return;
 			}
 				
+			$result = CLdapRecord::model('LdapVmFromTemplate')->findByDn($_POST['dn']);
+
 			// 'save' devices before
 			$rdevices = $result->devices;
 			/* Create a copy to be sure that we will write a new record */
@@ -673,16 +695,18 @@ class VmTemplateController extends Controller
 			$vm->attributes = $result->attributes;
 
 			$vm->setOverwrite(true);
+			$vm->sstVirtualMachine = CPhpLibvirt::getInstance()->generateUUID();
 			$vm->sstVirtualMachineType = 'dynamic';
-			if (isset($_GET['sysprep']) && 'true' == $_GET['sysprep']) {
+			if (isset($finishForm['sysprep']) && 'true' == $finishForm['sysprep']) {
 				$vm->sstVirtualMachineSubType = 'System-Preparation';
 			}
 			else {
 				$vm->sstVirtualMachineSubType = 'Golden-Image';
 			}
-			if (isset($_GET['name']) && '' != $_GET['name']) {
-				$vm->sstDisplayName = $_GET['name'];
+			if (isset($finishForm['displayname']) && '' != $finishForm['displayname']) {
+				$vm->sstDisplayName = $finishForm['displayname'];
 			}
+
 			$vm->sstVirtualMachinePool = $vmpool->sstVirtualMachinePool;
 			$vm->sstNode = $usedNode->sstNode;
 			/* Delete all objectclasses and let the LdapVM set them */
@@ -767,7 +791,7 @@ class VmTemplateController extends Controller
 			}
 		}
 		//$this->redirect(array('index', 'copyaction' => $copydata['pid']));
-		$this->sendAjaxAnswer(array('error' => 0, 'url' => $this->createUrl('index', array('copyaction' => $copydata['pid']))));
+		$this->sendJsonAnswer(array('error' => 0, 'message' => '', 'url' => $this->createUrl('index', array('copyaction' => $copydata['pid']))));
 	}
 
 	/**
@@ -1239,7 +1263,7 @@ EOS;
 ?>
 		<br/>
 		<div style="padding-top: 10px; clear: both;">
-			<label for="displayname">Name </label><input type="text" id="displayname" name="displayname" value="<?php echo (isset($_GET['name']) ? $_GET['name'] : ''); ?>"/>
+			<label for="dyndisplayname">Name </label><input type="text" id="dyndisplayname" name="dyndisplayname" value="<?php echo (isset($_GET['name']) ? $_GET['name'] : ''); ?>"/>
 		</div>
 		<br/>
 		<div style="">
@@ -1434,14 +1458,19 @@ EOS;
 					$answer = array('node' => $vm->sstNode, 'statustxt' => '');
 					$libvirt = CPhpLibvirt::getInstance();
 					$status = $libvirt->getVmStatus(array('libvirt' => $vm->node->getLibvirtUri(), 'name' => $vm->sstVirtualMachine));
-					if ($status['active']) {
-						$memory = $this->getHumanSize($status['memory'] * 1024);
-						$maxmemory = $this->getHumanSize($status['maxMem'] * 1024);
-						//$data[$vm->sstVirtualMachine] = array('status' => ($status['active'] ? 'running' : 'stopped'), 'mem' => $memory . ' / ' . $maxmemory, 'node' => $vm->sstNode);
-						$data[$vm->sstVirtualMachine] = array('status' => ($status['active'] ? 'running' : 'stopped'), 'mem' => $memory . ' / ' . $maxmemory, 'node' => $vm->sstNode, 'spice' => $vm->getSpiceUri());
+					if ($vm->hasActiveBackup()) {
+						$data[$vm->sstVirtualMachine] = array_merge($answer, array('status' => 'backup', 'spice' => $vm->getSpiceUri()));
 					}
 					else {
-						$data[$vm->sstVirtualMachine] = array_merge($answer, array('status' => 'stopped', 'spice' => $vm->getSpiceUri()));
+						if ($status['active']) {
+							$memory = $this->getHumanSize($status['memory'] * 1024);
+							$maxmemory = $this->getHumanSize($status['maxMem'] * 1024);
+							//$data[$vm->sstVirtualMachine] = array('status' => ($status['active'] ? 'running' : 'stopped'), 'mem' => $memory . ' / ' . $maxmemory, 'node' => $vm->sstNode);
+							$data[$vm->sstVirtualMachine] = array('status' => ($status['active'] ? 'running' : 'stopped'), 'mem' => $memory . ' / ' . $maxmemory, 'node' => $vm->sstNode, 'spice' => $vm->getSpiceUri());
+						}
+						else {
+							$data[$vm->sstVirtualMachine] = array_merge($answer, array('status' => 'stopped', 'spice' => $vm->getSpiceUri()));
+						}
 					}
 				}
 				else {
