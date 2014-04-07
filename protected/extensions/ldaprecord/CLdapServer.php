@@ -398,6 +398,7 @@ class CLdapServer {
 		$entries = @ldap_get_entries($this->_connection, $result);
 		Yii::log('findByDn: entries: ' . $entries['count'], 'profile', 'ext.ldaprecord.CLdapServer');
 		if ($entries === false) {
+			Yii::log('findByDn failt (' . ldap_errno($this->_connection) . '): ' . ldap_error($this->_connection), 'profile', 'ext.ldaprecord.CLdapServer');
 			throw new CLdapException(Yii::t('LdapComponent.server', 'ldap_get_entries failt ({errno}): {message}',
 				array('{errno}'=>ldap_errno($this->_connection), '{message}'=>ldap_error($this->_connection))), ldap_errno($this->_connection));
 		}
@@ -419,6 +420,7 @@ class CLdapServer {
 		Yii::log("modify: $dn\n" . print_r($entry, true), 'profile', 'ext.ldaprecord.CLdapServer');
 		$retval = @ldap_modify($this->_connection, $dn, $entry);
 		if (!$retval) {
+			Yii::log('modify $dn failt (' . ldap_errno($this->_connection) . '): ' . ldap_error($this->_connection), 'profile', 'ext.ldaprecord.CLdapServer');
 			throw new CLdapException(Yii::t('LdapComponent.server', 'ldap_modify failt ({errno}): {message}',
 				array('{errno}'=>ldap_errno($this->_connection), '{message}'=>ldap_error($this->_connection))), ldap_errno($this->_connection));
 		}
@@ -430,9 +432,10 @@ class CLdapServer {
 		if (strpos($dn, $this->_config['base_dn']) === false) {
 			$dn = $dn . ',' . $this->_config['base_dn'];
 		}
-		Yii::log("mod_del: $dn\n" . print_r($entry, true), 'profile', 'ext.ldaprecord.CLdapServer');
+		Yii::log("modify_del: $dn\n" . print_r($entry, true), 'profile', 'ext.ldaprecord.CLdapServer');
 		$retval = @ldap_mod_del($this->_connection, $dn, $entry);
 		if (!$retval) {
+			Yii::log('mod_del $dn failt (' . ldap_errno($this->_connection) . '): ' . ldap_error($this->_connection), 'profile', 'ext.ldaprecord.CLdapServer');
 			throw new CLdapException(Yii::t('LdapComponent.server', 'ldap_mod_del failt ({errno}): {message}',
 				array('{errno}'=>ldap_errno($this->_connection), '{message}'=>ldap_error($this->_connection))), ldap_errno($this->_connection));
 		}
@@ -464,6 +467,7 @@ class CLdapServer {
 		Yii::log("add: $dn\n" . print_r($entry, true), 'profile', 'ext.ldaprecord.CLdapServer');
 		$retval = @ldap_add($this->_connection, $dn, $entry);
 		if (!$retval) {
+			Yii::log('add $dn failt (' . ldap_errno($this->_connection) . '): ' . ldap_error($this->_connection), 'profile', 'ext.ldaprecord.CLdapServer');
 			throw new CLdapException(Yii::t('LdapComponent.server', 'ldap_add failt ({errno}): {message}',
 				array('{errno}'=>ldap_errno($this->_connection), '{message}'=>ldap_error($this->_connection))), ldap_errno($this->_connection));
 		}
