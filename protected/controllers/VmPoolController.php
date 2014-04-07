@@ -424,7 +424,8 @@ class VmPoolController extends Controller
 
 	public function actionCreate() {
 		$model = new VmPoolForm('create');
-
+		$hasError = false;
+		
 		$this->performAjaxValidation($model);
 
 		if(isset($_POST['VmPoolForm'])) {
@@ -433,193 +434,219 @@ class VmPoolController extends Controller
 			$libvirt = CPhpLibvirt::getInstance();
 
 			$storagepool = CLdapRecord::model('LdapStoragePool')->findByAttributes(array('attr'=>array('sstStoragePool'=>$model->storagepool)));
-
-			$pool = new LdapVmPool();
-			$pool->sstVirtualMachinePool = CPhpLibvirt::getInstance()->generateUUID();
-			$pool->sstDisplayName = $model->displayName;
-			$pool->description = $model->description;
-			$pool->sstVirtualMachinePoolType = $storagepool->sstStoragePoolType;
-			if ('dynamic' === $storagepool->sstStoragePoolType) {
-				$pool->sstBrokerMinimalNumberOfVirtualMachines = $model->brokerMin;
-				$pool->sstBrokerMaximalNumberOfVirtualMachines = $model->brokerMax;
-				$pool->sstBrokerPreStartNumberOfVirtualMachines = $model->brokerPreStart;
-				$pool->sstBrokerPreStartInterval = $model->brokerPreStartInterval;
-			}
-			else {
-				$pool->removeAttributesByObjectClass('sstVirtualMachinePoolDynamicObjectClass');
-			}
-			$pool->sstBelongsToCustomerUID = Yii::app()->user->customerUID;
-			$pool->sstBelongsToResellerUID = Yii::app()->user->resellerUID;
-			$pool->save();
-
-			$globalbackup = LdapConfigurationBackup::model()->findByDn('ou=backup,ou=configuration,ou=virtualization,ou=services');
-			$poolbackup = new LdapConfigurationBackup();
-			//$poolbackup->attributes = $globalbackup->attributes;
-			$poolbackup->branchDn = $pool->getDn();
-			$poolbackup->setOverwrite(true);
-			$poolbackup->ou = 'backup';
-			$poolbackup->description = 'This sub tree contains the backup plan of the pool \'' . $pool->sstDisplayName . '\'';
-			
-			$saveattrs = array();
-			if ('TRUE' === $model->poolBackupActive) {
-				$poolbackup->sstBackupNumberOfIterations = $model->sstBackupNumberOfIterations;
-				$poolbackup->sstVirtualizationVirtualMachineForceStart = $model->sstVirtualizationVirtualMachineForceStart;
-				$saveattrs[] = 'sstBackupNumberOfIterations';
-				$saveattrs[] = 'sstVirtualizationVirtualMachineForceStart';
-			}
-			
-			if ('GLOBAL' !== $model->poolCronActive) {
-				$poolbackup->sstCronActive = $model->poolCronActive;
-				if ('TRUE' === $model->poolCronActive) {
-					list($hour, $minute) = explode(':', $model->cronTime);
-					$poolbackup->sstCronMinute = (int) $minute;
-					$poolbackup->sstCronHour = (int) $hour;
-					$poolbackup->sstCronDayOfWeek = $model->sstCronDayOfWeek;
-					$poolbackup->sstCronDay = '*';
-					$poolbackup->sstCronMonth = '*';
-					$saveattrs[] = 'sstCronMinute';
-					$saveattrs[] = 'sstCronHour';
-					$saveattrs[] = 'sstCronDayOfWeek';
-					$saveattrs[] = 'sstCronDay';
-					$saveattrs[] = 'sstCronMonth';
-					$saveattrs[] = 'sstCronActive';
-				}
-				else {
-					$saveattrs[] = 'sstCronActive';
-				}
-			}
-				
-			if (0 < count($saveattrs)) {
-				$poolbackup->save(false);
-			}
-				
-			if ('dynamic' === $pool->sstVirtualMachinePoolType && 'TRUE' === $model->poolShutdownActive) {
-				$poolshutdown = new LdapConfigurationShutdown();
-				$poolshutdown->branchDn = $pool->getDn();
-				$poolshutdown->ou = 'shutdown';
-				$poolshutdown->setOverwrite(true);
-				$poolshutdown->description = 'This sub tree contains the shutdown plan of the pool \'' . $pool->sstDisplayName . '\'';
-				
-				$poolshutdown->sstCronActive = $model->poolShutdownActive;
-				list($hour, $minute) = explode(':', $model->poolShutdownTime);
-				$poolshutdown->sstCronMinute = (int) $minute;
-				$poolshutdown->sstCronHour = (int) $hour;
-				$poolshutdown->sstCronDayOfWeek = $model->poolShutdownDayOfWeek;
-				$poolshutdown->sstCronDay = '*';
-				$poolshutdown->sstCronMonth = '*';
-				$poolshutdown->save(false);
-			}
-
-			$settings = new LdapVmPoolConfigurationSettings();
-			$settings->setBranchDn($pool->dn);
-			$settings->ou = "settings";
-			$settings->save();
-
-			if (1 == $model->poolSound) {
-				$poolSound = new LdapConfigurationSetting();
-				$poolSound->branchDn = $settings->getDn();
-				$poolSound->ou = 'sound';
-				$poolSound->sstAllowSound = 1 == $model->allowSound ? 'TRUE' : 'FALSE';
-				$poolSound->save();
-			}
-				
-			if (1 == $model->poolUsb) {
-				$poolUsb = new LdapConfigurationSetting();
-				$poolUsb->branchDn = 'ou=settings,' . $pool->getDn();
-				$poolUsb->ou = 'usb';
-				$poolUsb->sstAllowUsb = 1 == $model->allowUsb ? 'TRUE' : 'FALSE';
-				$poolUsb->save();
-			}
-				
-			$server = CLdapServer::getInstance();
-			$data = array();
-			$data['objectClass'] = array('top', 'organizationalUnit', 'sstRelationship');
-			$data['ou'] = array('nodes');
-			$data['description'] = array('This is the Nodes subtree.');
-			$data['sstBelongsToCustomerUID'] = array(Yii::app()->user->customerUID);
-			$data['sstBelongsToResellerUID'] = array(Yii::app()->user->resellerUID);
-			$dn = 'ou=nodes,' . $pool->dn;
-			$server->add($dn, $data);
-
 			$basepath = substr($storagepool->sstStoragePoolURI, 7);
 			foreach($model->nodes as $nodename) {
-				$data = array();
-				$data['objectClass'] = array('top', 'organizationalUnit', 'labeledURIObject', 'sstRelationship');
-				$data['ou'] = $nodename;
 				$node = CLdapRecord::model('LdapNode')->findByAttributes(array('attr'=>array('sstNode'=>$nodename)));
-
-				$data['description'] = array('This entry links to the node ' . $nodename . '.');
-				$data['labeledURI'] = array('ldap:///' . $node->dn);
-				$data['sstBelongsToCustomerUID'] = array(Yii::app()->user->customerUID);
-				$data['sstBelongsToResellerUID'] = array(Yii::app()->user->resellerUID);
-				$dn2 = 'ou=' . $nodename . ',' . $dn;
-				$server->add($dn2, $data);
-				if (false === $libvirt->assignStoragePoolToNode($node->getLibvirtUri(), $storagepool->sstStoragePool, substr($storagepool->sstStoragePoolURI, 7))) {
-					echo "ERRORRRRRRRRRRRRRRRRR";
+				if (false === $libvirt->assignStoragePoolToNode($node->getLibvirtUri(), $storagepool->sstStoragePool, $basepath)) {
+					$hasError = true;
+					$model->addError('dn', Yii::t('vmpool', 'Unable to assign StoragePool to node {node}!',
+						array(
+							'{node}' => $nodename,
+						)
+					));
 				}
 			}
-			$data = array();
-			$data['objectClass'] = array('top', 'organizationalUnit', 'sstRelationship');
-			$data['ou'] = array('ranges');
-			$data['description'] = array('This is the Ranges subtree.');
-			$data['sstBelongsToCustomerUID'] = array(Yii::app()->user->customerUID);
-			$data['sstBelongsToResellerUID'] = array(Yii::app()->user->resellerUID);
-			$dn = 'ou=ranges,' . $pool->dn;
-			$server->add($dn, $data);
-			$data = array();
-			$data['objectClass'] = array('top', 'organizationalUnit', 'labeledURIObject', 'sstRelationship');
-			$data['ou'] = $model->range;
-			$range = CLdapRecord::model('LdapDhcpRange')->findByAttributes(array('attr'=>array('cn'=>$model->range), 'depth'=>true));
+			
+			if (!$hasError) {
+				$pool = new LdapVmPool();
+				$pool->sstVirtualMachinePool = CPhpLibvirt::getInstance()->generateUUID();
+				$pool->sstDisplayName = $model->displayName;
+				$pool->description = $model->description;
+				//$pool->sstNumberOfScreens = $model->sstNumberOfScreens;
+				$pool->sstVirtualMachinePoolType = $storagepool->sstStoragePoolType;
+				if ('dynamic' === $storagepool->sstStoragePoolType) {
+					$pool->sstBrokerMinimalNumberOfVirtualMachines = $model->brokerMin;
+					$pool->sstBrokerMaximalNumberOfVirtualMachines = $model->brokerMax;
+					$pool->sstBrokerPreStartNumberOfVirtualMachines = $model->brokerPreStart;
+					$pool->sstBrokerPreStartInterval = $model->brokerPreStartInterval;
+				}
+				else {
+					$pool->removeAttributesByObjectClass('sstVirtualMachinePoolDynamicObjectClass');
+				}
+				$pool->sstBelongsToCustomerUID = Yii::app()->user->customerUID;
+				$pool->sstBelongsToResellerUID = Yii::app()->user->resellerUID;
+				$pool->save();
+	
+				$globalbackup = LdapConfigurationBackup::model()->findByDn('ou=backup,ou=configuration,ou=virtualization,ou=services');
+				$poolbackup = new LdapConfigurationBackup();
+				//$poolbackup->attributes = $globalbackup->attributes;
+				$poolbackup->branchDn = $pool->getDn();
+				$poolbackup->setOverwrite(true);
+				$poolbackup->ou = 'backup';
+				$poolbackup->description = 'This sub tree contains the backup plan of the pool \'' . $pool->sstDisplayName . '\'';
+				
+				$saveattrs = array();
+				if ('TRUE' === $model->poolBackupActive) {
+					$poolbackup->sstBackupNumberOfIterations = $model->sstBackupNumberOfIterations;
+					$poolbackup->sstVirtualizationVirtualMachineForceStart = $model->sstVirtualizationVirtualMachineForceStart;
+					$saveattrs[] = 'sstBackupNumberOfIterations';
+					$saveattrs[] = 'sstVirtualizationVirtualMachineForceStart';
+				}
+				
+				if ('GLOBAL' !== $model->poolCronActive) {
+					$poolbackup->sstCronActive = $model->poolCronActive;
+					if ('TRUE' === $model->poolCronActive) {
+						list($hour, $minute) = explode(':', $model->cronTime);
+						$poolbackup->sstCronMinute = (int) $minute;
+						$poolbackup->sstCronHour = (int) $hour;
+						$poolbackup->sstCronDayOfWeek = $model->sstCronDayOfWeek;
+						$poolbackup->sstCronDay = '*';
+						$poolbackup->sstCronMonth = '*';
+						$saveattrs[] = 'sstCronMinute';
+						$saveattrs[] = 'sstCronHour';
+						$saveattrs[] = 'sstCronDayOfWeek';
+						$saveattrs[] = 'sstCronDay';
+						$saveattrs[] = 'sstCronMonth';
+						$saveattrs[] = 'sstCronActive';
+					}
+					else {
+						$poolbackup->sstCronDay = '*';
+						$poolbackup->sstCronMonth = '*';
+						$poolbackup->sstCronDayOfWeek = '*';
+						$poolbackup->sstCronMinute = 0;
+						$poolbackup->sstCronHour = 0;
+	
+						$saveattrs[] = 'sstCronMinute';
+						$saveattrs[] = 'sstCronHour';
+						$saveattrs[] = 'sstCronDayOfWeek';
+						$saveattrs[] = 'sstCronDay';
+						$saveattrs[] = 'sstCronMonth';
+						$saveattrs[] = 'sstCronActive';
+					}
+				}
+				else {
+					$poolbackup->removeAttributesByObjectClass('sstCronObjectClass');
+				}
 
-			$data['description'] = array('This entry links to the range ' . $model->range . '.');
-			$data['labeledURI'] = array('ldap:///' . $range->dn);
-			$data['sstBelongsToCustomerUID'] = array(Yii::app()->user->customerUID);
-			$data['sstBelongsToResellerUID'] = array(Yii::app()->user->resellerUID);
-			$dn2 = 'ou=' . $model->range . ',' . $dn;
-			$server->add($dn2, $data);
+				if (0 < count($saveattrs)) {
+					$poolbackup->save(false);
+				}
 
-			$data = array();
-			$data['objectClass'] = array('top', 'organizationalUnit', 'sstRelationship');
-			$data['ou'] = array('storage pools');
-			$data['description'] = array('This is the StoragePool subtree.');
-			$data['sstBelongsToCustomerUID'] = array(Yii::app()->user->customerUID);
-			$data['sstBelongsToResellerUID'] = array(Yii::app()->user->resellerUID);
-			$dn = 'ou=storage pools,' . $pool->dn;
-			$server->add($dn, $data);
-
-			$data = array();
-			$data['objectClass'] = array('top', 'organizationalUnit', 'labeledURIObject', 'sstRelationship');
-			$data['ou'] = $model->storagepool;
-			$storagepool = CLdapRecord::model('LdapStoragePool')->findByAttributes(array('attr'=>array('sstStoragePool'=>$model->storagepool)));
-			$data['description'] = array('This entry links to the storagepool ' . $model->storagepool . '.');
-			$data['labeledURI'] = array('ldap:///' . $storagepool->dn);
-			$data['sstBelongsToCustomerUID'] = array(Yii::app()->user->customerUID);
-			$data['sstBelongsToResellerUID'] = array(Yii::app()->user->resellerUID);
-			$dn2 = 'ou=' . $model->storagepool . ',' . $dn;
-			$server->add($dn2, $data);
-
-			$data = array();
-			$data['objectClass'] = array('top', 'organizationalUnit', 'sstRelationship');
-			$data['ou'] = array('groups');
-			$data['description'] = array('This is the assigned groups subtree.');
-			$data['sstBelongsToCustomerUID'] = array(Yii::app()->user->customerUID);
-			$data['sstBelongsToResellerUID'] = array(Yii::app()->user->resellerUID);
-			$dn = 'ou=groups,' . $pool->dn;
-			$server->add($dn, $data);
-
-			$data = array();
-			$data['objectClass'] = array('top', 'organizationalUnit', 'sstRelationship');
-			$data['ou'] = array('people');
-			$data['description'] = array('This is the assigned people subtree.');
-			$data['sstBelongsToCustomerUID'] = array(Yii::app()->user->customerUID);
-			$data['sstBelongsToResellerUID'] = array(Yii::app()->user->resellerUID);
-			$dn = 'ou=people,' . $pool->dn;
-			$server->add($dn, $data);
-
-			//echo '<pre>' . print_r($pool, true) . '</pre>';
-			$this->redirect(array('index'));
+				if ('dynamic' === $pool->sstVirtualMachinePoolType && 'TRUE' === $model->poolShutdownActive) {
+					$poolshutdown = new LdapConfigurationShutdown();
+					$poolshutdown->branchDn = $pool->getDn();
+					$poolshutdown->ou = 'shutdown';
+					$poolshutdown->setOverwrite(true);
+					$poolshutdown->description = 'This sub tree contains the shutdown plan of the pool \'' . $pool->sstDisplayName . '\'';
+					
+					$poolshutdown->sstCronActive = $model->poolShutdownActive;
+					list($hour, $minute) = explode(':', $model->poolShutdownTime);
+					$poolshutdown->sstCronMinute = (int) $minute;
+					$poolshutdown->sstCronHour = (int) $hour;
+					$poolshutdown->sstCronDayOfWeek = $model->poolShutdownDayOfWeek;
+					$poolshutdown->sstCronDay = '*';
+					$poolshutdown->sstCronMonth = '*';
+					$poolshutdown->save(false);
+				}
+	
+				$settings = new LdapVmPoolConfigurationSettings();
+				$settings->setBranchDn($pool->dn);
+				$settings->ou = "settings";
+				$settings->save();
+	
+				if (1 == $model->poolSound) {
+					$poolSound = new LdapConfigurationSetting();
+					$poolSound->branchDn = $settings->getDn();
+					$poolSound->ou = 'sound';
+					$poolSound->sstAllowSound = 1 == $model->allowSound ? 'TRUE' : 'FALSE';
+					$poolSound->save();
+				}
+					
+				if (1 == $model->poolUsb) {
+					$poolUsb = new LdapConfigurationSetting();
+					$poolUsb->branchDn = 'ou=settings,' . $pool->getDn();
+					$poolUsb->ou = 'usb';
+					$poolUsb->sstAllowUsb = 1 == $model->allowUsb ? 'TRUE' : 'FALSE';
+					$poolUsb->save();
+				}
+					
+				$server = CLdapServer::getInstance();
+				$data = array();
+				$data['objectClass'] = array('top', 'organizationalUnit', 'sstRelationship');
+				$data['ou'] = array('nodes');
+				$data['description'] = array('This is the Nodes subtree.');
+				$data['sstBelongsToCustomerUID'] = array(Yii::app()->user->customerUID);
+				$data['sstBelongsToResellerUID'] = array(Yii::app()->user->resellerUID);
+				$dn = 'ou=nodes,' . $pool->dn;
+				$server->add($dn, $data);
+	
+				$basepath = substr($storagepool->sstStoragePoolURI, 7);
+				foreach($model->nodes as $nodename) {
+					$data = array();
+					$data['objectClass'] = array('top', 'organizationalUnit', 'labeledURIObject', 'sstRelationship');
+					$data['ou'] = $nodename;
+					$node = CLdapRecord::model('LdapNode')->findByAttributes(array('attr'=>array('sstNode'=>$nodename)));
+	
+					$data['description'] = array('This entry links to the node ' . $nodename . '.');
+					$data['labeledURI'] = array('ldap:///' . $node->dn);
+					$data['sstBelongsToCustomerUID'] = array(Yii::app()->user->customerUID);
+					$data['sstBelongsToResellerUID'] = array(Yii::app()->user->resellerUID);
+					$dn2 = 'ou=' . $nodename . ',' . $dn;
+					$server->add($dn2, $data);
+				}
+				$data = array();
+				$data['objectClass'] = array('top', 'organizationalUnit', 'sstRelationship');
+				$data['ou'] = array('ranges');
+				$data['description'] = array('This is the Ranges subtree.');
+				$data['sstBelongsToCustomerUID'] = array(Yii::app()->user->customerUID);
+				$data['sstBelongsToResellerUID'] = array(Yii::app()->user->resellerUID);
+				$dn = 'ou=ranges,' . $pool->dn;
+				$server->add($dn, $data);
+				$data = array();
+				$data['objectClass'] = array('top', 'organizationalUnit', 'labeledURIObject', 'sstRelationship');
+				$data['ou'] = $model->range;
+				$range = CLdapRecord::model('LdapDhcpRange')->findByAttributes(array('attr'=>array('cn'=>$model->range), 'depth'=>true));
+	
+				$data['description'] = array('This entry links to the range ' . $model->range . '.');
+				$data['labeledURI'] = array('ldap:///' . $range->dn);
+				$data['sstBelongsToCustomerUID'] = array(Yii::app()->user->customerUID);
+				$data['sstBelongsToResellerUID'] = array(Yii::app()->user->resellerUID);
+				$dn2 = 'ou=' . $model->range . ',' . $dn;
+				$server->add($dn2, $data);
+	
+				$data = array();
+				$data['objectClass'] = array('top', 'organizationalUnit', 'sstRelationship');
+				$data['ou'] = array('storage pools');
+				$data['description'] = array('This is the StoragePool subtree.');
+				$data['sstBelongsToCustomerUID'] = array(Yii::app()->user->customerUID);
+				$data['sstBelongsToResellerUID'] = array(Yii::app()->user->resellerUID);
+				$dn = 'ou=storage pools,' . $pool->dn;
+				$server->add($dn, $data);
+	
+				$data = array();
+				$data['objectClass'] = array('top', 'organizationalUnit', 'labeledURIObject', 'sstRelationship');
+				$data['ou'] = $model->storagepool;
+				$storagepool = CLdapRecord::model('LdapStoragePool')->findByAttributes(array('attr'=>array('sstStoragePool'=>$model->storagepool)));
+				$data['description'] = array('This entry links to the storagepool ' . $model->storagepool . '.');
+				$data['labeledURI'] = array('ldap:///' . $storagepool->dn);
+				$data['sstBelongsToCustomerUID'] = array(Yii::app()->user->customerUID);
+				$data['sstBelongsToResellerUID'] = array(Yii::app()->user->resellerUID);
+				$dn2 = 'ou=' . $model->storagepool . ',' . $dn;
+				$server->add($dn2, $data);
+	
+				$data = array();
+				$data['objectClass'] = array('top', 'organizationalUnit', 'sstRelationship');
+				$data['ou'] = array('groups');
+				$data['description'] = array('This is the assigned groups subtree.');
+				$data['sstBelongsToCustomerUID'] = array(Yii::app()->user->customerUID);
+				$data['sstBelongsToResellerUID'] = array(Yii::app()->user->resellerUID);
+				$dn = 'ou=groups,' . $pool->dn;
+				$server->add($dn, $data);
+	
+				$data = array();
+				$data['objectClass'] = array('top', 'organizationalUnit', 'sstRelationship');
+				$data['ou'] = array('people');
+				$data['description'] = array('This is the assigned people subtree.');
+				$data['sstBelongsToCustomerUID'] = array(Yii::app()->user->customerUID);
+				$data['sstBelongsToResellerUID'] = array(Yii::app()->user->resellerUID);
+				$dn = 'ou=people,' . $pool->dn;
+				$server->add($dn, $data);
+	
+				//echo '<pre>' . print_r($pool, true) . '</pre>';
+				$this->redirect(array('index'));
+			}
 		}
-		else {
+		if (!isset($_POST['VmPoolForm']) || $hasError) {
 /*
 			$pools = CLdapRecord::model('LdapStoragePool')->findAll(array('attr'=>array()));
 			$storagepools = $this->createDropdownFromLdapRecords($pools, 'sstStoragePool', 'sstDisplayName');
@@ -797,6 +824,7 @@ class VmPoolController extends Controller
 			}
 			else {
 				$poolbackup->setAsNew();
+				// old one will be deleted before save this one
 			}
 			$poolbackup->setOverwrite(true);
 				
@@ -804,12 +832,18 @@ class VmPoolController extends Controller
 			if ('TRUE' === $model->poolBackupActive) {
 				$poolbackup->sstBackupNumberOfIterations = $model->sstBackupNumberOfIterations;
 				$poolbackup->sstVirtualizationVirtualMachineForceStart = $model->sstVirtualizationVirtualMachineForceStart;
-				$saveattrs[] = 'sstBackupNumberOfIterations';
-				$saveattrs[] = 'sstVirtualizationVirtualMachineForceStart';
 			}
+			else {
+				$poolbackup->sstBackupNumberOfIterations = '';
+				$poolbackup->sstVirtualizationVirtualMachineForceStart = '';
+			}
+			$saveattrs[] = 'sstBackupNumberOfIterations';
+			$saveattrs[] = 'sstVirtualizationVirtualMachineForceStart';
 			
 			if ('GLOBAL' !== $model->poolCronActive) {
+				$poolbackup->addObjectClass('sstCronObjectClass');
 				$poolbackup->sstCronActive = $model->poolCronActive;
+				$saveattrs[] = 'sstCronActive';
 				if ('TRUE' === $model->poolCronActive) {
 					list($hour, $minute) = explode(':', $model->cronTime);
 					$poolbackup->sstCronMinute = (int) $minute;
@@ -820,20 +854,25 @@ class VmPoolController extends Controller
 					else {
 						$poolbackup->sstCronDayOfWeek = implode(',', $model->sstCronDayOfWeek);
 					}
-					$poolbackup->sstCronDay = '*';
-					$poolbackup->sstCronMonth = '*';
-
-					$saveattrs[] = 'sstCronMinute';
-					$saveattrs[] = 'sstCronHour';
-					$saveattrs[] = 'sstCronDayOfWeek';
-					$saveattrs[] = 'sstCronDay';
-					$saveattrs[] = 'sstCronMonth';
-					$saveattrs[] = 'sstCronActive';
 				}
 				else {
-					$saveattrs[] = 'sstCronActive';
+					$poolbackup->sstCronMinute = 0;
+					$poolbackup->sstCronHour = 0;
+					$poolbackup->sstCronDayOfWeek = '*';
 				}
+				$poolbackup->sstCronDay = '*';
+				$poolbackup->sstCronMonth = '*';
+
+				$saveattrs[] = 'sstCronMinute';
+				$saveattrs[] = 'sstCronHour';
+				$saveattrs[] = 'sstCronDayOfWeek';
+				$saveattrs[] = 'sstCronDay';
+				$saveattrs[] = 'sstCronMonth';
 			}
+			else {
+				$poolbackup->removeAttributesByObjectClass('sstCronObjectClass', true);
+			}
+
 					
 			if (0 < count($saveattrs)) {
 // 				if (!in_array('sstCronActive', $saveattrs)) {
