@@ -98,6 +98,11 @@ class CPhpLibvirtDummy extends CPhpLibvirt {
 		return true;
 	}
 
+	public function getLastError() {
+		$retval = 'no error in dummy';
+		return $retval;
+	}
+
 	public function changeVmBootDevice($data) {
 		return 2701;
 	}
@@ -108,13 +113,16 @@ class CPhpLibvirtDummy extends CPhpLibvirt {
 			$_SESSION['phplibvirt']['vms'][$data['name']] = 5 > rand(1, 10);
 		}
 		$retval['active'] = $_SESSION['phplibvirt']['vms'][$data['name']];
+		if ($retval['active']) {
+			$retval['state'] = isset($_SESSION['phplibvirt']['blockjob'][$data['name']]) ? 'paused' : 'running';
+		}
 		$retval['memory'] = rand(128000, 16777216);
 		$retval['maxMem'] = 16777216;
 		$retval['cpuTime'] = rand(30, 85);
 		$retval['nrVirtCpu'] = 1;
 		$retval['cpuTimeOrig'] = 32.5;
 		Yii::log('dummy_getVmStatus: ' . print_r($retval, true), 'profile', 'phplibvirt');
-		sleep(2);
+		//sleep(2);
 		return $retval;
 	}
 
@@ -122,7 +130,7 @@ class CPhpLibvirtDummy extends CPhpLibvirt {
 		$templatesdir = LdapStoragePoolDefinition::getPathByType('vm-templates');
 		$volumename = $this->generateUUID();
 
-		$path = $templatesdir . Yii::app()->params['virtualization']['vmtemplatestoragepool'];
+		$path = $templatesdir; // . Yii::app()->params['virtualization']['vmtemplatestoragepool'];
 		if (!file_exists($path)) {
 			mkdir($path, 0770);
 		}
@@ -136,11 +144,14 @@ class CPhpLibvirtDummy extends CPhpLibvirt {
 		return array('VolumeName' => $volumename, 'SourceFile' => $sourcefile);
 	}
 
+	public function createBackingStoreVolumeFile($templatesdir, $pooluuid, $goldenimagepath, $host, $capacity) {
+		return $this->createVolumeFile($templatesdir, $pooluuid, $host, $capacity);
+	}
+
 	public function copyVolumeFile($persistentdir, $disk) {
 		$volumename = $this->generateUUID();
 
-		$name = Yii::app()->params['virtualization']['vmstoragepool'];
-		$path = $persistentdir . '/' . $name;
+		$path = $persistentdir;
 		if (!file_exists($path)) {
 			mkdir($path, 0770);
 		}
@@ -170,12 +181,13 @@ class CPhpLibvirtDummy extends CPhpLibvirt {
 	    return false;
 	}
 
-	public function createStoragePool($host, $basepath) {
-		$path = $basepath . '/' . $this->generateUUID();
+	public function createStoragePool($host, $uuid, $path) {
+		//$path = $path . '/' . $uuid;
 
 		if (!file_exists($path)) {
 			mkdir($path, 0770);
 		}
+		return true;
 	}
 
 	public function deleteStoragePool($host, $basepath, $uuid) {
@@ -185,4 +197,9 @@ class CPhpLibvirtDummy extends CPhpLibvirt {
 			rmdir($path);
 		}
 	}
+
+	public function removeStoragePoolToNodeAssignment($host, $uuid) {
+		return true;
+	}
+
 }
