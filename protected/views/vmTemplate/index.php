@@ -609,6 +609,7 @@ $selectStaticTxt = Yii::t('vmtemplate', 'Create persistent VM');
 $selectStaticOkButtonTxt = Yii::t('vmtemplate', 'Create');
 $selectStaticCancelButtonTxt = Yii::t('vmtemplate', 'Cancel');
 
+$okButtonTxt = Yii::t('vmtemplate', 'Ok');
 $cancelButtonTxt = Yii::t('vmtemplate', 'Cancel');
 
 Yii::app()->clientScript->registerScript('finish', <<<EOS
@@ -924,7 +925,7 @@ Yii::app()->clientScript->registerScript('checkCopy', <<<EOS
 		},
 		buttons:  [
 			{
-				text: '{$cancelButtonTxt}',
+				text: '{$okButtonTxt}',
 				click: function() {
 					$(this).dialog('close');
 					clearTimeout(timeoutid);
@@ -933,6 +934,7 @@ Yii::app()->clientScript->registerScript('checkCopy', <<<EOS
 			}
 		]
 	});
+
 	function check() {
 		$.ajax({
 			url: "{$baseurl}/vmTemplate/checkCopy",
@@ -1069,11 +1071,13 @@ EOS
 			<input type="text" id="finishDynDisplayname" name="FinishForm[displayname]" value="" />
 		</div>
 		<br/>
+<!-- 
 		<div>
 			<div style="width: 150px; float: left;">&nbsp;</div>
 			<input type="checkbox" id="radiosysprep" name="FinishForm[sysprep]" /><label for="radiosysprep">Sys Prep</label>
 		</div>
 		<br/>
+ -->
 		<div id="errorSelectDynamic" class="ui-state-error ui-corner-all" style="display: none; width: 90%; margin-top: 10px; margin-left: 20px; padding: 0pt 0.7em; float: right;">
 			<p style="margin: 0.3em 0pt ; "><span style="float: left; margin-right: 0.3em;" class="ui-icon ui-icon-alert"></span><span id="errorSelectDynamicnMsg" style="display: block;"></span></p>
 		</div>
