@@ -43,14 +43,14 @@ class UpdateLdap extends Patch
 				$basedefinition->ou = 'basedir';
 				$basedefinition->sstSelfService = 'FALSE';
 				$basedefinition->sstStoragePoolType = 'none';
-				$persistentdefinition = CLdapRecord::model('LdapStoragePoolDefinition')->findByAttributes(array('attr'=>array('ou'=>'vm-persistentt')));
+				$persistentdefinition = CLdapRecord::model('LdapStoragePoolDefinition')->findByAttributes(array('attr'=>array('ou'=>'vm-persistent')));
 				if($persistentdefinition != null) {
 					$basedefinition->sstStoragePoolURI = substr($persistentdefinition->sstStoragePoolURI, 0, strrpos($persistentdefinition->sstStoragePoolURI, '/', -2));
 					$basedefinition->save(false);
 				}
 				else {
 					Yii::log('processStoragePoolConfig throw', 'profile', 'patch.UpdateLdap');
-					throw new PatchException('Unable to find StoragePool configuration "vm-persitent"!');
+					throw new PatchException('Unable to find StoragePool configuration "vm-persistent"!');
 				}
 			}
 				
