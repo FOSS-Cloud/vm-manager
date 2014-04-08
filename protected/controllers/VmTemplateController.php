@@ -697,12 +697,12 @@ class VmTemplateController extends Controller
 			$vm->setOverwrite(true);
 			$vm->sstVirtualMachine = CPhpLibvirt::getInstance()->generateUUID();
 			$vm->sstVirtualMachineType = 'dynamic';
-			if (isset($finishForm['sysprep']) && 'true' == $finishForm['sysprep']) {
-				$vm->sstVirtualMachineSubType = 'System-Preparation';
-			}
-			else {
+// 			if (isset($finishForm['sysprep']) && 'true' == $finishForm['sysprep']) {
+// 				$vm->sstVirtualMachineSubType = 'System-Preparation';
+// 			}
+// 			else {
 				$vm->sstVirtualMachineSubType = 'Golden-Image';
-			}
+//			}
 			if (isset($finishForm['displayname']) && '' != $finishForm['displayname']) {
 				$vm->sstDisplayName = $finishForm['displayname'];
 			}
