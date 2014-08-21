@@ -837,7 +837,7 @@ EOS;
 				$vm = CLdapRecord::model('LdapVm')->findByDn($dn);
 				//echo '<pre>' . print_r($vm, true) . '</pre>';
 				if (!is_null($vm)) {
-					$answer = array(/* 'type' => $vm->sstVirtualMachineType, 'subtype' => $vm->sstVirtualMachineSubType,*/ 'node' => $vm->sstNode, 'statustxt' => '');
+					$answer = array(/* 'type' => $vm->sstVirtualMachineType, 'subtype' => $vm->sstVirtualMachineSubType,*/ 'name' => $vm->sstDisplayName, 'node' => $vm->sstNode, 'statustxt' => '');
 					$checkStatus = true;
 					if ('dynamic' == $vm->sstVirtualMachineType) {
 						switch($vm->sstVirtualMachineSubType) {
