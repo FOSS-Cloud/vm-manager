@@ -439,6 +439,10 @@ img.superaction
 	margin-right: 3px;
 	border: 1px solid gray;
 }
+img.notallowed {
+	opacity: 0.3;
+	filter: alpha(opacity=30);
+}
 
 .valigntop
 {
