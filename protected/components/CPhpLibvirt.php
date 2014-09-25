@@ -131,6 +131,7 @@ class CPhpLibvirt {
 
 	public function redefineVm($data) {
 		$this->undefineVm($data);
+		unset($data['name']);
 		return $this->defineVm($data);
 	}
 
@@ -248,7 +249,18 @@ class CPhpLibvirt {
 	<os>
 		<type arch=\"{$data[\'sstOSArchitecture\']}\" machine=\"{$data[\'sstOSMachine\']}\">{$data[\'sstOSType\']}</type>
 		<boot dev=\"{$data[\'sstOSBootDevice\']}\"/>
+		<smbios mode=\"sysinfo\"/>
 	</os>
+	<sysinfo type=\"smbios\">
+		<bios>
+			<entry name=\"vendor\">FOSS-Group</entry>
+		</bios>
+		<system>
+			<entry name=\"manufacturer\">FOSS-Group</entry>
+			<entry name=\"vendor\">FOSS-Group</entry>
+			<entry name=\"serial\">{$data[\'sstUuid\']}</entry>
+		</system>
+	</sysinfo>
 	<features>
 		{$features}
 	</features>
