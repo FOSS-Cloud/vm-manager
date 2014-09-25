@@ -225,6 +225,15 @@ class Utils {
 		return (($ip_dec & $netmask_dec) == ($range_dec & $netmask_dec));
 	}
 
+	public static function getMacAddress($ip) {
+		$line = exec('arp -an ' . $ip); //, $output);
+		$parts = explode(' ', $line);
+		if (isset($parts[3]) && 1 == preg_match('/^([0-9A-F]{2}:){5}([0-9A-F]{2})$/i', $parts[3])) {
+			return $parts[3];
+		}
+		return null;
+	}
+
 	public static function generatePassword() {
 		return CPhpLibvirt::getInstance()->generateUUID();
 	}
