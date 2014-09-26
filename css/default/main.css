@@ -47,7 +47,8 @@ div.sidebar
 {
 	background:transparent url(logo.png) no-repeat 10px 10px;
 	padding: 20px 20px 0 119px;
-	height: 70px;
+	height: 51px;
+	width: 150px;
 	font-size: 200%;
 	float: left;
 }
