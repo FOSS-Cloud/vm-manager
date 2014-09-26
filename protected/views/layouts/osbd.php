@@ -142,9 +142,9 @@
 	}
 ?>
 <?php if (isset($this->submenu) && 0 < count($this->submenu) && !Yii::app()->user->isGuest) : ?>
-		<div class="span-19 last">
+		<div class="span-22 last">
 <?php else : ?>
-		<div class="span-24 last">
+		<div class="span-27 last">
 <?php endif; ?>
 			<div id="content">
 				<h1 style="float: left;"><?=$this->title;?></h1>
