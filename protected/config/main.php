@@ -32,8 +32,9 @@
 // This is the main Web application configuration. Any writable
 // CWebApplication properties can be configured here.
 
+$config = CMap::mergeArray(require(dirname(__FILE__).'/vm_config.php'), require(dirname(__FILE__).'/modules_config.php'));
 return CMap::mergeArray(
-    require(dirname(__FILE__).'/vm_config.php'),
+    $config,
 	array(
 	'basePath' => dirname(__FILE__) . DIRECTORY_SEPARATOR . '..',
 	'name' => 'FOSS-Cloud',
