@@ -75,6 +75,7 @@ class VmController extends Controller
 						'label' => Yii::t('menu', 'Download Spice Client'),
 						'url' => 'http://www.foss-cloud.org/en/wiki/Spice-Client',
 						'itemOptions' => array('title' => Yii::t('menu', 'Spice Client Tooltip')),
+						'linkOptions' => array('target' => '_blank'),
 					)
 				)
 			);
