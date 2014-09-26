@@ -167,6 +167,7 @@ EOS
 	</div>
 	<div id="footer">
 		Version <?= $version; ?><br/>
+		on server <i><?= gethostname();?></i><br/>
 		Copyright &copy; <?php echo date('Y'); ?> by FOSS-Group.<br/>
 		All Rights Reserved.<br/>
 	</div><!-- footer -->
