@@ -95,10 +95,10 @@ EOS
 </div>
 </div>
 <?php
-	$startVmGuiUrl = $this->createUrl('vmList/getStartVmGui');
-	$startVmUrl = $this->createUrl('vmList/startVm');
-	$assignVmGuiUrl = $this->createUrl('vmList/getAssignVmGui');
-	$assignVmUrl = $this->createUrl('vmList/assignVm');
+	$startVmGuiUrl = $this->createUrl('getStartVmGui');
+	$startVmUrl = $this->createUrl('startVm');
+	$assignVmGuiUrl = $this->createUrl('getAssignVmGui');
+	$assignVmUrl = $this->createUrl('assignVm');
 	Yii::app()->clientScript->registerScript('startVm', <<<EOS
 	function startVm(dn) {
 		$('#startVmLink').fancybox({
