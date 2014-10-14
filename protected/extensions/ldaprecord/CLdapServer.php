@@ -226,7 +226,14 @@ class CLdapServer {
 				$filter = '(&';
 				foreach ($criteria['attr'] as $key => $value) {
 					if ('' != $value) {
-						if ('*' == $value) {
+						if (is_array($value)) {
+							$filter .= '(|';
+							foreach($value as $part) {
+								$filter .= "($key=$part)";
+							}
+							$filter .= ')';
+						} 
+						else if ('*' == $value) {
 							$filter .= "($key=*)";
 						}
 						else {
