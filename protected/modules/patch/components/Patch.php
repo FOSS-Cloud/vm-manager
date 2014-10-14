@@ -7,16 +7,18 @@ class Patch extends CComponent
 	public $patchName = '';
 	public $patchPath = '';
 	public $description = '';
+	public $stopOnError = false;
 
 	protected $patchParams;
 	protected $finishtype = 'remove';
-	
+
 	protected $actionName = '';
 	protected $actionProgress = 0;
 	protected $actions = array();
 	protected $actionCount = 0;
 	protected $postActions = array();
-	
+	protected $log = null;
+
 	public function init($xmlPatch) {
 		$this->patchParams = Patch::getParams($xmlPatch->getElementsByTagName('param'), null);
 		$actions = $xmlPatch->getElementsByTagName('actions')->item(0);
@@ -113,7 +115,11 @@ class Patch extends CComponent
 					$action = $this->actions[0];
 					if (is_subclass_of($action, 'PatchAction')) {
 						Yii::log('Patch::process ' . $action->name, 'profile', 'patch.Action');
+						$this->log = null;
 						$data = $action->run(false);
+						if (!is_null($this->log)) {
+							$data['log'] = $this->log;
+						}
 					}
 					$this->actionProgress = $data['partvalue'];
 				}
@@ -127,7 +133,11 @@ class Patch extends CComponent
 						Yii::log('Patch::process ' . $action->name, 'profile', 'patch.Action');
 						$this->actionName = $action->name;
 						$this->actionProgress = 0;
+						$this->log = null;
 						$data = $action->run(true);
+						if (!is_null($this->log)) {
+							$data['log'] = $this->log;
+						}
 					}
 					$this->actionProgress = $data['partvalue'];
 				}
@@ -170,6 +180,9 @@ class Patch extends CComponent
 					} 
 				}
 			}
+		}
+		else {
+			$data['stop'] = $this->stopOnError;
 		}
 
 		return $data;
@@ -263,5 +276,13 @@ class Patch extends CComponent
 			(is_dir($path)) ? $this->delTree($path) : unlink($path);
 		}
 		return rmdir($dir);
+	}
+	
+	protected function log($message) {
+		Yii::log('Patch::log ' . $message, 'profile', 'patch.Action');
+		if (is_null($this->log)) {
+			$this->log = array();
+		}
+		$this->log[] = $message;
 	}
 }

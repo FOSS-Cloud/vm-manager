@@ -7,7 +7,7 @@ else {
 	$messagestyle = 'display: none;';
 }
 ?>
-<div id="message" class="<?php echo $messageclass?>" style="<?php echo $messagestyle; ?>"><?php echo $message;?></div>
+<div id="message" class="<?php echo $messageclass?> ui-corner-all" style="<?php echo $messagestyle; ?>"><?php echo $message;?></div>
 <div id="actions">
 </div>
 <?php
@@ -17,6 +17,7 @@ if (!$error) {
 	$startUrl = $this->createUrl('patch/start');
 	$processUrl = $this->createUrl('patch/process');
 	Yii::app()->getClientScript()->registerScript('patch', <<<EOS
+		var procTimeout;
 		$("#startdialog").dialog({
 			modal: true,
 			height: 'auto',
@@ -34,7 +35,7 @@ if (!$error) {
 								that.dialog('close');
 								$("#progress").show();
 								showProgress(data);
-								setTimeout('process()', 100);
+								procTimeout = setTimeout('process()', 100);
 							}
 						}, 'json');
 					}
@@ -71,11 +72,23 @@ if (!$error) {
 			$.get('{$processUrl}', {name: '{$patchname}', key: '{$patchkey}'}, function(data) {
 				if (1 == data.error) {
 					$("#message").addClass('flash-error').html(data.message).show();
+					clearTimeout(procTimeout);
+					if (!data.stopOnError) {
+						if (100 > data.totalvalue) {
+							procTimeout = setTimeout('process()', 100);
+						}
+					}
 				}
 				else {
 					showProgress(data);
+					if (undefined != data.log) {
+						$("#log").show();
+						$.each(data.log, function(idx, value) {
+							$("#logtext").append(value + '<br/>');
+						});
+					}
 					if (100 > data.totalvalue) {
-						setTimeout('process()', 100);
+						procTimeout = setTimeout('process()', 100);
 					}
 					else {
 						$("#message").addClass('flash-success').html(data.message).show();
@@ -101,6 +114,10 @@ EOS
 		<p style="margin: 10px;" class="progresstext"></p>
 		<div style="margin: 10px; position: relative;" class="progressbar"><div class="progressbar-label" style="position: absolute;left: 50%;top: 4px;font-weight: bold;text-shadow: 1px 1px 0 #fff;"></div></div>
 	</div>
+</div>
+<div id="log"  class="ui-state-default ui-corner-all" style="display: none;">
+	<div class="ui-widget-header" style="padding: 0.4em 1em;">Log</div>
+	<div id="logtext" style="margin: 10px;"></div>
 </div>
 <div id='startdialog' title="<?php echo PatchModule::t('patch', 'start patch')?>" style="display: none;">
 	<p><?php echo PatchModule::t('patch', 'Do you really want to start this patch?')?></p>

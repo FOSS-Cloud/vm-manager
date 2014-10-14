@@ -118,18 +118,19 @@ class PatchController extends BaseController
 				}
 				
 				$title = $patch->getElementsByTagName('title')->item(0)->textContent;
-				$mainClass = $patch->getElementsByTagName('mainclass')->item(0);
-				//				echo '<pre>' . print_r($mainClass, true) . '</pre>';
-				if (!is_null($mainClass)) {
-					$mainClassName = $mainClass->getAttribute('name');
+				$xmlMainClass = $patch->getElementsByTagName('mainclass')->item(0);
+				// echo '<pre>' . print_r($mainClass, true) . '</pre>';
+				if (!is_null($xmlMainClass)) {
+					$mainClassName = $xmlMainClass->getAttribute('name');
 					$sessionpatch['mainClassName'] = $mainClassName;
 					Yii::import('application.runtime.patches.' . $name . '.*');
 					Yii::import('application.runtime.patches.' . $name . '.models.*');
-						
+
 					$mainClass = new $mainClassName();
 					$mainClass->patchName = $name;
 					$mainClass->patchPath = $patchDir . DIRECTORY_SEPARATOR . $name;
 					$mainClass->description = $patchDesc;
+					$mainClass->stopOnError = 'true' === $xmlMainClass->getAttribute('stopOnError');
 					try {
 						$mainClass->init($patch);
 						$mainClass->checkParams();
@@ -176,17 +177,17 @@ class PatchController extends BaseController
 		
 		$mainClass = unserialize($sessionpatch['mainClass']);
 		//Yii::log('PathController::actionProcess ' . print_r($mainClass, true), 'profile', 'patch.PatchCustomer');
-		
-		$data = array_merge($data, $mainClass->process());
 
+		$data = array_merge($data, $mainClass->process());
+		Yii::log('PathController::actionProcess data ' . print_r($data, true), 'profile', 'patch.PatchCustomer');
 		$sessionpatch['mainClass'] = serialize($mainClass);
 		$session['patch'] = $sessionpatch;
 		
 		if (isset($data['totalvalue']) && 100 <= $data['totalvalue']) {
 			unset($session['patch']);
 		}
-		$data['partvalue'] = round($data['partvalue'], 1);
-		$data['totalvalue'] = round($data['totalvalue'], 1);
+// 		$data['partvalue'] = round($data['partvalue'], 1);
+// 		$data['totalvalue'] = round($data['totalvalue'], 1);
 
 		echo CJSON::encode($data);
 	}
