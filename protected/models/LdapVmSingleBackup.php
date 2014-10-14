@@ -37,7 +37,7 @@
 
 class LdapVmSingleBackup extends CLdapRecord {
 	protected $_branchDn = '';
-	protected $_filter = array('all' => 'ou=*');
+	protected $_filter = array('all' => 'ou=*', 'active' => '(&(objectClass=sstProvisioning)(!(sstProvisioningMode=finished)))');
 	protected $_dnAttributes = array('ou');
 	protected $_objectClasses = array('sstProvisioning', 'organizationalUnit', 'top');
 
