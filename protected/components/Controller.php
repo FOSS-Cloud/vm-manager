@@ -47,6 +47,10 @@ class Controller extends CController
 	 */
 	public $layout='application.views.layouts.osbd';
 	/**
+	 * @var array possible header tags
+	 */
+	public $header=array();
+	/**
 	 * @var array context menu items. This property will be assigned to {@link CMenu::items}.
 	 */
 	public $menu=array();

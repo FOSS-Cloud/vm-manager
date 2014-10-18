@@ -45,6 +45,10 @@
 	<link rel="stylesheet" type="text/css" href="<?php echo $this->cssBase ?>/form.css" />
 
 	<title><?php echo CHtml::encode($this->pageTitle); ?></title>
+<?php foreach ($this->header as $header) {
+	echo "\t" . $header . "\n";
+}
+?>
 </head>
 <body>
 <?php
