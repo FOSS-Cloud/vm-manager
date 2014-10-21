@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright (C) 2012 FOSS-Group
+ * Copyright (C) 2006 - 2014 FOSS-Group
  *                    Germany
  *                    http://www.foss-group.de
  *                    support@foss-group.de
@@ -8,7 +8,7 @@
  * Authors:
  *  Christian Wittkowski <wittkowski@devroom.de>
  *
- * Licensed under the EUPL, Version 1.1 or – as soon they
+ * Licensed under the EUPL, Version 1.1 or higher - as soon they
  * will be approved by the European Commission - subsequent
  * versions of the EUPL (the "Licence");
  * You may not use this work except in compliance with the
@@ -26,13 +26,6 @@
  * permissions and limitations under the Licence.
  *
  *
- */
-
-/**
- * CLdapServer class file.
- *
- * @author: Christian Wittkowski <wittkowski@devroom.de>
- * @version: 0.6
  */
 
 /**
@@ -348,6 +341,7 @@ class CLdapServer {
 		return $entries;
 	}
 
+
 	/**
 	 * Search LDAP (Wrapper to LDAP function ldap_search).
 	 *
@@ -431,6 +425,7 @@ class CLdapServer {
 			throw new CLdapException(Yii::t('LdapComponent.server', 'ldap_modify failt ({errno}): {message}',
 				array('{errno}'=>ldap_errno($this->_connection), '{message}'=>ldap_error($this->_connection))), ldap_errno($this->_connection));
 		}
+
 
 		return true;
 	}

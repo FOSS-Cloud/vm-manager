@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright (C) 2012 FOSS-Group
+ * Copyright (C) 2006 - 2014 FOSS-Group
  *                    Germany
  *                    http://www.foss-group.de
  *                    support@foss-group.de
