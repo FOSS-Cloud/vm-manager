@@ -35,4 +35,7 @@ $this->breadcrumbs=array(
 $this->title = Yii::t('user', 'Create User');
 //$this->helpurl = Yii::t('help', 'createUser');
 
-echo $this->renderPartial('_form', array('model'=>$model,'usergroups'=>$usergroups,'submittext'=>Yii::t('user','Create')));
+echo $this->renderPartial('_form', array('model'=>$model,
+		'userroles'=>$userroles,
+		'usergroups'=>$usergroups,
+		'submittext'=>Yii::t('user','Create')));

@@ -51,7 +51,6 @@ class UserController extends Controller
 				'itemOptions' => array('title' => Yii::t('menu', 'User Update Tooltip')),
 				'active' => true,
 			);
-
 		}
 	}
 
@@ -73,15 +72,28 @@ class UserController extends Controller
 	public function accessRules()
 	{
 		return array(
-			array('allow', // allow authenticated user to perform 'create' and 'update' actions
-		        	'actions'=>array('index', 'create', 'update', 'delete',
-					'updatePopup',
-					'getUser', 'getVMsGui', 'getRoles', 'saveVMsAssign'),
+			array('allow',
+				'actions'=>array('index', 'getUser', 'getRoles'),
 				'users'=>array('@'),
-				'expression'=>'Yii::app()->user->isAdmin'
+				'expression'=>'Yii::app()->user->hasRight(\'user\', \'Access\', \'Enabled\')'
+			),
+			array('allow',
+				'actions'=>array('create'),
+				'users'=>array('@'),
+				'expression'=>'Yii::app()->user->hasRight(\'user\', \'Create\', \'Enabled\')'
+			),
+			array('allow',
+				'actions'=>array('update', 'getVMsGui', 'saveVMsAssign'),
+				'users'=>array('@'),
+				'expression'=>'Yii::app()->user->hasOtherRight(\'user\', \'Edit\', \'Enabled\', \'None\')'
+			),
+			array('allow',
+				'actions'=>array('delete'),
+				'users'=>array('@'),
+				'expression'=>'Yii::app()->user->hasOtherRight(\'user\', \'Delete\', \'Enabled\', \'None\')'
 			),
 			array('deny',  // deny all users
-	    	    		'users'=>array('*'),
+				'users'=>array('*'),
 			),
 		);
 	}
@@ -136,28 +148,17 @@ class UserController extends Controller
 			$user->sstBelongsToCustomerUID = Yii::app()->user->customerUID;
 			$user->sstBelongsToResellerUID = Yii::app()->user->resellerUID;
 			$user->sstGroupUID = $model->usergroups;
+			$user->sstRoleUID = $model->userrole;
 			$user->save();
-
-			$userrole = new LdapUserRole();
-			$userrole->setBranchDn($user->dn);
-			$userrole->sstProduct = '0';
-			$userrole->sstRole = 'User';
-			$userrole->save();
-			if ('admin' == $model->userrole) {
-				$userrole = new LdapUserRole();
-				$userrole->setBranchDn($user->dn);
-				$userrole->sstProduct = '0';
-				$userrole->sstRole = 'Admin Virtualization';
-				$userrole->save();
-			}
-
 			$this->redirect(array('index'));
 		}
 		else {
+			$userroles = LdapUserRole::model()->findAll(array('attr'=>array()));
 			$usergroups = LdapGroup::model()->findAll(array('attr'=>array()));
 
 			$this->render('create', array(
 				'model' => $model,
+				'userroles' => $this->createDropdownFromLdapRecords($userroles, 'uid', 'sstDisplayName'),
 				'usergroups' => $this->createDropdownFromLdapRecords($usergroups, 'uid', 'sstDisplayName'),
 			));
 		}
@@ -199,23 +200,8 @@ class UserController extends Controller
 				$data = array('sstGroupUID' => array());
 				$server->modify_del($user->dn, $data);
 			}
+			$user->sstRoleUID = $model->userrole;
 			$user->save();
-
-			if ('admin' == $model->userrole && !$user->isAdmin()) {
-				$userrole = new LdapUserRole();
-				$userrole->setBranchDn($user->dn);
-				$userrole->sstProduct = '0';
-				$userrole->sstRole = 'Admin Virtualization';
-				$userrole->save();
-			}
-			else if ('user' == $model->userrole && $user->isAdmin()) {
-				$userroles = $user->roles;
-				foreach($userroles as $role) {
-					if ('User' != $role->sstRole) {
-						$role->delete();
-					}
-				}
-			}
 
 			$this->redirect(array('index'));
 		}
@@ -234,7 +220,7 @@ class UserController extends Controller
 			$model->username = $user->cn;
 			$model->telephone = $user->telephoneNumber;
 			$model->mobile = $user->mobile;
-			$model->userrole = ($user->isAdmin() ? 'admin' : 'user');
+			$model->userrole = $user->sstRoleUID;
 			$model->language = $user->preferredLanguage;
 			$groups = $user->sstGroupUID;
 			if (!is_array($groups)) {
@@ -242,10 +228,12 @@ class UserController extends Controller
 			}
 			$model->usergroups = $groups;
 
+			$userroles = LdapUserRole::model()->findAll(array('attr'=>array()));
 			$usergroups = LdapGroup::model()->findAll(array('attr'=>array()));
 
 			$this->render('update', array(
 				'model' => $model,
+				'userroles' => $this->createDropdownFromLdapRecords($userroles, 'uid', 'sstDisplayName'),
 				'usergroups' => $this->createDropdownFromLdapRecords($usergroups, 'uid', 'sstDisplayName'),
 			));
 		}
@@ -324,21 +312,16 @@ class UserController extends Controller
 		if (isset($_GET['email']) && '' != $_GET['email']) {
 			$attr['mail'] = '*' . $_GET['email'] . '*';
 		}
-		$users = CLdapRecord::model('LdapUser')->findAll(array('attr' => $attr));
-		$count = count($users);
 		if (isset($_GET['role'])) {
-			for ($i=0; $i<$count; $i++) {
-				$user = $users[$i];
-				if ('admin' == $_GET['role'] && !$user->isAdmin()) {
-					unset($users[$i]);
-				}
-				else if ('user' == $_GET['role'] && $user->isAdmin()) {
-					unset($users[$i]);
-				}
-			}
-			$users = array_values($users);
-			$count = count($users);
+			$attr['sstRoleUid'] = $_GET['role'];
 		}
+		if(Yii::app()->user->hasRight('user', 'View', 'All')) {
+			$users = LdapUser::model()->findAll(array('attr' => $attr));
+		}
+		else {
+			$users = array();
+		}
+		$count = count($users);
 		$total_pages = ceil($count / $limit);
 
 		$s = "<?xml version='1.0' encoding='utf-8'?>";
@@ -362,7 +345,7 @@ class UserController extends Controller
 			$s .= '<cell>'. rawurlencode($user->dn) ."</cell>\n";
 			$s .= '<cell>'. $user->getName() ."</cell>\n";
 			$s .= '<cell>'. $user->mail ."</cell>\n";
-			$s .= '<cell>'. ($user->isAdmin() ? Yii::t('user', 'Admin') : Yii::t('user', 'VM User')) ."</cell>\n";
+			$s .= '<cell>'. $user->role->sstDisplayName ."</cell>\n";
 			$s .= '<cell>'. ($user->isActiveUser() ? 'true' : 'false') ."</cell>\n";
 			$s .= "<cell></cell>\n";
 			$s .= "</row>\n";
@@ -419,10 +402,11 @@ class UserController extends Controller
 	}
 
 	public function actionGetRoles() {
+		$userroles = LdapUserRole::model()->findAll(array('attr'=>array()));
 		echo '<select>';
 		echo '<option value=""></option>';
-		foreach(LdapUser::getRoleNames() as $val => $name) {
-			echo '<option value="' . $val . '">' . $name . '</option>';
+		foreach($userroles as $userrole) {
+			echo '<option value="' . $userrole->uid . '">' . $userrole->sstDisplayName . '</option>';
 		}
 		echo '</select>';
 	}

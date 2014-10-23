@@ -36,4 +36,7 @@ $this->breadcrumbs=array(
 $this->title = Yii::t('user', 'Edit User "{name}"', array('{name}' => $model->getName()));
 //$this->helpurl = Yii::t('help', 'updateUser');
 
-echo $this->renderPartial('_form', array('model'=>$model,'usergroups'=>$usergroups,'submittext'=>Yii::t('user','Save')));
+echo $this->renderPartial('_form', array('model'=>$model,
+		'userroles'=>$userroles,
+		'usergroups'=>$usergroups,
+		'submittext'=>Yii::t('user','Save')));
