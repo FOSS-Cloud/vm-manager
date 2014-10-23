@@ -34,6 +34,8 @@ $this->breadcrumbs=array(
 );
 $this->title = 'VM Template Infos';
 
+$vmUse = Yii::app()->user->hasRight('templateVM', 'Use', 'All');
+
 ?>
 <ul>
 <?php
@@ -52,8 +54,8 @@ foreach($vms as $dn => $vm) {
 if (!is_null($libvirturi)) {
 	echo '<li><b>Libvirt URI</b><br/><pre>' . $libvirturi . '</pre></li>';
 }
-if (!is_null($spiceuri)) {
-	echo '<li><b>SPICE URI</b><br/><pre>' . $spiceuri . '</pre></li>';
+if (!is_null($spiceuri) && $vmUser) {
+	echo '<li><b>SPICE URI</b><br/><a href="' . $spiceuri . '"><pre>' . $spiceuri . '</pre></a></li>';
 }
 if (!is_null($startxml)) {
 	echo '<li><b>Start XML</b><br/><div style="overflow: auto;"><pre>' . print_r(htmlspecialchars($startxml), true) . '</pre></div></li>';

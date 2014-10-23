@@ -72,10 +72,25 @@ class DiagnosticsController extends Controller
 	public function accessRules()
 	{
 		return array(
-			array('allow', // allow authenticated user to perform 'create' and 'update' actions
-				'actions'=>array('index', 'vminfos', 'vmtemplateinfos', 'ldapattrtypes', 'ldapobjclasses', 'vmcounter'),
+			array('allow',
+				'actions'=>array('index', 'ldapattrtypes', 'ldapobjclasses', 'vmcounter'),
 				'users'=>array('@'),
-				'expression'=>'Yii::app()->user->isAdmin'
+				'expression'=>'Yii::app()->user->hasRight(\'diagnostic\', \'Access\', \'Enabled\')'
+			),
+			array('allow',
+				'actions'=>array('persistentvminfos'),
+				'users'=>array('@'),
+				'expression'=>'Yii::app()->user->hasOtherRight(\'persistentVM\', \'View\', \'None\')'
+			),
+			array('allow',
+				'actions'=>array('dynamicvminfos'),
+				'users'=>array('@'),
+				'expression'=>'Yii::app()->user->hasOtherRight(\'dynamicVM\', \'View\', \'None\')'
+			),
+			array('allow',
+				'actions'=>array('vmtemplateinfos'),
+				'users'=>array('@'),
+				'expression'=>'Yii::app()->user->hasOtherRight(\'templateVM\', \'View\', \'None\')'
 			),
 			array('deny',  // deny all users
 				'users'=>array('*'),
@@ -83,48 +98,89 @@ class DiagnosticsController extends Controller
 		);
 	}
 
-	public function actionVMInfos()
+	public function actionPersistentVMInfos()
 	{
 		$vms = array();
-		$result = CLdapRecord::model('LdapVm')->findAll(array('filter'=>'(!(sstVirtualMachineType=template))'));
-		foreach($result as $vm) {
-			$vms[$vm->dn] = array('name' => $vm->sstDisplayName . ' (' . $vm->sstVirtualMachineType . ')', 'selected' => (isset($_GET['dn']) && $_GET['dn'] == $vm->dn ? true : false));
+		$criteria = array('filter'=>'(&(sstVirtualMachineType=persistent))');
+		if (Yii::app()->user->hasRight('persistentVM', 'View', 'All')) {
+			$result = LdapVm::model()->findAll($criteria);
+		}
+		else if (Yii::app()->user->hasRight('persistentVM', 'View', 'Owner')) {
+			$result = LdapVm::getAssignedVms('persistent', $criteria);
+			$result = array_values($result);
+		}
+		else {
+			$result = array();
 		}
 		$startxml = null;
 		$libvirturi = null;
 		$spiceuri = null;
-		if (isset($_GET['dn'])) {
-			$vm = CLdapRecord::model('LdapVm')->findByDn($_GET['dn']);
-			if (!is_null($vm)) {
+		foreach($result as $vm) {
+			$vms[$vm->dn] = array('name' => $vm->sstDisplayName, 'selected' => (isset($_GET['dn']) && $_GET['dn'] == $vm->dn ? true : false));
+			if (isset($_GET['dn']) && $_GET['dn'] == $vm->dn) {
 				$libvirt = CPhpLibvirt::getInstance();
 				$startxml = $libvirt->getXML($vm->getStartParams());
 				$libvirturi = $vm->node->getLibvirtUri();
 				$spiceuri = $vm->getSpiceUri();
 			}
 		}
-		$this->render('vminfos', array('vms' => $vms, 'startxml' => $startxml, 'libvirturi' => $libvirturi, 'spiceuri' => $spiceuri));
+		$this->render('persistentvminfos', array('vms' => $vms, 'startxml' => $startxml, 'libvirturi' => $libvirturi, 'spiceuri' => $spiceuri));
+	}
+
+	public function actionDynamicVMInfos()
+	{
+		$vms = array();
+		$criteria = array('filter'=>'(&(sstVirtualMachineType=dynamic))');
+		if (Yii::app()->user->hasRight('dynamicVM', 'View', 'All')) {
+			$result = LdapVm::model()->findAll($criteria);
+		}
+		else if (Yii::app()->user->hasRight('dynamicVM', 'View', 'Owner')) {
+			$result = LdapVm::getAssignedVms('dynamic', $criteria);
+			$result = array_values($result);
+		}
+		else {
+			$result = array();
+		}
+		
+		//$result = CLdapRecord::model('LdapVm')->findAll(array('filter'=>'(&(sstVirtualMachineType=dynamic))'));
+		$startxml = null;
+		$libvirturi = null;
+		$spiceuri = null;
+		foreach($result as $vm) {
+			$vms[$vm->dn] = array('name' => $vm->sstDisplayName, 'selected' => (isset($_GET['dn']) && $_GET['dn'] == $vm->dn ? true : false));
+			if (isset($_GET['dn']) && $_GET['dn'] == $vm->dn) {
+				$libvirt = CPhpLibvirt::getInstance();
+				$startxml = $libvirt->getXML($vm->getStartParams());
+				$libvirturi = $vm->node->getLibvirtUri();
+				$spiceuri = $vm->getSpiceUri();
+			}
+		}
+		$this->render('dynamicvminfos', array('vms' => $vms, 'startxml' => $startxml, 'libvirturi' => $libvirturi, 'spiceuri' => $spiceuri));
 	}
 
 	public function actionVMTemplateInfos()
 	{
 		$vms = array();
-		$result = CLdapRecord::model('LdapVmFromTemplate')->findAll(array('filter'=>'(&(sstVirtualMachineType=template))'));
-		foreach($result as $vm) {
-			$vms[$vm->dn] = array('name' => $vm->sstDisplayName, 'selected' => (isset($_GET['dn']) && $_GET['dn'] == $vm->dn ? true : false));
+		$criteria = array('filter'=>'(&(sstVirtualMachineType=template))');
+		if (Yii::app()->user->hasRight('templateVM', 'View', 'All')) {
+			$result = LdapVmFromTemplate::model()->findAll($criteria);
+		}
+		else {
+			$result = array();
 		}
 		$startxml = null;
 		$libvirturi = null;
 		$spiceuri = null;
-		if (isset($_GET['dn'])) {
-			$vm = CLdapRecord::model('LdapVmFromTemplate')->findByDn($_GET['dn']);
-			if (!is_null($vm)) {
+		foreach($result as $vm) {
+			$vms[$vm->dn] = array('name' => $vm->sstDisplayName, 'selected' => (isset($_GET['dn']) && $_GET['dn'] == $vm->dn ? true : false));
+			if (isset($_GET['dn']) && $_GET['dn'] == $vm->dn) {
 				$libvirt = CPhpLibvirt::getInstance();
 				$startxml = $libvirt->getXML($vm->getStartParams());
 				$libvirturi = $vm->node->getLibvirtUri();
 				$spiceuri = $vm->getSpiceUri();
 			}
 		}
-		$this->render('vminfos', array('vms' => $vms, 'startxml' => $startxml, 'libvirturi' => $libvirturi, 'spiceuri' => $spiceuri));
+		$this->render('vmtemplateinfos', array('vms' => $vms, 'startxml' => $startxml, 'libvirturi' => $libvirturi, 'spiceuri' => $spiceuri));
 	}
 
 	public function actionLDAPObjClasses()
