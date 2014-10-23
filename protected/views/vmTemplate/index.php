@@ -38,6 +38,7 @@ $this->title = Yii::t('vmtemplate', 'Manage VMTemplates');
 $gridid = 'vmtemplates';
 $baseurl = Yii::app()->baseUrl;
 $imagesurl = $baseurl . '/images';
+$getvmtemplatesurl = $this->createUrl('vmTemplate/getVmTemplates');
 $detailurl = $this->createUrl('vmTemplate/view');
 $updateurl = $this->createUrl('vmTemplate/update');
 $deleteurl = $this->createUrl('vmTemplate/delete');
@@ -52,8 +53,17 @@ $cancelrestoreactionurl = $this->createUrl('vmTemplate/cancelRestoreAction');
 
 $actrefreshtime = Yii::app()->getSession()->get('vm_refreshtime', 10000);
 
+$vmTemplateCreate = Yii::app()->user->hasRight('templateVM', 'Create', 'Enabled') ? 'true' : 'false';
+$vmTemplateEdit = Yii::app()->user->hasRight('templateVM', 'Edit', 'All') ? 'true' : 'false';
+$vmTemplateDelete = Yii::app()->user->hasRight('templateVM', 'Delete', 'All') ? 'true' : 'false';
+$vmTemplateManage = Yii::app()->user->hasRight('templateVM', 'Manage', 'All') ? 'true' : 'false';
+$vmTemplateUse = Yii::app()->user->hasRight('templateVM', 'Use', 'All') ? 'true' : 'false';
+$persistentVmCreate = Yii::app()->user->hasRight('persistentVM', 'Create', 'Enabled') ? 'true' : 'false';
+$dynamicVmCreate = Yii::app()->user->hasRight('dynamicVM', 'Create', 'Enabled') ? 'true' : 'false';
+$nodeView = Yii::app()->user->hasRight('node', 'View', 'All') ? 'true' : 'false';
+
 Yii::app()->clientScript->registerScript('refresh', <<<EOS
-var refreshTimeout = {$actrefreshtime};
+var refreshTimeout = {$sessionvars['refreshTime']};
 var buttonState = [];
 function refreshVmButtons(id, buttons) {
 	$.each(buttons, function (key, active) {
@@ -65,16 +75,17 @@ function refreshVmButtons(id, buttons) {
 		}
 		if (active) {
 			if (!buttonState[id][key]) {
-				$('#' + key + '_' + id).css({cursor: 'pointer'});
-				$('#' + key + '_' + id).attr('src', '{$imagesurl}/' + key + '.png');
+				$('#' + key + '_' + id).css({cursor: 'pointer'}).removeClass('notallowed');
+				//$('#' + key + '_' + id).attr('src', '{$imagesurl}/' + key + '.png');
 				switch(key) {
 					case 'vm_start': $('#' + key + '_' + id).click(function(event) {event.stopPropagation(); startVm(id);}); break;
 					case 'vm_reboot': break;
 					case 'vm_shutdown': $('#' + key + '_' + id).click(function(event) {event.stopPropagation(); shutdownVm(id);}); break;
 					case 'vm_destroy': $('#' + key + '_' + id).click(function(event) {event.stopPropagation(); destroyVm(id);}); break;
-					case 'vm_migrate': break;
-					case 'vm_edit': $('#' + key + '_' + id).click(function(event) {event.stopPropagation(); editVm(id);}); break;;
+					case 'vm_migrate': $('#' + key + '_' + id).click(function(event) {event.stopPropagation(); selectNode(id);}); break;
+					case 'vm_edit': $('#' + key + '_' + id).click(function(event) {event.stopPropagation(); editVm(id);}); break;
 					case 'vm_del': $('#' + key + '_' + id).click(function(event) {event.stopPropagation(); deleteRow(id);}); break;
+					case 'vm_toggle': $('#' + key + '_' + id).click(function(event) {event.stopPropagation(); toggleBoot(id);}); break;
 					case 'vm_login': $('#' + key + '_' + id).click(function(event) {event.stopPropagation(); loginVm(id);}); break;
 					case 'vmtemplate_finish': $('#' + key + '_' + id).click(function(event) {event.stopPropagation(); selectStaticPool(id);}); break;
 					case 'vmtemplate_finishdyn': $('#' + key + '_' + id).click(function(event) {event.stopPropagation(); selectDynamicPool(id);}); break;
@@ -82,9 +93,9 @@ function refreshVmButtons(id, buttons) {
 			}
 		}
 		else {
-			$('#' + key + '_' + id).css({cursor: 'auto'});
-			$('#' + key + '_' + id).attr('src', '{$imagesurl}/' + key + '_n.png');
-			$('#' + key + '_' + id).unbind('click');
+				$('#' + key + '_' + id).css({cursor: 'auto'}).addClass('notallowed');
+				//$('#' + key + '_' + id).attr('src', '{$imagesurl}/' + key + '_n.png');
+					$('#' + key + '_' + id).unbind('click');
 			if (key == 'vm_edit') {
 				$('#{$gridid}_grid').setRowData(id, {'displayname' : row['name']});
 			}
@@ -98,6 +109,13 @@ var cputimes_max = [22, 100];
 var vmcount = 0;
 var timeoutid = -1;
 var refreshDns = new Array();
+function reloadVms()
+{
+	buttonState = [];
+	clearTimeout(timeoutid);
+	timeoutid = -1;
+	$('#{$gridid}_grid').trigger('reloadGrid');
+}
 function refreshVms()
 {
 	clearTimeout(timeoutid);
@@ -139,109 +157,101 @@ function refreshNextVm()
 				switch(status)
 				{
 					case 'unknown':
-						buttons = {'vm_start': false, 'vm_restart': false, 'vm_shutdown': false, 'vm_destroy': false, 'vm_migrate': true, 'vm_edit': false, 'vm_del': false, 'vm_login': false, 'vmtemplate_finish': false, 'vmtemplate_finishdyn': false};
+						buttons = {'vm_start': false, 'vm_restart': false, 'vm_shutdown': false, 'vm_destroy': false, 'vm_migrate': true, 'vm_edit': false, 'vm_del': false, 'vm_toggle': false, 'vm_login': false, 'vmtemplate_finish': false, 'vmtemplate_finishdyn': false};
 						state = 'red';
 						break;
 					case 'running':
-						buttons = {'vm_start': false, 'vm_restart': true, 'vm_shutdown': true, 'vm_destroy': true, 'vm_migrate': true, 'vm_edit': false, 'vm_del': false, 'vm_login': true, 'vmtemplate_finish': false, 'vmtemplate_finishdyn': false};
+						buttons = {'vm_start': false, 'vm_restart': true, 'vm_shutdown': true, 'vm_destroy': true, 'vm_migrate': true, 'vm_edit': false, 'vm_del': false, 'vm_toggle': false, 'vm_login': true, 'vmtemplate_finish': false, 'vmtemplate_finishdyn': false};
 						state = 'green';
 						break;
 					case 'migrating':
-						buttons = {'vm_start': false, 'vm_restart': false, 'vm_shutdown': false, 'vm_destroy': false, 'vm_migrate': false, 'vm_edit': false, 'vm_del': false, 'vm_login': false, 'vmtemplate_finish': false, 'vmtemplate_finishdyn': false};
+						buttons = {'vm_start': false, 'vm_restart': false, 'vm_shutdown': false, 'vm_destroy': false, 'vm_migrate': false, 'vm_edit': false, 'vm_del': false, 'vm_toggle': false, 'vm_login': false, 'vmtemplate_finish': false, 'vmtemplate_finishdyn': false};
 						state = 'yellow';
 						break;
 					case 'stopped':
-						buttons = {'vm_start': true, 'vm_restart': false, 'vm_shutdown': false, 'vm_destroy': false, 'vm_migrate': true, 'vm_edit': true, 'vm_del': true, 'vm_login': false, 'vmtemplate_finish': true, 'vmtemplate_finishdyn': true};
+						buttons = {'vm_start': true, 'vm_restart': false, 'vm_shutdown': false, 'vm_destroy': false, 'vm_migrate': true, 'vm_edit': true, 'vm_del': true, 'vm_toggle': true, 'vm_login': false, 'vmtemplate_finish': true, 'vmtemplate_finishdyn': true};
 						state = 'red';
 						break;
 					case 'shutdown':
-						buttons = {'vm_start': true, 'vm_restart': false, 'vm_shutdown': false, 'vm_destroy': false, 'vm_migrate': true, 'vm_edit': true, 'vm_del': true, 'vm_login': false, 'vmtemplate_finish': true, 'vmtemplate_finishdyn': true};
+						buttons = {'vm_start': true, 'vm_restart': false, 'vm_shutdown': false, 'vm_destroy': false, 'vm_migrate': true, 'vm_edit': true, 'vm_del': true, 'vm_toggle': true, 'vm_login': false, 'vmtemplate_finish': true, 'vmtemplate_finishdyn': true};
 						state = 'red';
 						break;
 					case 'backup':
-						buttons = {'vm_start': false, 'vm_restart': false, 'vm_shutdown': false, 'vm_destroy': false, 'vm_migrate': false, 'vm_edit': false, 'vm_del': false, 'vm_login': false, 'vmtemplate_finish': false, 'vmtemplate_finishdyn': false};
+						buttons = {'vm_start': false, 'vm_restart': false, 'vm_shutdown': false, 'vm_destroy': false, 'vm_migrate': false, 'vm_edit': false, 'vm_del': false, 'vm_toggle': false, 'vm_login': false, 'vmtemplate_finish': false, 'vmtemplate_finishdyn': false};
 						state = 'red';
 						break;
 				}
-
-				refreshVmButtons(id, buttons);
-				if (buttons['vm_edit'])
-				{
-					displayname = '<a href="${updateurl}?dn=' + row['dn'] + '">' + row['name'] + '</a>';
-				}
-				else
-				{
-					displayname = row['name'];
-				}
-				stateimg = 'vm_status_' + state;
-				node = '<a href="${nodeurl}?node=' + data[row['uuid']]['node'] + '">' + data[row['uuid']]['node'] + '</a>';
-
-				spice = data[row['uuid']]['spice'];
-				$('#{$gridid}_grid').setCell(id, 'spice', spice);
-				if ('green' == state) {
-					mem = data[row['uuid']]['mem'];
-					cpu = data[row['uuid']]['cpu'];
-					cputext = '<div id="cpu_' + id + '" style="float: left; height:16px;"></div><div style="float: right; background-color: #E7DFDA; width: 3em;">' + cpu + '%</div>';
-
-					if (cputimes[row['uuid']] == undefined) {
-						cputimes[row['uuid']] = [0];
+				if (null != buttons) {
+					buttons.vm_start = buttons.vm_start && {$vmTemplateManage};
+					buttons.vm_restart = buttons.vm_restart && {$vmTemplateManage};
+					buttons.vm_shutdown = buttons.vm_shutdown && {$vmTemplateManage};
+					buttons.vm_destroy = buttons.vm_destroy && {$vmTemplateManage};
+					buttons.vm_migrate = buttons.vm_migrate && {$vmTemplateEdit};
+					buttons.vm_edit = buttons.vm_edit && {$vmTemplateEdit};
+					buttons.vm_del = buttons.vm_del && {$vmTemplateDelete};
+					buttons.vm_toggle = buttons.vm_toggle && {$vmTemplateCreate};
+					buttons.vm_login = buttons.vm_login && {$vmTemplateUse};
+					buttons.vmtemplate_finish = buttons.vmtemplate_finish && {$persistentVmCreate};
+					buttons.vmtemplate_finishdyn = buttons.vmtemplate_finishdyn && {$dynamicVmCreate};
+					
+				
+					refreshVmButtons(id, buttons);
+					if (buttons['vm_edit'])
+					{
+						displayname = '<a href="${updateurl}?dn=' + row['dn'] + '" title="created: ' + row['cts'] + '">' + data[row['uuid']]['name'] + '</a>';
 					}
-	                		cputimes[row['uuid']].push(cpu);
-                			if (cputimes[row['uuid']].length > cputimes_max[0])
-                    				cputimes[row['uuid']].splice(0,1);
-
-					if (cputimes[row['uuid'] + 2] == undefined) {
-						cputimes[row['uuid'] + 2] = [0];
+					else
+					{
+						displayname = '<span title="created: ' + row['cts'] + '">' + data[row['uuid']]['name'] + '</span>';
 					}
-	                		cputimes[row['uuid'] + 2].push(cpu);
-                			if (cputimes[row['uuid'] + 2].length > cputimes_max[1])
-                    				cputimes[row['uuid'] + 2].splice(0,1);
+					stateimg = 'vm_status_' + state;
+					if ('' != data[row['uuid']]['node']) {
+						if (${nodeView}) {
+							node = '<a href="${nodeurl}?node=' + data[row['uuid']]['node'] + '">' + data[row['uuid']]['node'] + '</a>';
+						}
+						else {
+							node = data[row['uuid']]['node'];
+						}
+					}
+					else {
+						node = '';
+					}
+					
+					spice = data[row['uuid']]['spice'];
+					$('#{$gridid}_grid').setCell(id, 'spice', spice);
+					if ('green' == state) {
+						mem = data[row['uuid']]['mem'];
+						cpu = data[row['uuid']]['cpu'];
+						cputext = '<div id="cpu_' + id + '" style="float: left; height:16px;"></div><div style="float: right; background-color: #E7DFDA; width: 3em;">' + cpu + '%</div>';
+	
+						if (cputimes[row['uuid']] == undefined) {
+							cputimes[row['uuid']] = [0];
+						}
+		                		cputimes[row['uuid']].push(cpu);
+	                			if (cputimes[row['uuid']].length > cputimes_max[0])
+	                    				cputimes[row['uuid']].splice(0,1);
+	
+						if (cputimes[row['uuid'] + 2] == undefined) {
+							cputimes[row['uuid'] + 2] = [0];
+						}
+		                		cputimes[row['uuid'] + 2].push(cpu);
+	                			if (cputimes[row['uuid'] + 2].length > cputimes_max[1])
+	                    				cputimes[row['uuid'] + 2].splice(0,1);
+					}
+					else {
+						mem = '---';
+						cpu = 0;
+						cputext = '---';
+					}
+					$('#{$gridid}_grid').setCell(id, 'status', status, {'padding-left': '20px', background: 'url({$imagesurl}/' + stateimg + '.png) no-repeat 3px 3px transparent'});
+	
+					var change = {};
+	
+					change['displayname'] = displayname;
+					change['mem'] = mem;
+					change['node'] = node;
+					$('#{$gridid}_grid').setRowData(id, change);
 				}
-				else {
-					mem = '---';
-					cpu = 0;
-					cputext = '---';
-				}
-				$('#{$gridid}_grid').setCell(id, 'status', status, {'padding-left': '20px', background: 'url({$imagesurl}/' + stateimg + '.png) no-repeat 3px 3px transparent'});
-
-				var change = {};
-
-				change['displayname'] = displayname;
-				change['mem'] = mem;
-				change['node'] = node;
-				$('#{$gridid}_grid').setRowData(id, change);
-
-				//$('#spice' + i).attr('href', spice);
-
-//				$('#{$gridid}_grid').setCell(id, 'cpu', cputext, {'font-weight': 'normal'});
-//				$('#cpu_' + id).sparkline(cputimes[row['uuid']], { lineColor: '#000000',
-//			                fillColor: '', //#E7DFDA',
-//			                spotColor: '#000000',
-//			                chartRangeMin: 0,
-//			                chartRangeMax: 100,
-//	        		        //minSpotColor: '#000000',
-//			                //maxSpotColor: '#000000',
-//	        		        normalRangeMin: 0,
-//					normalRangeMax: 50,
-//					normalRangeColor: '#68C760',
-//			                spotRadius: 2,
-//	        		        lineWidth: 1,
-//				 });
-//				$('#cpu2_' + id).sparkline(cputimes[row['uuid'] + 2], { lineColor: '#000000',
-//			                fillColor: '', //#E7DFDA',
-//	        		        spotColor: '#000000',
-//			                chartRangeMin: 0,
-//	        		        chartRangeMax: 100,
-//			                width : '150px',
-//					height : '50px',
-//	        		        //minSpotColor: '#000000',
-//			                //maxSpotColor: '#000000',
-//	        		        normalRangeMin: 0,
-//					normalRangeMax: 50,
-//					normalRangeColor: '#68C760',
-//			                spotRadius: 2,
-//	        		        lineWidth: 1,
-//				 });
 			}
 			vmcount--;
 			if (0 == vmcount) {
@@ -796,7 +806,7 @@ EOS
 $refreshtimes = array(5 => 5000, 10 => 10000, 20 => 20000, 60 => 60000);
 $refreshoptions = '';
 foreach($refreshtimes as $key => $value) {
-	$refreshoptions .= '<option value="' . $value . '" ' . ($actrefreshtime == $value ? 'selected="selected"' : '') . '>' .$key . '</option>';
+	$refreshoptions .= '<option value="' . $value . '" ' . ($sessionvars['refreshTime'] == $value ? 'selected="selected"' : '') . '>' .$key . '</option>';
 }
 $this->widget('ext.zii.CJqGrid', array(
 	'extend'=>array(
@@ -810,26 +820,27 @@ $this->widget('ext.zii.CJqGrid', array(
 		),
 	),
      'options'=>array(
-		'pager'=>$gridid . '_pager',
-		'url'=>$baseurl . '/vmTemplate/getVmTemplates',
-		'datatype'=>'xml',
-		'mtype'=>'GET',
-		'colNames'=>array('No.', 'DN', 'UUID', 'Spice', 'Boot', 'OrigName', 'Name', 'Status', 'Run Action', 'Memory', 'CPU', 'Node', 'Action'),
-		'colModel'=>array(
+		'pager' => $gridid . '_pager',
+		'page' => $sessionvars['page'],
+		'url' => $baseurl . '/vmTemplate/getVmTemplates',
+		'datatype' => 'xml',
+		'mtype' => 'GET',
+		'colNames' => array('No.', 'DN', 'UUID', 'Spice', 'Boot', 'Name', 'DisplayName', 'createTimestamp', 'Status', 'Run Action', 'Memory', 'CPU', 'Node', 'Action'),
+		'colModel' => array(
 			array('name'=>'no','index'=>'no','width'=>'30','align'=>'right', 'sortable' => false, 'search' =>  false, 'editable'=>false),
 			array('name'=>'dn','index'=>'dn','hidden'=>true,'editable'=>false),
 			array('name'=>'uuid','index'=>'uuid','hidden'=>true,'editable'=>false),
 			array('name'=>'spice','index'=>'spice','hidden'=>true,'editable'=>false),
 			array('name'=>'boot','index'=>'boot','hidden'=>true,'editable'=>false),
 			array('name'=>'name','index'=>'name','hidden'=>true,'editable'=>false),
-			array('name'=>'displayname','index'=>'sstDisplayName','editable'=>false),
+			array('name'=>'displayname','index'=>'sstDisplayName','width'=>'70','editable'=>false),
+			array('name'=>'cts','index'=>'createTimestamp','hidden'=>true,'editable'=>false, 'search' =>false),
 			array('name'=>'status','index'=>'status', 'sortable' =>false, 'search' =>false, 'editable'=>false),
-			array('name'=>'statusact','index'=>'statusact','width' => 70, 'fixed' => true, 'sortable' => false, 'search' =>  false, 'editable'=>false),
+			array('name'=>'statusact','index'=>'statusact','width' => 76, 'fixed' => true, 'sortable' =>false, 'search' =>false, 'editable'=>false),
 			array('name'=>'mem','index'=>'mem','width' => '100', 'fixed' => true, 'align'=>'center', 'sortable' =>false, 'search' => false, 'editable'=>false),
 			array('name'=>'cpu','index'=>'cpu','width' => '104', 'fixed' => true, 'align'=>'center', 'sortable' =>false, 'search' => false, 'editable'=>false, 'hidden'=>true),
 			array('name'=>'node','index'=>'sstNode','editable'=>false),
-			array ('name' => 'act','index' => 'act','width' => 19 * 6, 'fixed' => true, 'sortable' => false, 'search' =>  false, 'editable'=>false)
-			// 'width' => 124
+			array('name' => 'act','index' => 'act','width' => 114, 'fixed' => true, 'sortable' => false, 'search' =>  false, 'editable'=>false)
 		),
 		//'toolbar' => array(true, "top"),
 		//'caption'=>'VMs',
@@ -873,23 +884,28 @@ EOS
 					bootdevice = 'cdrom';
 				}
 				var statusact = '';
-				statusact += '<img id="vm_start_' + ids[i] + '" src="{$imagesurl}/vm_start_n.png" alt="" title="start VM" class="action" />';
-//				statusact += '<img id="vm_restart_' + ids[i] + '" src="{$imagesurl}/vm_restart_n.png" alt="" title="reboot VM" class="action" onclick="rebootVm(\'' + ids[i] + '\');" />';
-				statusact += '<img id="vm_shutdown_' + ids[i] + '" src="{$imagesurl}/vm_shutdown_n.png" alt="" title="shutdown VM" class="action" />';
-				statusact += '<img id="vm_destroy_' + ids[i] + '" src="{$imagesurl}/vm_destroy_n.png" alt="" title="destroy VM" class="action" />';
-				statusact += '<img id="vm_migrate_' + ids[i] + '" src="{$imagesurl}/vm_migrate.png" alt="" title="migrate VM" class="action" onclick="selectNode(\'' + ids[i] + '\');" />';
+				statusact += '<img id="vm_start_' + ids[i] + '" src="{$imagesurl}/vm_start.png" alt="" title="start VM" class="action notallowed" />';
+//				statusact += '<img id="vm_restart_' + ids[i] + '" src="{$imagesurl}/vm_restart.png" alt="" title="reboot VM" class="action notallowed" onclick="rebootVm(\'' + ids[i] + '\');" />';
+				statusact += '<img id="vm_shutdown_' + ids[i] + '" src="{$imagesurl}/vm_shutdown.png" alt="" title="shutdown VM" class="action notallowed" />';
+				statusact += '<img id="vm_destroy_' + ids[i] + '" src="{$imagesurl}/vm_destroy.png" alt="" title="destroy VM" class="action notallowed" />';
+				statusact += '<img id="vm_migrate_' + ids[i] + '" src="{$imagesurl}/vm_migrate.png" alt="" title="migrate VM" class="action notallowed" />';
 				var act = '';
 				//act += '<a href="${detailurl}?dn=' + row['dn'] + '"><img src="{$imagesurl}/vmtemplate_detail.png" alt="" title="view VM Template" class="action" /></a>';
-				act += '<img id="vm_edit_' + ids[i] + '" src="{$imagesurl}/vm_edit_n.png" alt="" title="edit VM Template" class="action" />';
-				act += '<img id="vm_del_' + ids[i] + '" src="{$imagesurl}/vm_del_n.png" alt="" title="delete VM Template" class="action" />';
-				act += '<img src="{$imagesurl}/vmtemplate_' + row['boot'] + '.png" alt="" title="toogle bootdevice to ' + bootdevice + '" class="action" style="cursor: pointer;" onclick="toogleBoot(\'' + ids[i] + '\', \'' + bootdevice + '\');" />';
-//				act += '<a id="spice' + i + '" href="' + row['spice'] + '"><img id="vm_login_' + ids[i] + '" src="{$imagesurl}/vm_login_n.png" alt="" title="use VM Template" class="action" /></a>';
-				act += '<img id="vm_login_' + ids[i] + '" src="{$imagesurl}/vm_login_n.png" alt="" title="use VM Template" class="action" />';
-				act += '<img id="vmtemplate_finish_' + ids[i] + '" src="{$imagesurl}/vmtemplate_finish_n.png" alt="" title="VM Template =&gt; persistent VM" class="superaction"/>';
-				act += '<img id="vmtemplate_finishdyn_' + ids[i] + '" src="{$imagesurl}/vmtemplate_finishdyn_n.png" alt="" title="VM Template =&gt; dynamic VM" class="superaction"/>';
+				act += '<img id="vm_edit_' + ids[i] + '" src="{$imagesurl}/vm_edit.png" alt="" title="edit VM Template" class="action notallowed" />';
+				act += '<img id="vm_del_' + ids[i] + '" src="{$imagesurl}/vm_del.png" alt="" title="delete VM Template" class="action notallowed" />';
+				act += '<img id="vm_toggle_' + ids[i] + '" src="{$imagesurl}/vmtemplate_' + row['boot'] + '.png" alt="" title="toggle bootdevice to ' + bootdevice + '" class="action notallowed";" />';
+//				act += '<a id="spice' + i + '" href="' + row['spice'] + '"><img id="vm_login_' + ids[i] + '" src="{$imagesurl}/vm_login.png" alt="" title="use VM Template" class="action notallowed" /></a>';
+				act += '<img id="vm_login_' + ids[i] + '" src="{$imagesurl}/vm_login.png" alt="" title="use VM Template" class="action notallowed" />';
+				act += '<img id="vmtemplate_finish_' + ids[i] + '" src="{$imagesurl}/vmtemplate_finish.png" alt="" title="VM Template =&gt; persistent VM" class="superaction notallowed"/>';
+				act += '<img id="vmtemplate_finishdyn_' + ids[i] + '" src="{$imagesurl}/vmtemplate_finishdyn.png" alt="" title="VM Template =&gt; dynamic VM" class="superaction notallowed"/>';
 				//act += '<img src="{$imagesurl}/vm_del.png" alt="" title="delete VM" class="action" onclick="deleteRow(\'' + ids[i] + '\');" />';
-				var node = '<a href="${nodeurl}?node=' + row['node'] + '">' + row['node'] + '</a>';
-				$('#{$gridid}_grid').setRowData(ids[i],{'displayname': row['name'], 'act': act, 'statusact': statusact, 'node': node});
+				if (${nodeView}) {
+					var node = '<a href="${nodeurl}?node=' + row['node'] + '">' + row['node'] + '</a>';
+				}
+				else {
+					var node = row['node'];
+				}
+				$('#{$gridid}_grid').setRowData(ids[i],{'act': act, 'statusact': statusact, 'node': node});
 			}
 			if (-1 == timeoutid)
 			{

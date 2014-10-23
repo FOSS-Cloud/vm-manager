@@ -94,20 +94,42 @@ class VmTemplateController extends Controller
 	public function accessRules()
 	{
 		return array(
-			array('allow', // allow authenticated user to perform 'create' and 'update' actions
-		        	'actions'=>array('index', 'view', 'create', 'update', 'delete', 'finish', 'finishDynamic',
-					'getDefaults', 'getVmInfo', 'getVmTemplates', 'refreshVMs', 'getNodeGui',
-              				'saveVm', 'startVm', 'shutdownVm', 'rebootVm', 'destroyVm', 'migrateVm', 'toogleBoot',
-					'getCheckCopyGui', 'checkCopy', 'getDynData', 'getStaticPoolGui', 'getDynamicPoolGui', 'restoreVm', 'waitForRestoreAction', 'getRestoreAction', 'startRestoreAction', 'cancelRestoreAction', 'handleRestoreAction'),
-		        	'users'=>array('@'),
-				'expression'=>'Yii::app()->user->isAdmin'
+			array('allow',
+				'actions'=>array('index', 'view', 'getPoolInfo', 'getVmTemplates', 'getVmInfo', 'refreshTimeout', 'refreshVMs', 'getCheckCopyGui', 'checkCopy'),
+				'users'=>array('@'),
+				'expression'=>'Yii::app()->user->hasRight(\'templateVM\', \'Access\', \'Enabled\') || Yii::app()->user->hasRight(\'persistentVM\', \'Access\', \'Enabled\')'
+			),
+			array('allow',
+				'actions'=>array('create', 'toggleBoot'),
+				'users'=>array('@'),
+				'expression'=>'Yii::app()->user->hasRight(\'templateVM\', \'Create\', \'Enabled\') || Yii::app()->user->hasRight(\'persistentVM\', \'Create\', \'Enabled\')'
+			),
+			array('allow',
+				'actions'=>array('update', 'finish', 'finishDynamic', 'getDefaults', 'getDynData', 'getStaticPoolGui', 'getDynamicPoolGui'),
+				'users'=>array('@'),
+				'expression'=>'Yii::app()->user->hasOtherRight(\'templateVM\', \'Edit\', \'None\') || Yii::app()->user->hasOtherRight(\'persistentVM\', \'Edit\', \'None\')'
+			),
+			array('allow',
+				'actions'=>array('delete'),
+				'users'=>array('@'),
+				'expression'=>'Yii::app()->user->hasOtherRight(\'templateVM\', \'Delete\', \'None\') || Yii::app()->user->hasOtherRight(\'persistentVM\', \'Delete\', \'None\')'
+			),
+			array('allow',
+				'actions'=>array('startVm', 'shutdownVm', 'rebootVm', 'destroyVm', 'migrateVm', 'restoreVm', 'getNodeGui', 'waitForRestoreAction', 'getRestoreAction', 'startRestoreAction', 'cancelRestoreAction', 'handleRestoreAction'),
+				'users'=>array('@'),
+				'expression'=>'Yii::app()->user->hasOtherRight(\'templateVM\', \'Manage\', \'None\') || Yii::app()->user->hasOtherRight(\'persistentVM\', \'Manage\', \'None\')'
 			),
 			array('deny',  // deny all users
-	    	    'users'=>array('*'),
+				'users'=>array('*'),
 			),
 		);
 	}
 	public function actionIndex() {
+		$sessionvars = Yii::app()->getSession()->get('vmTemplate.index', array('page' => 1, 
+			'refreshTime' => 10000, 
+			'filter' => array('pool' => null, 'name' => null, 'createTimestamp' => null, 'node' => null)
+		));
+		
 		$persistentpools = array();
 		$ldappools = CLdapRecord::model('LdapVmPool')->findAll(array('attr'=>array('sstVirtualMachinePoolType'=>'persistent')));
 		foreach ($ldappools as $pool) {
@@ -130,7 +152,31 @@ class VmTemplateController extends Controller
 			$dynamicpools[$pool->dn] = array();
 			$dynamicpools[$pool->dn]['name'] = $pool->sstDisplayName;
 		}
-		$this->render('index', array('persistentpools' => $persistentpools, 'dynamicpools' => $dynamicpools, 'copyaction' => isset($_GET['copyaction']) ? $_GET['copyaction'] : null));
+		
+		$criteria = array('attr'=>array('sstVirtualMachinePoolType' => 'template'));
+		$vmpools = CLdapRecord::model('LdapVmPool')->findAll($criteria);
+		//$vmpool = Yii::app()->getSession()->get('vm.index.template.vmpool', null);
+		$vmpool = $sessionvars['filter']['pool'];
+		if (is_null($vmpool) && 1 === count($vmpools)) {
+			$vmpool = $vmpools[0]->sstVirtualMachinePool;
+		}
+		if (!is_null($vmpool)) {
+			//Yii::app()->getSession()->add('vm.index.template.vmpool', $vmpool);
+			$sessionvars['filter']['pool'] = $vmpool;
+			$criteria = array('attr'=>array('sstVirtualMachinePool' => $vmpool));
+			$pools = CLdapRecord::model('LdapVmPool')->findAll($criteria);
+		}
+		
+		Yii::app()->getSession()->add('vmTemplate.index', $sessionvars);
+		
+		$this->render('index', array(
+			'persistentpools' => $persistentpools, 
+			'dynamicpools' => $dynamicpools, 
+			'vmpools' => $this->createDropdownFromLdapRecords($vmpools, 'sstVirtualMachinePool', 'sstDisplayName'),
+			'vmpool' => $vmpool,
+			'sessionvars' => $sessionvars,
+			'copyaction' => isset($_GET['copyaction']) ? $_GET['copyaction'] : null
+		));
 	}
 
 	public function actionView() {
@@ -870,6 +916,7 @@ class VmTemplateController extends Controller
 
 	public function actionGetVMTemplates() {
 		$this->disableWebLogRoutes();
+		$sessionvars = Yii::app()->getSession()->get('vmTemplate.index', array());
 		$page = $_GET['page'];
 
 		// get how many rows we want to have into the grid - rowNum parameter in the grid
@@ -884,53 +931,37 @@ class VmTemplateController extends Controller
 
 		$criteria = array('attr'=>array());
 		$criteria['attr']['sstVirtualMachineType'] = 'template';
+		if (isset($_GET['vmpool'])) {
+			$criteria['attr']['sstVirtualMachinePool'] = $_GET['vmpool'];
+			$sessionvars['filter']['pool'] = $_GET['vmpool'];
+		}
 		if (isset($_GET['sstDisplayName'])) {
 			$criteria['attr']['sstDisplayName'] = '*' . $_GET['sstDisplayName'] . '*';
+			$sessionvars['filter']['name'] = $_GET['sstDisplayName'];
 		}
 		if (isset($_GET['sstNode'])) {
 			$criteria['attr']['sstNode'] = '*' . $_GET['sstNode'] . '*';
+			$sessionvars['filter']['node'] = $_GET['sstNode'];
 		}
 		if ($sidx != '')
 		{
 			$criteria['sort'] = $sidx . '.' . $sord;
+			$sessionvars['sort'] = $criteria['sort'];
 		}
-		$vms = CLdapRecord::model('LdapVmFromTemplate')->findAll($criteria);
+		
+		Yii::app()->getSession()->add('vmTemplate.index', $sessionvars);
+		
+		if (Yii::app()->user->hasRight('templateVM', 'View', 'All')) {
+			$vms = LdapVmFromTemplate::model()->findAll($criteria);
+		}
+		else {
+			$vms = array();
+		}
+		
+		
+//		$vms = CLdapRecord::model('LdapVmFromTemplate')->findAll($criteria);
 		$count = count($vms);
-
-		// calculate the total pages for the query
-		if( $count > 0 && $limit > 0)
-		{
-			$total_pages = ceil($count/$limit);
-		}
-		else
-		{
-			$total_pages = 0;
-		}
-
-		// if for some reasons the requested page is greater than the total
-		// set the requested page to total page
-		if ($page > $total_pages)
-		{
-			$page = $total_pages;
-		}
-
-		// calculate the starting position of the rows
-		$start = $limit * $page - $limit;
-
-		// if for some reasons start position is negative set it to 0
-		// typical case is that the user type 0 for the requested page
-		if($start < 0)
-		{
-			$start = 0;
-		}
-
-		$criteria['limit'] = $limit;
-		$criteria['offset'] = $start;
-
-		$vms = CLdapRecord::model('LdapVmFromTemplate')->findAll($criteria);
-
-		// we should set the appropriate header information. Do not forget this.
-		//header("Content-type: text/xml;charset=utf-8");
+		$total_pages = ceil($count / $limit);
 
 		$s = "<?xml version='1.0' encoding='utf-8'?>";
 		$s .=  '<rows>';
@@ -938,18 +969,24 @@ class VmTemplateController extends Controller
 		$s .= '<total>' . $total_pages . '</total>';
 		$s .= '<records>' . $count . '</records>';
 
-		$i = 1;
-		foreach ($vms as $vm) {
-			//	'colNames'=>array('No.', 'DN', 'UUID', 'Spice', 'Boot', 'Name', 'Displayname', 'Status', 'Run Action', 'Memory', 'CPU', 'Node', 'Action'),
+		$start = $limit * ($page - 1);
+		$start = $start > $count ? 0 : $start;
+		$end = $start + $limit;
+		$end = $end > $count ? $count : $end;
+		for ($i=$start; $i<$end; $i++) {
+			$vm = $vms[$i];
+					//	'colNames'=>array('No.', 'DN', 'UUID', 'Spice', 'Boot', 'Name', 'Displayname', 'createTimestamp', 'Status', 'Run Action', 'Memory', 'CPU', 'Node', 'Action'),
 
 			$s .= '<row id="' . $i . '">';
-			$s .= '<cell>'. $i ."</cell>\n";
+			$s .= '<cell>'. ($i+1) ."</cell>\n";
 			$s .= '<cell>'.$vm->dn ."</cell>\n";
 			$s .= '<cell>'. $vm->sstVirtualMachine ."</cell>\n";
 			$s .= '<cell><![CDATA['. $vm->getSpiceUri() . "]]></cell>\n";
 			$s .= '<cell>'. $vm->sstOsBootDevice ."</cell>\n";
+			//$s .= "<cell></cell>\n";
 			$s .= '<cell>'. $vm->sstDisplayName ."</cell>\n";
-			$s .= "<cell></cell>\n";
+			$s .= '<cell>'. $vm->sstDisplayName ."</cell>\n";
+			$s .= '<cell>'. $vm->formatCreateTimestamp('d.m.Y H:i:s') ."</cell>\n";
 			$s .= "<cell>unknown</cell>\n";
 			$s .= "<cell></cell>\n";
 			$s .= "<cell>---</cell>\n";
@@ -957,7 +994,6 @@ class VmTemplateController extends Controller
 			$s .= '<cell>'. $vm->sstNode ."</cell>\n";
 			$s .= "<cell></cell>\n";
 			$s .= "</row>\n";
-			$i++;
 		}
 		$s .= '</rows>';
 
