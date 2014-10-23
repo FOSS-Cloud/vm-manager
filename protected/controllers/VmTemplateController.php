@@ -1736,22 +1736,23 @@ EOS;
 		}
 	}
 
-	public function actionToogleBoot() {
+	public function actionToggleBoot() {
 		$this->disableWebLogRoutes();
 		if (isset($_GET['dn'])) {
 			$vm = CLdapRecord::model('LdapVmFromTemplate')->findByDn($_GET['dn']);
 			if (!is_null($vm)) {
 				$libvirt = CPhpLibvirt::getInstance();
-				$dev = array($_GET['dev']);
-				$dev[1] = 'hd' === $_GET['dev'] ? 'cdrom' : 'hd';
+				//$dev = array($_GET['dev']);
+				//$dev[1] = 'hd' === $_GET['dev'] ? 'cdrom' : 'hd';
+				$dev = array('hd' === $vm->sstOsBootDevice ? 'cdrom' : 'hd', $vm->sstOsBootDevice);
 				if ($libvirt->changeVmBootDevice(array('libvirt' => $vm->node->getLibvirtUri(), 'name' => $vm->sstVirtualMachine, 'device1' => $dev[0], 'device2' => $dev[1]))) {
 					$vm->setOverwrite(true);
-					$vm->sstOsBootDevice = $_GET['dev'];
+					$vm->sstOsBootDevice = $dev[0];
 					$vm->save();
 					$this->sendAjaxAnswer(array('error' => 0));
 				}
 				else {
-					$this->sendAjaxAnswer(array('error' => 1, 'message' => __FILE__ . '(' . __LINE__ . '): CPhpLibvirt startVm failed!'));
+					$this->sendAjaxAnswer(array('error' => 1, 'message' => __FILE__ . '(' . __LINE__ . '): CPhpLibvirt changeVmBootDevice failed!'));
 				}
 			}
 			else {

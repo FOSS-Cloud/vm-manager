@@ -449,14 +449,14 @@ function deleteRow(id)
 	}});
 }
 
-function toogleBoot(id, device)
+function toggleBoot(id) //, device)
 {
 	var row = $('#{$gridid}_grid').getRowData(id);
 	$.ajax({
-		url: "{$baseurl}/vmTemplate/toogleBoot",
+		url: "{$baseurl}/vmTemplate/toggleBoot",
 		cache: false,
 		dataType: 'xml',
-		data: 'dn=' + row['dn'] + '&dev=' + device,
+		data: 'dn=' + row['dn'], // + '&dev=' + device,
 		success: function(xml){
 			var err = $(xml).find('error');
 			err = err.text();
