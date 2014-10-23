@@ -308,6 +308,7 @@ class LdapUserIdentity extends CUserIdentity
 
 						$this->setState('uid', $model->uid);
 						$this->setState('groupuids', $groups);
+						$this->setState('roleuid', $model->sstRoleUID);
 						$this->setState('realm', $this->realm);
 						$this->setState('externalLDAP', isset($realm->sstLDAPExternalDirectory) &&  'TRUE' === $realm->sstLDAPExternalDirectory);
 						$this->setState('admin', $model->isAdmin());
@@ -319,6 +320,18 @@ class LdapUserIdentity extends CUserIdentity
 							$lang = substr($lang, 0, 2);
 						}
 						$this->setState('lang', $lang);
+						
+						$rights = array();
+						if (!is_null($model->role)) {
+							foreach($model->role->rights as $right) {
+								list($group, $action) = explode('.', $right->sstUserRightSectionAction);
+								if (!isset($rights[$group])) {
+									$rights[$group] = array();
+								}
+								$rights[$group][$action] = $right->sstUserRightValue;
+							}
+						}
+						$this->setState('rights', $rights);
 						
 						Yii::log('LdapUserIdentity::authenticationIntern: ' . var_export($_SESSION, true), 'profile', 'authentication');
 					}

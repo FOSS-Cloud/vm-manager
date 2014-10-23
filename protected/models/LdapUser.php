@@ -37,7 +37,8 @@ class LdapUser extends CLdapRecord {
 	public function relations()
 	{
 		return array(
-			'roles' => array(self::HAS_MANY, 'dn', 'LdapUserRole', '$model->getDn()'),
+			//'roles' => array(self::HAS_MANY, 'dn', 'LdapUserRole', '$model->getDn()'),
+			'role' => array(self::HAS_ONE, 'sstRoleUID', 'LdapUserRole', 'uid'),
 			'assign' => array(self::HAS_ONE_DN, 'dn', 'LdapUserAssign', '\'ou=\' . $model->uid . \',ou=people,ou=\' . Yii::app()->user->realm . \',ou=authentication,ou=virtualization,ou=services\''),
 		);
 	}
@@ -57,11 +58,26 @@ class LdapUser extends CLdapRecord {
 
 	public function isAdmin() {
 		$retval = false;
-		$roles = $this->roles;
-		foreach($this->roles as $role) {
-			if ('User' != $role->sstRole) {
-				$retval = true;
-				break;
+// 		$roles = $this->roles;
+// 		foreach($this->roles as $role) {
+// 			if ('User' != $role->sstRole) {
+// 				$retval = true;
+// 				break;
+// 			}
+// 		}
+		if (!is_null($this->role) && 'Admin' === $this->role->sstDisplayName) {
+			$retval = true;
+		}
+		else {
+			$criteria = array('branchDn' => $this->getDn(), 'attr' => array());
+			$roles = LdapUserRoleOld::model()->findAll($criteria);
+			if (!is_null($roles)) {
+				foreach($roles as $role) {
+					if ('Admin' == substr($role->sstRole, 0, 5)) {
+						$retval = true;
+						break;
+					}
+				}
 			}
 		}
 		return $retval;
@@ -161,13 +177,6 @@ class LdapUser extends CLdapRecord {
 		);
 	}
 
-	public static function getRoleNames() {
-		return array(
-			'admin' => Yii::t('user', 'Admin'),
-			'user' => Yii::t('user', 'VM User')
-		);
-	}
-
 	public static function getLanguages() {
 		$retval = array();
 
@@ -186,5 +195,28 @@ class LdapUser extends CLdapRecord {
 			$retval = $_SESSION['languages'];
 		}
 		return $retval;
+	}
+}
+
+/**
+ * Representing a user role of the previous role management.
+ * Only needed to allow login before patch was made
+ * 
+ * Todo: remove in next version
+ *
+ */
+class LdapUserRoleOld extends CLdapRecord {
+	protected $_branchDn = '';
+	protected $_filter = array('all' => 'sstRole=*');
+	protected $_dnAttributes = array('sstRole');
+	protected $_objectClasses = array('sstRoles', 'top');
+
+	/**
+	 * Returns the static model of the specified LDAP class.
+	 * @return CLdapRecord the static model class
+	*/
+	public static function model($className=__CLASS__)
+	{
+		return parent::model($className);
 	}
 }

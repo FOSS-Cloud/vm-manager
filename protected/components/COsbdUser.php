@@ -44,7 +44,8 @@
  *
  */
 class COsbdUser extends CWebUser {
-
+	private $rights = null;
+	
 	/**
 	 * Returns the URL that the user should be redirected to after successful login.
 	 * This property is usually used by the login action. If the login is successful and does not have role 'Admin',
@@ -99,5 +100,28 @@ class COsbdUser extends CWebUser {
 	 */
 	public function getResellerUID() {
 		return $this->getState('reselleruid');
+	}
+	
+	public function getLdapUser() {
+		return LdapUser::model()->findByDn('uid=' . $this->getUID() . ',ou=people');
+	}
+	
+	public function hasRight($group, $action, $value) {
+		return $value === $this->getRight($group, $action);
+	}
+	
+	public function hasOtherRight($group, $action, $value) {
+		$right = $this->getRight($group, $action);
+		return !is_null($right) && $value !== $right;
+	}
+	
+	public function getRight($group, $action) {
+		if (is_null($this->rights)) {
+			$this->rights = $this->getState('rights');
+		}
+		if (isset($this->rights[$group]) && isset($this->rights[$group][$action])) {
+			return $this->rights[$group][$action];
+		}
+		return null;
 	}
 }

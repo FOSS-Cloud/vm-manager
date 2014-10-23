@@ -29,8 +29,24 @@
  */
 
 class LdapUserRole extends CLdapRecord {
-	protected $_branchDn = '';
-	protected $_filter = array('all' => 'sstRole=*');
-	protected $_dnAttributes = array('sstRole');
-	protected $_objectClasses = array('sstRoles', 'top');
+	protected $_branchDn = 'ou=roles';
+	protected $_filter = array('all' => 'uid=*');
+	protected $_dnAttributes = array('uid');
+	protected $_objectClasses = array('sstRoleObjectClass', 'top');
+	
+	public function relations()
+	{
+		return array(
+			'rights' => array(self::HAS_MANY, 'dn', 'LdapUserRightAction', '$model->getDn()'),
+		);
+	}
+
+	/**
+	 * Returns the static model of the specified LDAP class.
+	 * @return CLdapRecord the static model class
+	 */
+	public static function model($className=__CLASS__)
+	{
+		return parent::model($className);
+	}
 }
