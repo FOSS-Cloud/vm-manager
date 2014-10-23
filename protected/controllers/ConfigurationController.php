@@ -79,7 +79,7 @@ class ConfigurationController extends Controller
 			array('allow', // allow authenticated user to perform 'create' and 'update' actions
 		        'actions'=>array('global', 'backup'),
 				'users'=>array('@'),
-				'expression'=>'Yii::app()->user->isAdmin'
+				'expression'=>'Yii::app()->user->hasRight(\'configuration\', COsbdUser::$RIGHT_ACTION_ACCESS, COsbdUser::$RIGHT_VALUE_ENABLED)'
 			),
 			array('deny',  // deny all users
 				'users'=>array('*'),
@@ -89,7 +89,6 @@ class ConfigurationController extends Controller
 	public function actionIndex() {
 		$this->render('index');
 	}
-
 
 	public function actionGlobal() {
 		$model = new ConfigurationGlobalForm('update');
