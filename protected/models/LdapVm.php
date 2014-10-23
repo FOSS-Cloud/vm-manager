@@ -169,6 +169,20 @@ class LdapVm extends CLdapRecord {
 	}
 
 	/**
+	 * is there a backup running for this vm
+	 * @return boolean
+	 * 
+	 * @copyright Copyright (c) 2014, stepping stone GmbH, Switzerland, http://www.stepping-stone.ch, support@stepping-stone.ch
+	 */
+	public function hasActiveBackup() {
+		$single = LdapVmSingleBackup::model();
+		$single->branchDn = $this->getDn(); // Don't use 'ou=backup,' . $this->getDn(); because there might be no backup branch
+		$active = $single->findAll(array('filterName' => 'active', 'depth' => true));
+				
+		return 0 < count($active);
+	}
+	
+	/**
 	 * @return array customized attribute labels (name=>label)
 	 */
 	public function attributeLabels()
