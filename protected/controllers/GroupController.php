@@ -73,14 +73,28 @@ class GroupController extends Controller
 	public function accessRules()
 	{
 		return array(
-			array('allow', // allow authenticated user to perform 'create' and 'update' actions
-		        	'actions'=>array('index', 'create', 'update', 'delete',
-					'getGroups', 'import'),
+			array('allow',
+				'actions'=>array('index', 'getGroups'),
 				'users'=>array('@'),
-				'expression'=>'Yii::app()->user->isAdmin'
+				'expression'=>'Yii::app()->user->hasRight(\'group\', \'Access\', \'Enabled\')'
+			),
+			array('allow',
+				'actions'=>array('create'),
+				'users'=>array('@'),
+				'expression'=>'Yii::app()->user->hasRight(\'group\', \'Create\', \'Enabled\')'
+			),
+			array('allow',
+				'actions'=>array('update', 'import'),
+				'users'=>array('@'),
+				'expression'=>'Yii::app()->user->hasOtherRight(\'group\', \'Edit\', \'Enabled\', \'None\')'
+			),
+			array('allow',
+				'actions'=>array('delete'),
+				'users'=>array('@'),
+				'expression'=>'Yii::app()->user->hasOtherRight(\'group\', \'Delete\', \'Enabled\', \'None\')'
 			),
 			array('deny',  // deny all users
-	    	    		'users'=>array('*'),
+				'users'=>array('*'),
 			),
 		);
 	}
@@ -322,7 +336,12 @@ class GroupController extends Controller
 		if (isset($_GET['extname']) && '' != $_GET['extname']) {
 			$attr['name'] = '*' . $_GET['extname'] . '*';
 		}
-		$groups = CLdapRecord::model('LdapGroup')->findAll(array('attr' => $attr));
+		if(Yii::app()->user->hasRight('group', 'View', 'All')) {
+			$groups = CLdapRecord::model('LdapGroup')->findAll(array('attr' => $attr));
+		}
+		else {
+			$groups = array();
+		}
 		$count = count($groups);
 		$total_pages = ceil($count / $limit);
 

@@ -47,6 +47,9 @@ $deleteUrl = $this->createUrl('group/delete');
 
 $savetxt = Yii::t('group', 'Save');
 
+$groupEdit = Yii::app()->user->hasRight('group', 'Edit', 'All') ? 'true' : 'false';
+$groupDelete = Yii::app()->user->hasRight('group', 'Delete', 'All') ? 'true' : 'false';
+
 Yii::app()->clientScript->registerScript('assignVMs', <<<EOS
 function assignVMs(dn)
 {
@@ -168,15 +171,26 @@ $this->widget('ext.zii.CJqGrid', array(
 			for(var i=0;i < ids.length;i++)
 			{
 				var row = $('#{$gridid}_grid').getRowData(ids[i]);
-				name = '<a href="${updateUrl}?dn=' + row['dn'] + '">' + row['name'] + '</a>';
+				var name;
+				if ({$groupEdit}) {
+					name = '<a href="{$updateUrl}?dn=' + row['dn'] + '">' + row['name'] + '</a>';
+				}
+				else {
+					name = row['name'];
+				}
 				var act = '';
-				act += '<a href="${updateUrl}?dn=' + row['dn'] + '"><img src="{$imagesUrl}/group_edit.png" alt="" title="edit Group" class="action" /></a>';
+				if ({$groupEdit}) {
+					act += '<a href="{$updateUrl}?dn=' + row['dn'] + '"><img src="{$imagesUrl}/group_edit.png" alt="" title="edit User" class="action" /></a>';
+				}
+				else {
+					act += '<img src="{$imagesUrl}/group_edit.png" alt="" title="" class="action notallowed" /></a>';
+				}
 				//act += '<img src="{$imagesUrl}/user_edit.png" style="cursor: pointer;" alt="" title="edit Group" class="action" onclick="update(\'' + row['dn'] + '\');" />';
-				if ('true' !== row['hasuser']) {
+				if ('true' !== row['hasuser'] && !${groupDelete}) {
 					act += '<img src="{$imagesUrl}/group_del.png" style="cursor: pointer;" alt="" title="delete Group" class="action" onclick="deleteRow(\'' + ids[i] + '\');" />';
 				}
 				else {
-					act += '<img src="{$imagesUrl}/group_del_n.png" alt="" title="User assigned to this group" class="action" />';
+					act += '<img src="{$imagesUrl}/group_del.png" alt="" title="User assigned to this group" class="action notallowed" />';
 				}
 				//act += '<img src="{$imagesUrl}/uservm_add.png" style="cursor: pointer;" alt="" title="Assign VMs to this user" class="action" onclick="assignVMs(\'' + row['dn'] + '\');" />';
 				$('#{$gridid}_grid').setRowData(ids[i],{'name': name, 'act': act});
