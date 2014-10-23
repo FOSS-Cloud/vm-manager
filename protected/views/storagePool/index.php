@@ -44,6 +44,9 @@ $deleteUrl = $this->createUrl('storagePool/delete');
 
 $savetxt = Yii::t('storagepool', 'Save');
 
+$poolEdit = Yii::app()->user->hasRight('storagePool', 'Edit', 'All') ? 'true' : 'false';
+$poolDelete = Yii::app()->user->hasRight('storagePool', 'Delete', 'All') ? 'true' : 'false';
+
 Yii::app()->clientScript->registerScript('javascript', <<<EOS
 function deleteRow(id)
 {
@@ -108,11 +111,22 @@ $this->widget('ext.zii.CJqGrid', array(
 			for(var i=0;i < ids.length;i++)
 			{
 				var row = $('#{$gridid}_grid').getRowData(ids[i]);
-				name = '<a href="${updateUrl}?dn=' + row['dn'] + '">' + row['name'] + '</a>';
+				var name;
+				if (${poolEdit}) {
+					name = '<a href="${updateUrl}?dn=' + row['dn'] + '">' + row['name'] + '</a>';
+				}
+				else {
+					name = row['name'];
+				}
 				var act = '';
-				act += '<a href="${updateUrl}?dn=' + row['dn'] + '"><img src="{$imagesUrl}/storagepool_edit.png" alt="" title="edit VM Pool" class="action" /></a>';
-				if ('true' == row['hasVmPools']) {
-					act += '<img src="{$imagesUrl}/storagepool_del_n.png" alt="" title="" class="action" />';
+				if (${poolEdit}) {
+					act += '<a href="${updateUrl}?dn=' + row['dn'] + '"><img src="{$imagesUrl}/storagepool_edit.png" alt="" title="edit Storage Pool" class="action" /></a>';
+				}
+				else {
+					act += '<img src="{$imagesUrl}/storagepool_edit.png" alt="" title="" class="action notallowed" /></a>';
+				}
+				if ('true' == row['hasVmPools'] || !${poolDelete}) {
+					act += '<img src="{$imagesUrl}/storagepool_del.png" alt="" title="" class="action notallowed" />';
 				}
 				else {
 					act += '<img src="{$imagesUrl}/storagepool_del.png" style="cursor: pointer;" alt="" title="delete Storage Pool" class="action" onclick="deleteRow(\'' + ids[i] + '\');" />';

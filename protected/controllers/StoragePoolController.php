@@ -51,10 +51,10 @@ class StoragePoolController extends Controller
 		if (!is_null($this->action)) {
 			$action = $this->action->id;
 		}
-		if ('view' == $action) {
+		if ('update' == $action) {
 			$this->submenu['storagepool']['items']['storagepool']['items'][] = array(
-				'label' => Yii::t('menu', 'View'),
-				'itemOptions' => array('title' => Yii::t('menu', 'Storage Pool View Tooltip')),
+				'label' => Yii::t('menu', 'Update'),
+				'itemOptions' => array('title' => Yii::t('menu', 'Storage Pool Update Tooltip')),
 				'active' => true,
 			);
 		}
@@ -78,13 +78,28 @@ class StoragePoolController extends Controller
 	public function accessRules()
 	{
 		return array(
-			array('allow', // allow authenticated user to perform 'create' and 'update' actions
-			        'actions'=>array('index', 'getStoragePools', 'create', 'update', 'view', 'delete'),
-		        	'users'=>array('@'),
-				'expression'=>'Yii::app()->user->isAdmin'
+			array('allow',
+				'actions'=>array('index', 'getStoragePools'),
+				'users'=>array('@'),
+				'expression'=>'Yii::app()->user->hasRight(\'storagePool\', \'Access\', \'Enabled\')'
+			),
+			array('allow',
+				'actions'=>array('create'),
+				'users'=>array('@'),
+				'expression'=>'Yii::app()->user->hasRight(\'storagePool\', \'Create\', \'Enabled\')'
+			),
+			array('allow',
+				'actions'=>array('update'),
+				'users'=>array('@'),
+				'expression'=>'Yii::app()->user->hasOtherRight(\'storagePool\', \'Edit\', \'Enabled\', \'None\')'
+			),
+			array('allow',
+				'actions'=>array('delete'),
+				'users'=>array('@'),
+				'expression'=>'Yii::app()->user->hasOtherRight(\'storagePool\', \'Delete\', \'Enabled\', \'None\')'
 			),
 			array('deny',  // deny all users
-	   	 	    'users'=>array('*'),
+				'users'=>array('*'),
 			),
 		);
 	}
@@ -144,50 +159,18 @@ class StoragePoolController extends Controller
 		// if we not pass at first time index use the first column for the index or what you want
 		if(!$sidx) $sidx = 1;
 
-		$criteria = array('attr'=>array());
+		$attr = array();
 		if (isset($_GET['sstDisplayName'])) {
-			$criteria['attr']['sstDisplayName'] = '*' . $_GET['sstDisplayName'] . '*';
+			$attr['sstDisplayName'] = '*' . $_GET['sstDisplayName'] . '*';
 		}
-		$pools = LdapStoragePool::model()->findAll($criteria);
+		if (Yii::app()->user->hasRight('storagePool', 'View', 'All')) {
+			$pools = LdapStoragePool::model()->findAll(array('attr' => $attr));
+		}
+		else {
+			$pools = array();
+		}
 		$count = count($pools);
-
-		// calculate the total pages for the query
-		if( $count > 0 && $limit > 0)
-		{
-			$total_pages = ceil($count/$limit);
-		}
-		else
-		{
-			$total_pages = 0;
-		}
-
-		// if for some reasons the requested page is greater than the total
-		// set the requested page to total page
-		if ($page > $total_pages)
-		{
-			$page = $total_pages;
-		}
-
-		// calculate the starting position of the rows
-		$start = $limit*$page - $limit;
-
-		// if for some reasons start position is negative set it to 0
-		// typical case is that the user type 0 for the requested page
-		if($start < 0)
-		{
-			$start = 0;
-		}
-
-		$criteria['limit'] = $limit;
-		$criteria['offset'] = $start;
-		if (1 != $sidx) {
-			$criteria['sort'] = $sidx . '.' . $sord;
-		}
-
-		$pools = LdapStoragePool::model()->findAll($criteria);
-
-		// we should set the appropriate header information. Do not forget this.
-		//header("Content-type: text/xml;charset=utf-8");
+		$total_pages = ceil($count / $limit);
 
 		$s = "<?xml version='1.0' encoding='utf-8'?>";
 		$s .=  "<rows>";
@@ -195,12 +178,15 @@ class StoragePoolController extends Controller
 		$s .= "<total>".$total_pages."</total>";
 		$s .= "<records>".$count."</records>";
 
-		$i = 1;
-		// be sure to put text data in CDATA
-		foreach ($pools as $pool) {
-			//$s .= '<row id="' . $node->dn . '">';
+		$start = $limit * ($page - 1);
+		$start = $start > $count ? 0 : $start;
+		$end = $start + $limit;
+		$end = $end > $count ? $count : $end;
+		for ($i=$start; $i<$end; $i++) {
+			$pool = $pools[$i];
+
 			$s .= '<row id="' . $i . '">';
-			$s .= '<cell>'. $i++ ."</cell>\n";
+			$s .= '<cell>'. ($i+1) ."</cell>\n";
 			$vmpools = LdapNameless::model()->findAll(array('branchDn'=>'ou=virtual machine pools,ou=virtualization,ou=services', 'depth'=>true,'attr'=>array('ou'=>$pool->sstStoragePool, 'objectClass'=>'sstRelationship')));
 			$hasVmPools = 0 < count($vmpools);
 			$s .= '<cell>'. ($hasVmPools ? 'true' : 'false') ."</cell>\n";
