@@ -56,7 +56,22 @@ class SiteController extends Controller
 		);
 	}
 
-		/**
+	public function init() {
+		$modules = Yii::app()->getModules();
+		foreach($modules as $id => $config) {
+			$module = Yii::app()->getModule($id);
+			if ($module instanceof IOsbdModule) {
+				if (method_exists($module, 'beforeLogin')) {
+					$this->onBeforeLogin = array($module, 'beforeLogin');
+				}
+				if (method_exists($module, 'afterLogin')) {
+					$this->onAfterLogin = array($module, 'afterLogin');
+				}
+			}
+		}
+	}
+	
+	/**
 	 * This is the default 'index' action that is invoked
 	 * when an action is not explicitly requested by users.
 	 */
@@ -109,7 +124,10 @@ class SiteController extends Controller
 				$this->redirect('site');
 			}
 			else {
-				$this->redirect('vmList/index');
+				// Don't use
+				// $this->redirect('vmList/index');
+				// any more because a module can overwrite menu items
+				$this->redirect($this->submenu['vmlist']['items'][0]['url']);
 			}
 		}
 
@@ -129,14 +147,16 @@ class SiteController extends Controller
 			// validate user input and redirect
 			if($model->validate() && $model->login())
 			{
+				$this->afterLogin();
 				if (Yii::app()->user->isAdmin) {
 					$this->redirect('site');
 				}
 				else {
-					$this->redirect('vmList/index');
+					$this->redirect($this->submenu['vmlist']['items'][0]['url']);
 				}
 			}
 		}
+		$this->beforeLogin();
 
 		$realms = array();
 		$server = CLdapServer::getInstance();
@@ -172,5 +192,32 @@ class SiteController extends Controller
 // 			Yii::app()->user->renewCookie();
 			$this->redirect(Yii::app()->getRequest()->getUrlReferrer());
 		}
+	}
+
+	public function onAfterLogin($event)
+	{
+	    $this->raiseEvent('onAfterLogin', $event);
+	}
+
+	protected function afterLogin()
+	{
+		if($this->hasEventHandler('onAfterLogin'))
+			$this->onAfterLogin(new CEvent($this));
+	}
+	
+	public function onBeforeLogin($event)
+	{
+	    $this->raiseEvent('onBeforeLogin', $event);
+	}
+
+	protected function beforeLogin()
+	{
+		if($this->hasEventHandler('onBeforeLogin'))
+			$this->onBeforeLogin(new CEvent($this));
+	}
+	
+	public function actionResetSession() {
+		$session = Yii::app()->getSession();
+		$session->destroy();
 	}
 }
