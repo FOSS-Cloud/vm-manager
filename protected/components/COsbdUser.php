@@ -44,6 +44,23 @@
  *
  */
 class COsbdUser extends CWebUser {
+	
+	/* Allowed actions of a right */
+	public static $RIGHT_ACTION_ACCESS 	= 'Access';
+	public static $RIGHT_ACTION_VIEW	= 'View';
+	public static $RIGHT_ACTION_CREATE	= 'Create';
+	public static $RIGHT_ACTION_EDIT	= 'Edit';
+	public static $RIGHT_ACTION_DELETE	= 'Delete';
+	public static $RIGHT_ACTION_USE		= 'Use';
+	public static $RIGHT_ACTION_MANAGE	= 'Manage';
+	
+	/* Allowed values of an action */
+	public static $RIGHT_VALUE_ENABLED	= 'Enabled';
+	public static $RIGHT_VALUE_DISABLED	= 'Disabled';
+	public static $RIGHT_VALUE_ALL		= 'All';
+	public static $RIGHT_VALUE_OWNER	= 'Owner';
+	public static $RIGHT_VALUE_NONE		= 'None';
+
 	private $rights = null;
 	
 	/**
