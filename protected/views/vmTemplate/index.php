@@ -803,6 +803,26 @@ EOS
 , CClientScript::POS_END);
 //Yii::app()->clientScript->registerScriptFile($baseurl . '/js/jquery.sparkline.min.js');
 
+$vmp = is_null($vmpool) ? '???' : $vmpool;
+?>
+<div class="ui-widget">
+	<label>Vm Pool</label>
+<?php echo CHtml::dropDownList('vmpool', $vmp, $vmpools, array('id' => 'vmpool', 'prompt' => '')); ?>
+</div><br />
+<?php
+$vmpooljs = '';
+$vmpooljs .= <<<EOS
+$('#vmpool').change(function() {
+	var vmpool = this.value;
+	if ('' != vmpool) {
+		$('#{$gridid}_grid').setGridParam({url: '{$getvmtemplatesurl}?vmpool=' + vmpool});
+		reloadVms();
+ 	}
+});
+EOS;
+
+Yii::app()->clientScript->registerScript( 'vmpool', $vmpooljs, CClientScript::POS_END);
+
 $refreshtimes = array(5 => 5000, 10 => 10000, 20 => 20000, 60 => 60000);
 $refreshoptions = '';
 foreach($refreshtimes as $key => $value) {
