@@ -37,7 +37,11 @@ $this->title = Yii::t('vmprofile', 'Manage VMProfiles');
 
 $gridid = 'vmprofiles';
 $baseurl = Yii::app()->baseUrl;
-$imagesurl = $baseurl . '/images';
+$imagesUrl = $baseurl . '/images';
+
+$profileEdit = Yii::app()->user->hasRight('profile', 'Edit', 'All') ? 'true' : 'false';
+$profileDelete = Yii::app()->user->hasRight('profile', 'Delete', 'All') ? 'true' : 'false';
+
 
 Yii::app()->clientScript->registerScript('funcs', <<<EOS
 function deleteRow(id)
@@ -58,9 +62,8 @@ function deleteRow(id)
 EOS
 , CClientScript::POS_END);
 
-$detailurl = $this->createUrl('vmProfile/view');
-$updateurl = $this->createUrl('vmProfile/update');
-$deleteurl = $this->createUrl('vmProfile/delete');
+$updateUrl = $this->createUrl('vmProfile/update');
+$deleteUrl = $this->createUrl('vmProfile/delete');
 $this->widget('ext.zii.CJqGrid', array(
 	'extend'=>array(
 		'id' => $gridid,
@@ -95,7 +98,7 @@ $this->widget('ext.zii.CJqGrid', array(
 		'rowList'=> array(10,20,30),
 		'height'=>230,
 		'altRows'=>true,
-		'editurl'=>$deleteurl,
+		'editurl'=>$deleteUrl,
 		'gridComplete' =>  'js:' . <<<EOS
 		function()
 		{
@@ -103,10 +106,28 @@ $this->widget('ext.zii.CJqGrid', array(
 			for(var i=0;i < ids.length;i++)
 			{
 				var row = $('#{$gridid}_grid').getRowData(ids[i]);
-				name = '<a href="${updateurl}?dn=' + row['dn'] + '&vm=' + row['vm'] + '">' + row['name'] + '</a>';
+				var name;
+				if ({$profileEdit}) {
+					name = '<a href="${updateUrl}?dn=' + row['dn'] + '&vm=' + row['vm'] + '">' + row['name'] + '</a>';
+				}
+				else {
+					name = row['name'];
+				}
 				var act = '';
-				act += '<a href="${updateurl}?dn=' + row['dn'] + '&vm=' + row['vm'] + '"><img src="{$imagesurl}/vmprofile_edit.png" alt="" title="edit VM Profile" class="action" /></a>';
-				act += '<img src="{$imagesurl}/vmprofile_del.png" style="cursor: pointer;" alt="" title="delete VM Profile" class="action" onclick="deleteRow(\'' + ids[i] + '\');" />';
+				if ({$profileEdit}) {
+					act += '<a href="${updateUrl}?dn=' + row['dn'] + '&vm=' + row['vm'] + '"><img src="{$imagesUrl}/vmprofile_edit.png" alt="" title="edit VM Profile" class="action" /></a>';
+				}
+				else {
+					act += '<img src="{$imagesUrl}/vmprofile_edit.png" alt="" title="" class="action notallowed" /></a>';
+				}
+				//act += '<a href="${updateUrl}?dn=' + row['dn'] + '&vm=' + row['vm'] + '"><img src="{$imagesUrl}/vmprofile_edit.png" alt="" title="edit VM Profile" class="action" /></a>';
+				if ({$profileDelete}) {
+					act += '<img src="{$imagesUrl}/vmprofile_del.png" style="cursor: pointer;" alt="" title="delete VM Profile" class="action" onclick="deleteRow(\'' + ids[i] + '\');" />';
+				}
+				else {
+					act += '<img src="{$imagesUrl}/vmprofile_del.png" alt="" title="" class="action notallowed" />';
+				}
+				//act += '<img src="{$imagesUrl}/vmprofile_del.png" style="cursor: pointer;" alt="" title="delete VM Profile" class="action" onclick="deleteRow(\'' + ids[i] + '\');" />';
 				$('#{$gridid}_grid').setRowData(ids[i],{'name': name, 'act': act});
 			}
 		}

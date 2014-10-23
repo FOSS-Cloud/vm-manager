@@ -82,12 +82,30 @@ class VmProfileController extends Controller
 	public function accessRules()
 	{
 		return array(
-			array('allow', // allow authenticated user to perform 'create' and 'update' actions
-				'actions'=>array('index', 'view', 'create', 'update', 'delete',
-					'requestInfo', 'getDefaults', 'getVmProfiles',
-					'getCheckCopyGui', 'checkCopy', 'uploadIso', 'uploadIsoPart'),
+			array('allow',
+				'actions'=>array('index', 'getVmProfiles', 'getCheckCopyGui', 'checkCopy'),
 				'users'=>array('@'),
-				'expression'=>'Yii::app()->user->isAdmin'
+				'expression'=>'Yii::app()->user->hasRight(\'profile\', \'Access\', \'Enabled\')'
+			),
+			array('allow',
+				'actions'=>array('create', 'getDefaults'),
+				'users'=>array('@'),
+				'expression'=>'Yii::app()->user->hasRight(\'profile\', \'Create\', \'Enabled\')'
+			),
+			array('allow',
+				'actions'=>array('update', 'getDefaults'),
+				'users'=>array('@'),
+				'expression'=>'Yii::app()->user->hasOtherRight(\'profile\', \'Edit\', \'Enabled\', \'None\')'
+			),
+			array('allow',
+				'actions'=>array('delete'),
+				'users'=>array('@'),
+				'expression'=>'Yii::app()->user->hasOtherRight(\'profile\', \'Delete\', \'Enabled\', \'None\')'
+			),
+			array('allow',
+				'actions'=>array('uploadIso', 'uploadIsoPart', 'requestInfo'),
+				'users'=>array('@'),
+				'expression'=>'Yii::app()->user->hasOtherRight(\'profile\', \'Manage\', \'Enabled\', \'None\')'
 			),
 			array('deny',  // deny all users
 				'users'=>array('*'),
@@ -812,42 +830,45 @@ class VmProfileController extends Controller
 			$criteria['sort'] = $sidx . '.' . $sord;
 		}
 */
-		$subtree = CLdapRecord::model('LdapSubTree');
-		$subtree->setBranchDn('ou=virtual machine profiles,ou=virtualization,ou=services');
-		$result = $subtree->findSubTree(array());
-
 		$items = array();
-		if (!is_null($result->children)) {
-			foreach($result->children as $child) {
-				$type = $child->ou;
-				foreach($child->children as $child2) {
-					$name = $child2->ou;
-					if ('default' == $name) {
-						continue;
-					}
-					if (isset($_GET['name']) && 0 == preg_match('/.*' . $_GET['name'] . '.*/', $name)) {
-						continue;
-					}
+		if(Yii::app()->user->hasRight('profile', 'View', 'All')) {
+			$subtree = CLdapRecord::model('LdapSubTree');
+			$subtree->setBranchDn('ou=virtual machine profiles,ou=virtualization,ou=services');
+			$result = $subtree->findSubTree(array());
 
-					foreach($child2->children as $child3) {
-						$arch = $child3->ou;
-						foreach($child3->children as $child4) {
-							$lang = $child4->ou;
-							foreach($child4->children as $child5) {
-								$desc = $child5->description;
-								if (isset($_GET['architecture']) && 0 == preg_match('/.*' . $_GET['architecture'] . '.*/', $arch) && 0 == preg_match('/.*' . $_GET['architecture'] . '.*/', $type)) {
-									continue;
+			if (!is_null($result->children)) {
+				foreach($result->children as $child) {
+					$type = $child->ou;
+					foreach($child->children as $child2) {
+						$name = $child2->ou;
+						if ('default' == $name) {
+							continue;
+						}
+						if (isset($_GET['name']) && 0 == preg_match('/.*' . $_GET['name'] . '.*/', $name)) {
+							continue;
+						}
+	
+						foreach($child2->children as $child3) {
+							$arch = $child3->ou;
+							foreach($child3->children as $child4) {
+								$lang = $child4->ou;
+								foreach($child4->children as $child5) {
+									$desc = $child5->description;
+									if (isset($_GET['architecture']) && 0 == preg_match('/.*' . $_GET['architecture'] . '.*/', $arch) && 0 == preg_match('/.*' . $_GET['architecture'] . '.*/', $type)) {
+										continue;
+									}
+									$item = array('dn' =>$child2->dn , 'type'=>$type, 'name'=>$name,
+												'arch'=>$arch, 'lang'=>$lang, 'desc'=>$desc,
+												'vmsubtree'=>substr($child5->dn, 0, strpos($child5->dn, $child2->dn)-1));
+									$items[] = $item;
 								}
-								$item = array('dn' =>$child2->dn , 'type'=>$type, 'name'=>$name,
-											'arch'=>$arch, 'lang'=>$lang, 'desc'=>$desc,
-											'vmsubtree'=>substr($child5->dn, 0, strpos($child5->dn, $child2->dn)-1));
-								$items[] = $item;
 							}
 						}
 					}
 				}
 			}
 		}
+		
 		$count = count($items);
 
 		// calculate the total pages for the query
