@@ -88,13 +88,38 @@ class VmPoolController extends Controller
 	public function accessRules()
 	{
 		return array(
-			array('allow', // allow authenticated user to perform 'create' and 'update' actions
-			        'actions'=>array('index', 'getVmPools', 'create', 'update', 'getDynData', 'getUserGui', 'saveUserAssign', 'getgroupGui', 'saveGroupAssign', 'view', 'delete'),
-		        	'users'=>array('@'),
-				'expression'=>'Yii::app()->user->isAdmin'
+			array('allow',
+				'actions'=>array('index', 'getVmPools'),
+				'users'=>array('@'),
+				'expression'=>'Yii::app()->user->hasRight(\'vmPool\', \'Access\', \'Enabled\')'
+			),
+			array('allow',
+				'actions'=>array('create', 'getDynData'),
+				'users'=>array('@'),
+				'expression'=>'Yii::app()->user->hasRight(\'vmPool\', \'Create\', \'Enabled\')'
+			),
+			array('allow',
+				'actions'=>array('update', 'getDynData'),
+				'users'=>array('@'),
+				'expression'=>'Yii::app()->user->hasOtherRight(\'vmPool\', \'Edit\', \'None\')'
+			),
+			array('allow',
+				'actions'=>array('delete'),
+				'users'=>array('@'),
+				'expression'=>'Yii::app()->user->hasOtherRight(\'vmPool\', \'Delete\', \'None\')'
+			),
+			array('allow',
+				'actions'=>array('getUserGui', 'saveUserAssign'),
+				'users'=>array('@'),
+				'expression'=>'Yii::app()->user->hasOtherRight(\'user\', \'Manage\', \'None\')'
+			),
+			array('allow',
+				'actions'=>array('getGroupGui', 'saveGroupAssign'),
+				'users'=>array('@'),
+				'expression'=>'Yii::app()->user->hasOtherRight(\'group\', \'Manage\', \'None\')'
 			),
 			array('deny',  // deny all users
-	   	 	    'users'=>array('*'),
+				'users'=>array('*'),
 			),
 		);
 	}
@@ -155,60 +180,35 @@ class VmPoolController extends Controller
 		// if we not pass at first time index use the first column for the index or what you want
 		if(!$sidx) $sidx = 1;
 
-		$criteria = array('attr'=>array());
+		$attr = array();
 		if (isset($_GET['sstDisplayName'])) {
-			$criteria['attr']['sstDisplayName'] = '*' . $_GET['sstDisplayName'] . '*';
+			$attr['sstDisplayName'] = '*' . $_GET['sstDisplayName'] . '*';
 		}
-		$pools = CLdapRecord::model('LdapVmPool')->findAll($criteria);
+		if (Yii::app()->user->hasRight('vmPool', 'View', 'All')) {
+			$pools = LdapVmPool::model()->findAll(array('attr' => $attr));
+		}
+		else if (Yii::app()->user->hasRight('vmPool', 'View', 'Owner')) {
+			$pools = LdapVmPool::getAssignedPools();
+			$pools = array_values($pools);
+		}
+		else {
+			$pools = array();
+		}
 		$count = count($pools);
+		$total_pages = ceil($count / $limit);
 
-		// calculate the total pages for the query
-		if( $count > 0 && $limit > 0)
-		{
-			$total_pages = ceil($count/$limit);
-		}
-		else
-		{
-			$total_pages = 0;
-		}
+		$s = '<?xml version="1.0" encoding="utf-8"?>';
+		$s .=  '<rows>';
+		$s .= '<page>' . $page . '</page>';
+		$s .= '<total>' . $total_pages . '</total>';
+		$s .= '<records>' . $count . '</records>';
 
-		// if for some reasons the requested page is greater than the total
-		// set the requested page to total page
-		if ($page > $total_pages)
-		{
-			$page = $total_pages;
-		}
-
-		// calculate the starting position of the rows
-		$start = $limit*$page - $limit;
-
-		// if for some reasons start position is negative set it to 0
-		// typical case is that the user type 0 for the requested page
-		if($start < 0)
-		{
-			$start = 0;
-		}
-
-		$criteria['limit'] = $limit;
-		$criteria['offset'] = $start;
-		if (1 != $sidx) {
-			$criteria['sort'] = $sidx . '.' . $sord;
-		}
-
-		$pools = CLdapRecord::model('LdapVmPool')->findAll($criteria);
-
-		// we should set the appropriate header information. Do not forget this.
-		//header("Content-type: text/xml;charset=utf-8");
-
-		$s = "<?xml version='1.0' encoding='utf-8'?>";
-		$s .=  "<rows>";
-		$s .= "<page>".$page."</page>";
-		$s .= "<total>".$total_pages."</total>";
-		$s .= "<records>".$count."</records>";
-
-		$i = 1;
-		// be sure to put text data in CDATA
-		foreach ($pools as $pool) {
+		$start = $limit * ($page - 1);
+		$start = $start > $count ? 0 : $start;
+		$end = $start + $limit;
+		$end = $end > $count ? $count : $end;
+		for ($i=$start; $i<$end; $i++) {
+			$pool = $pools[$i];
 			$hasVms = 0 < count($pool->vms);
 			$storagepooldns = '';
 			$storagepools = '';
@@ -236,7 +236,7 @@ class VmPoolController extends Controller
 				$nodes .= $node->sstNode;
 			}
 			$s .= '<row id="' . $i . '">';
-			$s .= '<cell>'. $i++ . "</cell>\n";
+			$s .= '<cell>'. ($i+1) ."</cell>\n";
 			$s .= '<cell>' . ($hasVms ? 'true' : 'false') . "</cell>\n";
 			$s .= '<cell>'. $pool->dn ."</cell>\n";
 			$s .= '<cell>'. $pool->sstVirtualMachinePoolType ."</cell>\n";

@@ -44,6 +44,13 @@ $deleteUrl = $this->createUrl('vmPool/delete');
 $viewNodeUrl = $this->createUrl('node/view');
 $updateStoragePoolUrl = $this->createUrl('storagePool/update');
 
+$poolEdit = Yii::app()->user->hasRight('vmPool', 'Edit', 'All') ? 'true' : 'false';
+$poolDelete = Yii::app()->user->hasRight('vmPool', 'Delete', 'All') ? 'true' : 'false';
+$nodeView = Yii::app()->user->hasRight('node', 'View', 'All') ? 'true' : 'false';
+$storagePoolEdit = Yii::app()->user->hasRight('storagePool', 'Edit', 'All') ? 'true' : 'false';
+$userManage = Yii::app()->user->hasRight('user', 'Manage', 'All') ? 'true' : 'false';
+$groupManage = Yii::app()->user->hasRight('group', 'Manage', 'All') ? 'true' : 'false';
+
 $savetxt = Yii::t('vmpool', 'Save');
 
 Yii::app()->clientScript->registerScript('javascript', <<<EOS
@@ -165,6 +172,12 @@ function assignGroup(dn)
 EOS
 , CClientScript::POS_END);
 
+if (Yii::app()->user->hasRight('vmPool', 'Edit', 'All')) {
+	$displayname = '\'<a href="' . $updateUrl . '?dn=\' + row[\'dn\'] + \'">\' + row[\'name\'] + \'</a>\'';
+}
+else {
+	$displayname = 'row[\'name\']';
+}
 
 $this->widget('ext.zii.CJqGrid', array(
 	'extend'=>array(
@@ -226,28 +239,61 @@ $this->widget('ext.zii.CJqGrid', array(
 			for(var i=0;i < ids.length;i++)
 			{
 				var row = $('#{$gridid}_grid').getRowData(ids[i]);
-				name = '<a href="${updateUrl}?dn=' + row['dn'] + '">' + row['name'] + '</a>';
-				nodes = '';
-				names = row['nodes'].split('|');
-				dns = row['nodesdn'].split('|');
+				var name;
+				if (${poolEdit}) {
+					name = '<a href="${updateUrl}?dn=' + row['dn'] + '">' + row['name'] + '</a>';
+				}
+				else {
+					name = row['name'];
+				}
+				
+				var nodes = '';
+				var names = row['nodes'].split('|');
+				var dns = row['nodesdn'].split('|');
 				for (var j=0; j<names.length; j++) {
 					if ('' != nodes) {
 						nodes += '<br/>';
 					}
-					nodes += '<a href="${viewNodeUrl}?dn=' + dns[j] + '">' + names[j] + '</a>';
+					if ({$nodeView}) {
+						nodes += '<a href="{$viewNodeUrl}?dn=' + dns[j] + '">' + names[j] + '</a>';
+					}
+					else {
+						nodes += names[j];
+					}
 				}
-				storagepool = '<a href="${updateStoragePoolUrl}?dn=' + row['storagepooldn'] + '">' + row['storagepool'] + '</a>';
+				var storagepool;
+				if ({$storagePoolEdit}) {
+					storagepool = '<a href="{$updateStoragePoolUrl}?dn=' + row['storagepooldn'] + '">' + row['storagepool'] + '</a>';
+				}
+				else {
+					storagepool = row['storagepool'];
+				}
 				var act = '';
-				act += '<a href="${updateUrl}?dn=' + row['dn'] + '"><img src="{$imagesUrl}/vmpool_edit.png" alt="" title="edit VM Pool" class="action" /></a>';
-				if ('true' == row['hasVms']) {
-					act += '<img src="{$imagesUrl}/vmpool_del_n.png" alt="" title="" class="action" />';
+				if (${poolEdit}) {
+					act += '<a href="${updateUrl}?dn=' + row['dn'] + '"><img src="{$imagesUrl}/vmpool_edit.png" alt="" title="edit VM Pool" class="action" /></a>';
+				}
+				else {
+					act += '<img src="{$imagesUrl}/vmpool_edit.png" alt="" title="" class="action notallowed" /></a>';
+				}
+				if ('true' == row['hasVms'] || !${poolDelete}) {
+					act += '<img src="{$imagesUrl}/vmpool_del.png" alt="" title="" class="action notallowed" />';
 				}
 				else {
 					act += '<img src="{$imagesUrl}/vmpool_del.png" style="cursor: pointer;" alt="" title="delete VM Pool" class="action" onclick="deleteRow(\'' + ids[i] + '\');" />';
 				}
 				if ('dynamic' == row['type'] || 'persistent' == row['type']) {
-					act += '<img src="{$imagesUrl}/vmuser_add.png" style="cursor: pointer;" alt="" title="Assign user to this VM" class="action" onclick="assignUser(\'' + row['dn'] + '\');" />';
-					act += '<img src="{$imagesUrl}/vmgroup_add.png" style="cursor: pointer;" alt="" title="Assign groups to this VM" class="action" onclick="assignGroup(\'' + row['dn'] + '\');" />';
+					if ({$userManage}) {
+						act += '<img src="{$imagesUrl}/vmuser_add.png" style="cursor: pointer;" alt="" title="assign user to VM Pool" class="action" onclick="assignUser(\'' + row['dn'] + '\');" />';
+					}
+					else {
+						act += '<img src="{$imagesUrl}/vmuser_add.png" alt="" title="" class="action notallowed" />';
+					}
+					if ({$groupManage}) {
+						act += '<img src="{$imagesUrl}/vmgroup_add.png" style="cursor: pointer;" alt="" title="assign groups to VM Pool" class="action" onclick="assignGroup(\'' + row['dn'] + '\');" />';
+					}
+					else {
+						act += '<img src="{$imagesUrl}/vmgroup_add.png" alt="" title="" class="action notallowed" />';
+					}
 				}
 				$('#{$gridid}_grid').setRowData(ids[i],{'name': name, 'nodes': nodes, 'storagepool': storagepool, 'act': act});
 			}
