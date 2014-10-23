@@ -1,6 +1,6 @@
 <?php
 /*
- * Copyright (C) 2006 - 2014 FOSS-Group
+ * Copyright (C) 2014 FOSS-Group
  *                    Germany
  *                    http://www.foss-group.de
  *                    support@foss-group.de
@@ -30,9 +30,11 @@
 
 $this->breadcrumbs=array(
 	'Diagnostics'=>array('/diagnostics'),
-	'VM Infos',
+	'Dynamic VM Infos',
 );
-$this->title = 'VM Infos';
+$this->title = 'Dynamic VM Infos';
+
+$vmUse = Yii::app()->user->hasRight('dynamicVM', 'Use', 'All');
 
 ?>
 <ul>
@@ -52,8 +54,8 @@ foreach($vms as $dn => $vm) {
 if (!is_null($libvirturi)) {
 	echo '<li><b>Libvirt URI</b><br/><pre>' . $libvirturi . '</pre></li>';
 }
-if (!is_null($spiceuri)) {
-	echo '<li><b>SPICE URI</b><br/><pre>' . $spiceuri . '</pre></li>';
+if (!is_null($spiceuri) && $vmUse) {
+	echo '<li><b>SPICE URI</b><br/><a href="' . $spiceuri . '"><pre>' . $spiceuri . '</pre></a></li>';
 }
 if (!is_null($startxml)) {
 	echo '<li><b>Start XML</b><br/><div style="overflow: auto;"><pre>' . print_r(htmlspecialchars($startxml), true) . '</pre></div></li>';
