@@ -102,14 +102,33 @@ class NodeController extends WizardController
 	public function accessRules()
 	{
 		return array(
-			array('allow', // allow authenticated user to perform 'create' and 'update' actions
-				'actions'=>array('index', 'view', 'getNodes', 'getPoolInfo', 'getVms', 'delete', 'viewVms','maintainVmNode',
-					'wizard', 'handleWizardAction'),
-		        	'users'=>array('@'),
-				'expression'=>'Yii::app()->user->isAdmin'
+			array('allow',
+				'actions'=>array('index', 'getNodes'),
+				'users'=>array('@'),
+				'expression'=>'Yii::app()->user->hasRight(\'node\', \'Access\', \'Enabled\')'
+			),
+			array('allow',
+				'actions'=>array('view'),
+				'users'=>array('@'),
+				'expression'=>'Yii::app()->user->hasOtherRight(\'node\', \'View\', \'Enabled\', \'None\')'
+			),
+				array('allow',
+				'actions'=>array('wizard', 'handleWizardAction'),
+				'users'=>array('@'),
+				'expression'=>'Yii::app()->user->hasRight(\'node\', \'Create\', \'Enabled\')'
+			),
+			array('allow',
+				'actions'=>array('maintainVmNode'),
+				'users'=>array('@'),
+				'expression'=>'Yii::app()->user->hasOtherRight(\'node\', \'Edit\', \'Enabled\', \'None\')'
+			),
+			array('allow',
+				'actions'=>array('delete'),
+				'users'=>array('@'),
+				'expression'=>'Yii::app()->user->hasOtherRight(\'node\', \'Delete\', \'Enabled\', \'None\')'
 			),
 			array('deny',  // deny all users
-	   	 	    'users'=>array('*'),
+				'users'=>array('*'),
 			),
 		);
 	}
@@ -177,7 +196,13 @@ class NodeController extends WizardController
 		if (isset($_GET['sstNode'])) {
 			$criteria['attr']['sstNode'] = '*' . $_GET['sstNode'] . '*';
 		}
-		$nodes = CLdapRecord::model('LdapNode')->findAll($criteria);
+		
+		if(Yii::app()->user->hasRight('node', 'View', 'All')) {
+			$nodes = LdapNode::model()->findAll($criteria);
+		}
+		else {
+			$nodes = array();
+		}
 		$count = count($nodes);
 
 		// calculate the total pages for the query
@@ -213,7 +238,12 @@ class NodeController extends WizardController
 			$criteria['sort'] = $sidx . '.' . $sord;
 		}
 
-		$nodes = CLdapRecord::model('LdapNode')->findAll($criteria);
+		if (Yii::app()->user->hasRight('node', 'View', 'All')) {
+			$nodes = CLdapRecord::model('LdapNode')->findAll($criteria);
+		}
+		else {
+			$nodes = array();
+		}
 
 		// we should set the appropriate header information. Do not forget this.
 		//header("Content-type: text/xml;charset=utf-8");

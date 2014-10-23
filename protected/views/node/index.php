@@ -42,6 +42,9 @@ if(Yii::app()->user->hasFlash('notice')) {
 $gridid = 'nodes';
 $baseurl = Yii::app()->baseUrl;
 
+$nodeEdit = Yii::app()->user->hasRight('node', 'Edit', 'All') ? 'true' : 'false';
+$nodeDelete = Yii::app()->user->hasRight('node', 'Delete', 'All') ? 'true' : 'false';
+
 Yii::app()->clientScript->registerScript('rowEdit', <<<EOS
 var {$gridid}_lastsel=-1;
 function editRow(id)
@@ -152,35 +155,37 @@ $this->widget('ext.zii.CJqGrid', array(
 			for(var i=0;i < ids.length;i++)
 			{
 				var row = $('#{$gridid}_grid').getRowData(ids[i]);
-				var act = '<a href="${detailurl}?dn=' + row['dn'] + '"><img src="{$imagesurl}/node_detail.png" alt="" title="view Node" class="action" /></a>';
-				if ('' == row['vms'])
+				var act = '<a href="{$detailurl}?dn=' + row['dn'] + '"><img src="{$imagesurl}/node_detail.png" alt="" title="view Node" class="action" /></a>';
+				if ('' == row['vms'] && {$nodeDelete})
 				{
 					act += '<img id="node_del_' + ids[i] + '" src="{$imagesurl}/node_del.png" alt="" title="delete Node" class="action" />';
 				}
 				else
 				{
-					act += '<img src="{$imagesurl}/node_del_n.png" alt="" title="delete Node" class="action" />';
+					act += '<img src="{$imagesurl}/node_del.png" alt="" title="delete Node" class="action notallowed" />';
 				}
 				if ('false' == row['vmnodemaintain']) {
-					act += '<img id="node_maintain_' + ids[i] + '" src="{$imagesurl}/node_maintain.png" alt="" title="put Node in maintenance" class="action" />';
+					act += '<img id="node_maintain_' + ids[i] + '" src="{$imagesurl}/node_maintain.png" alt="" title="put Node in maintenance" class="action notallowed" />';
 				}
 				else if ('true' == row['vmnodemaintain']) {
-					act += '<img id="node_maintain_' + ids[i] + '" src="{$imagesurl}/node_active.png" alt="" title="end maintenance" class="action" />';
+					act += '<img id="node_maintain_' + ids[i] + '" src="{$imagesurl}/node_active.png" alt="" title="end maintenance" class="action notallowed" />';
 				}
 				$('#{$gridid}_grid').setRowData(ids[i],{'act': act});
 
-				if ('' == row['vmpools'])
+				if ('' == row['vmpools'] && {$nodeDelete})
 				{
 					$('#node_del_' + ids[i]).css({cursor: 'pointer'});
 					$('#node_del_' + ids[i]).click({did: ids[i]}, function(event) {event.stopPropagation(); deleteRow(event.data.did);});
 				}
-				if ('false' == row['vmnodemaintain']) {
-					$('#node_maintain_' + ids[i]).css({cursor: 'pointer'});
-					$('#node_maintain_' + ids[i]).click({did: ids[i]}, function(event) {event.stopPropagation(); maintainRow(event.data.did, true);});
-				}
-				else if ('true' == row['vmnodemaintain']) {
-					$('#node_maintain_' + ids[i]).css({cursor: 'pointer'});
-					$('#node_maintain_' + ids[i]).click({did: ids[i]}, function(event) {event.stopPropagation(); maintainRow(event.data.did, false);});
+				if ({$nodeEdit}) {
+					if ('false' == row['vmnodemaintain']) {
+						$('#node_maintain_' + ids[i]).css({cursor: 'pointer'}).removeClass('notallowed');
+						$('#node_maintain_' + ids[i]).click({did: ids[i]}, function(event) {event.stopPropagation(); maintainRow(event.data.did, true);});
+					}
+					else if ('true' == row['vmnodemaintain']) {
+						$('#node_maintain_' + ids[i]).css({cursor: 'pointer'}).removeClass('notallowed');
+						$('#node_maintain_' + ids[i]).click({did: ids[i]}, function(event) {event.stopPropagation(); maintainRow(event.data.did, false);});
+					}
 				}
 			}
 		}
