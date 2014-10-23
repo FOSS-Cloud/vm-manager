@@ -67,10 +67,25 @@ class SubnetController extends Controller
 	public function accessRules()
 	{
 		return array(
-			array('allow', // allow authenticated user to perform 'create' and 'update' actions
-				'actions'=>array('index', 'delete', 'update', 'create', 'updateRange', 'createRange', 'getSubnets',),
-            			'users'=>array('@'),
-				'expression'=>'Yii::app()->user->isAdmin'
+			array('allow',
+				'actions'=>array('index', 'getSubnets'),
+				'users'=>array('@'),
+				'expression'=>'Yii::app()->user->hasRight(\'network\', \'Access\', \'Enabled\')'
+			),
+			array('allow',
+				'actions'=>array('create', 'createRange'),
+				'users'=>array('@'),
+				'expression'=>'Yii::app()->user->hasRight(\'network\', \'Create\', \'Enabled\')'
+			),
+			array('allow',
+				'actions'=>array('update', 'updateRange'),
+				'users'=>array('@'),
+				'expression'=>'Yii::app()->user->hasOtherRight(\'network\', \'Edit\', \'Enabled\', \'None\')'
+			),
+			array('allow',
+				'actions'=>array('delete'),
+				'users'=>array('@'),
+				'expression'=>'Yii::app()->user->hasOtherRight(\'network\', \'Delete\', \'Enabled\', \'None\')'
 			),
 			array('deny',  // deny all users
 				'users'=>array('*'),

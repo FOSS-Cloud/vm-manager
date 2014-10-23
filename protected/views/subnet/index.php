@@ -43,6 +43,10 @@ $updateurl = $this->createUrl('subnet/update');
 $addrangeurl = $this->createUrl('subnet/createRange');
 $updaterangeurl = $this->createUrl('subnet/updateRange');
 
+$networkEdit = Yii::app()->user->hasRight('network', 'Edit', 'All') ? 'true' : 'false';
+$networkDelete = Yii::app()->user->hasRight('network', 'Delete', 'All') ? 'true' : 'false';
+$networkCreate = Yii::app()->user->hasOtherRight('network', 'Create', 'None') ? 'true' : 'false';
+
 Yii::app()->clientScript->registerScript('actions', <<<EOS
 function deleteRow(id)
 {
@@ -104,28 +108,55 @@ $this->widget('ext.zii.CJqGrid', array(
 					if (0 == row['level'])
 					{
 						if ('true' !== row['isUsed']) {
-							range = '<a href="${updateurl}?dn=' + row['dn'] + '">' + row['range'] + '</a>';
-							act += '<a href="${updateurl}?dn=' + row['dn'] + '"><img src="${imagesurl}/subnet_edit.png" alt="" title="edit Subnet" class="action" /></a>';
-							act += '<img src="${imagesurl}/subnet_del.png" style="cursor: pointer;" alt="" title="delete Subnet" class="action" onclick="deleteRow(\'' + ids[i] + '\');" />';
+							if ({$networkEdit}) {
+								range = '<a href="${updateurl}?dn=' + row['dn'] + '">' + row['range'] + '</a>';
+								act += '<a href="${updateurl}?dn=' + row['dn'] + '"><img src="${imagesurl}/subnet_edit.png" alt="" title="edit Subnet" class="action" /></a>';
+							}
+							else {
+								range = row['range'];
+								act += '<img src="${imagesurl}/subnet_edit.png" alt="" title="" class="action notallowed" /></a>';
+							}
+							if ({$networkDelete}) {
+								act += '<img src="${imagesurl}/subnet_del.png" style="cursor: pointer;" alt="" title="delete Subnet" class="action" onclick="deleteRow(\'' + ids[i] + '\');" />';
+							}
+							else {
+								act += '<img src="${imagesurl}/subnet_del.png" alt="" title="" class="action notallowed" />';
+							}
 						}
 						else {
 							range = row['range'];
-							act += '<img src="${imagesurl}/subnet_edit_n.png" alt="" title="" class="action" /></a>';
-							act += '<img src="${imagesurl}/subnet_del_n.png" alt="" title="" class="action" />';
+							act += '<img src="${imagesurl}/subnet_edit.png" alt="" title="" class="action notallowed" /></a>';
+							act += '<img src="${imagesurl}/subnet_del.png" alt="" title="" class="action notallowed" />';
 						}
-						act += '<a href="${addrangeurl}?dn=' + row['dn'] + '"><img src="${imagesurl}/subnet_add.png" alt="" title="add Range" class="action" /></a>';
+						if ({$networkCreate}) {
+							act += '<a href="${addrangeurl}?dn=' + row['dn'] + '"><img src="${imagesurl}/subnet_add.png" alt="" title="add Range" class="action" /></a>';
+						}
+						else {
+							act += '<img src="${imagesurl}/subnet_add.png" alt="" title="add Range" class="action notallowed" />';
+						}
 					}
 					else
 					{
 						if ('true' !== row['isUsed']) {
-							range = '<a href="${updaterangeurl}?dn=' + row['dn'] + '">' + row['range'] + '</a>';
-							act += '<a href="${updaterangeurl}?dn=' + row['dn'] + '"><img src="${imagesurl}/subnet_edit.png" alt="" title="edit Range" class="action" /></a>';
-							act += '<img src="{$imagesurl}/subnet_del.png" style="cursor: pointer;" alt="" title="delete Range" class="action" onclick="deleteRow(\'' + ids[i] + '\');" />';
+							if ({$networkEdit}) {
+								range = '<a href="${updaterangeurl}?dn=' + row['dn'] + '">' + row['range'] + '</a>';
+								act += '<a href="${updaterangeurl}?dn=' + row['dn'] + '"><img src="${imagesurl}/subnet_edit.png" alt="" title="edit Range" class="action" /></a>';
+							}
+							else {
+								range = row['range'];
+								act += '<img src="${imagesurl}/subnet_edit.png" alt="" title="" class="action notallowed" /></a>';
+							}
+							if ({$networkDelete}) {
+								act += '<img src="{$imagesurl}/subnet_del.png" style="cursor: pointer;" alt="" title="delete Range" class="action" onclick="deleteRow(\'' + ids[i] + '\');" />';
+							}
+							else {
+								act += '<img src="${imagesurl}/subnet_del.png" alt="" title="" class="action notallowed" />';
+							}
 						}
 						else {
 							range = row['range'];
-							act += '<img src="${imagesurl}/subnet_edit_n.png" alt="" title="" class="action" /></a>';
-							act += '<img src="${imagesurl}/subnet_del_n.png" alt="" title="" class="action" />';
+							act += '<img src="${imagesurl}/subnet_edit.png" alt="" title="" class="action notallowed" /></a>';
+							act += '<img src="${imagesurl}/subnet_del.png" alt="" title="" class="action notallowed" />';
 						}
 					}
 				}
