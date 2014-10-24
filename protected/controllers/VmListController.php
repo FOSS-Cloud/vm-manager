@@ -124,8 +124,10 @@ class VmListController extends Controller
 					}
 				}
 				//echo '<br/>';
-
 			}
+			
+			$poolAssigned = $this->additionalCheck($vmpool, $poolAssigned);
+			
 			if ($poolAssigned) {
 				$vmAssigned = false;
 				$vmFree = false;
@@ -144,7 +146,7 @@ class VmListController extends Controller
 						if ($vmonepeople->ou == Yii::app()->user->uid) {
 							$data['vmpools'][$vmpool->sstDisplayName] = array(
 								'description' => $vmpool->description,
-								'spiceuri' => $vm->getSpiceUri(),
+								'spiceuri' => $vm->getSpiceUri()
 							);
 							$vmAssigned = true;
 							//echo '; vm found<br/>';
@@ -161,112 +163,28 @@ class VmListController extends Controller
 				//echo '<br/>';
 			}
 		}
-
-		// Let's check the static VM Pools
-		$vmpools = LdapVmPool::model()->findAll(array('attr'=>array('sstVirtualMachinePoolType'=>'persistent')));
-		foreach($vmpools as $vmpool) {
-			$poolAssigned = false;
-			$poolgroups = $vmpool->groups;
-			//echo 'Pool: ' . $vmpool->sstDisplayName . '; Groups: ';
-			foreach($poolgroups as $poolgroup) {
-				//echo $poolgroup->ou . ', ';
-				if (false !== array_search($poolgroup->ou, $usergroups)) {
-					$poolAssigned = true;
-					//echo '; group found';
-					break;
-				}
-			}
-			//echo '<br/>';
-			if (!$poolAssigned) {
-				// No Pool assigned; try users
-				//echo 'Pool: ' . $vmpool->sstDisplayName . '; Users: ';
-				$vmuser = $vmpool->people;
-				foreach($vmuser as $vmoneuser) {
-					//echo $vmoneuser->ou . ', ';
-					if ($user->uid == $vmoneuser->ou) {
-						$poolAssigned = true;
-						//echo '; user found';
-						break;
-					}
-				}
-				//echo '<br/>';
-			}
-			$vms = LdapVm::model()->findAll(array('attr'=>array('sstVirtualMachinePool'=>$vmpool->sstVirtualMachinePool)));
-			foreach($vms as $vm) {
-				$vmAssigned = $poolAssigned;
-				if (!$vmAssigned) {
-					//echo 'VM: ' . $vm->sstDisplayName . '; Groups: ';
-					$vmgroups = $vm->groups;
-					foreach($vmgroups as $vmgroup) {
-						//echo $poolgroup->ou . ', ';
-						if (false !== array_search($vmgroup->ou, $usergroups)) {
-							$vmAssigned = true;
-							//echo '; group found';
-							break;
-						}
-					}
-					//echo '<br/>';
-					if (!$vmAssigned) {
-						$vmuser = $vm->people;
-						//echo 'VM: ' . $vm->sstDisplayName . '; Users: ';
-						foreach($vmuser as $vmoneuser) {
-							//echo $vmoneuser->ou . ', ';
-							if ($user->uid == $vmoneuser->ou) {
-								$vmAssigned = true;
-								//echo '; user found';
-								break;
-							}
-						}
-						//echo '<br/>';
-					}
-				}
-				if ($vmAssigned) {
-					$data['vms'][$vm->sstDisplayName] = array(
-						'description' => $vm->description . ' (persistent)',
-						'spiceuri' => $vm->getSpiceUri(),
-					);
-				}
-			}
+		$vms = LdapVm::getAssignedVms('persistent', array('attr' => array('sstVirtualMachineType' => 'persistent')));
+		foreach($vms as $vm) {
+			$libvirt = CPhpLibvirt::getInstance();
+			$status = $libvirt->getVmStatus(array('libvirt' => $vm->node->getLibvirtUri(), 'name' => $vm->sstVirtualMachine));
+			$data['vms'][$vm->sstDisplayName] = array(
+				'description' => $vm->description . ' (persistent)',
+				'spiceuri' => $vm->getSpiceUri(),
+				'uuid' => $vm->sstVirtualMachine,
+				'dn' => $vm->getDn(),
+				'active' => $status['active']
+			);
 		}
-
+		
 		// Let's check the static VMs
-/* old version!
-		$vms = LdapVm::model()->findAll(array('attr'=>array('sstVirtualMachineType'=>'static')));
-		foreach($vms as $vm) {
-			$vmuser = $vm->people;
-			foreach($vmuser as $vmoneuser) {
-				//echo 'VM::User ' . $vm->sstDisplayName . ': ' . $user->uid . ' == ' . $vmoneuser->ou . '<br/>';
-				if ($user->uid == $vmoneuser->ou) {
-					$data['vms'][$vm->sstDisplayName] = array(
-						'description' => $vm->description . ' (user)',
-						'spiceuri' => $vm->getSpiceUri()
-					);
-					break;
-				}
-			}
-		}
-		foreach($vms as $vm) {
-			$vmAssigned = false;
-			$vmgroups = $vm->groups;
-			foreach($vmgroups as $vmgroup) {
-				//echo 'VM::Group ' . $vm->sstDisplayName . ': ' . $vmgroup->ou . '<br/>';
-				if (false !== array_search($vmgroup->ou, $usergroups)) {
-					$vmAssigned = true;
-					break;
-				}
-			}
-			if ($vmAssigned) {
-				$data['vms'][$vm->sstDisplayName] = array(
-					'description' => $vm->description . ' (group)',
-					'spiceuri' => $vm->getSpiceUri()
-				);
-			}
-		}
-*/
-
+		$this->header[] = '<meta http-equiv="refresh" content="30; URL=' . Yii::app()->request->url . '">';
 		$this->render('index',array(
 			'data'=>$data,
 		));
+	}
+	
+	protected function additionalCheck($vmpool, $poolAssigned) {
+		return $poolAssigned;
 	}
 
 	public function actionGetStartVmGui() {
