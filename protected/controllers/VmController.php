@@ -104,27 +104,26 @@ class VmController extends Controller
 			array('allow',
 				'actions'=>array('index', 'view', 'getPoolInfo', 'getVms', 'getVmInfo', 'refreshTimeout', 'refreshVms'),
 				'users'=>array('@'),
-				'expression'=>'Yii::app()->user->hasRight(\'dynamicVM\', \'Access\', \'Enabled\') || Yii::app()->user->hasRight(\'persistentVM\', \'Access\', \'Enabled\')'
+				'expression'=>'(isset($_GET[\'vmtype\']) && \'dynamic\' === $_GET[\'vmtype\'] && $user->hasRight(\'dynamicVM\', COsbdUser::$RIGHT_ACTION_ACCESS, COsbdUser::$RIGHT_VALUE_ENABLED)) || ' . 
+					'((!isset($_GET[\'vmtype\']) || \'persistent\' === $_GET[\'vmtype\']) && $user->hasRight(\'persistentVM\', COsbdUser::$RIGHT_ACTION_ACCESS, COsbdUser::$RIGHT_VALUE_ENABLED))'
 			),
-// 			array('allow',
-// 		        'actions'=>array('create'),
-// 	        	'users'=>array('@'),
-// 				'expression'=>'Yii::app()->user->hasRight(\'dynamicVM\', \'Create\', \'Enabled\') || Yii::app()->user->hasRight(\'persistentVM\', \'Create\', \'Enabled\')'
-// 			),
 			array('allow',
 				'actions'=>array('update', 'makeGolden', 'activateGolden', 'getUserGui', 'saveUserAssign', 'getGroupGui', 'saveGroupAssign', 'getNodeGui'),
 				'users'=>array('@'),
-				'expression'=>'Yii::app()->user->hasOtherRight(\'dynamicVM\', \'Edit\', \'None\') || Yii::app()->user->hasOtherRight(\'persistentVM\', \'Edit\', \'None\')'
+				'expression'=>'(isset($_GET[\'vmtype\']) && \'dynamic\' === $_GET[\'vmtype\'] && $user->hasOtherRight(\'dynamicVM\', COsbdUser::$RIGHT_ACTION_EDIT, COsbdUser::$RIGHT_VALUE_NONE)) || ' . 
+					'((!isset($_GET[\'vmtype\']) || \'persistent\' === $_GET[\'vmtype\']) && $user->hasOtherRight(\'persistentVM\', COsbdUser::$RIGHT_ACTION_EDIT, COsbdUser::$RIGHT_VALUE_NONE))'
 			),
 			array('allow',
 				'actions'=>array('delete'),
 				'users'=>array('@'),
-				'expression'=>'Yii::app()->user->hasOtherRight(\'dynamicVM\', \'Delete\', \'None\') || Yii::app()->user->hasOtherRight(\'persistentVM\', \'Delete\', \'None\')'
+				'expression'=>'(isset($_GET[\'vmtype\']) && \'dynamic\' === $_GET[\'vmtype\'] && $user->hasOtherRight(\'dynamicVM\', COsbdUser::$RIGHT_ACTION_DELETE, COsbdUser::$RIGHT_VALUE_NONE)) || ' . 
+					'((!isset($_GET[\'vmtype\']) || \'persistent\' === $_GET[\'vmtype\']) && $user->hasOtherRight(\'persistentVM\', COsbdUser::$RIGHT_ACTION_DELETE, COsbdUser::$RIGHT_VALUE_NONE))'
 			),
 			array('allow',
 				'actions'=>array('startVm', 'shutdownVm', 'rebootVm', 'destroyVm', 'migrateVm', 'restoreVm', 'waitForRestoreAction', 'getRestoreAction', 'startRestoreAction', 'cancelRestoreAction', 'handleRestoreAction'),
 				'users'=>array('@'),
-				'expression'=>'Yii::app()->user->hasOtherRight(\'dynamicVM\', \'Manage\', \'None\') || Yii::app()->user->hasOtherRight(\'persistentVM\', \'Manage\', \'None\')'
+				'expression'=>'(isset($_GET[\'vmtype\']) && \'dynamic\' === $_GET[\'vmtype\'] && $user->hasOtherRight(\'dynamicVM\', COsbdUser::$RIGHT_ACTION_MANAGE, COsbdUser::$RIGHT_VALUE_NONE)) || ' . 
+					'((!isset($_GET[\'vmtype\']) || \'persistent\' === $_GET[\'vmtype\']) && $user->hasOtherRight(\'persistentVM\', COsbdUser::$RIGHT_ACTION_MANAGE, COsbdUser::$RIGHT_VALUE_NONE))'
 			),
 			array('deny',  // deny all users
 				'users'=>array('*'),
