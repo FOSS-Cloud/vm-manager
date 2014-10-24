@@ -37,7 +37,6 @@ class LdapUser extends CLdapRecord {
 	public function relations()
 	{
 		return array(
-			//'roles' => array(self::HAS_MANY, 'dn', 'LdapUserRole', '$model->getDn()'),
 			'role' => array(self::HAS_ONE, 'sstRoleUID', 'LdapUserRole', 'uid'),
 			'assign' => array(self::HAS_ONE_DN, 'dn', 'LdapUserAssign', '\'ou=\' . $model->uid . \',ou=people,ou=\' . Yii::app()->user->realm . \',ou=authentication,ou=virtualization,ou=services\''),
 		);
@@ -75,6 +74,7 @@ class LdapUser extends CLdapRecord {
 				foreach($roles as $role) {
 					if ('Admin' == substr($role->sstRole, 0, 5)) {
 						$retval = true;
+						Yii::app()->getSession()->add('simpleLink', array('label' => 'update LDAP', 'url' => array('/patch/patch/start', 'name'=>'UpdateLdap1_2_20TO1_3_0')));
 						break;
 					}
 				}
