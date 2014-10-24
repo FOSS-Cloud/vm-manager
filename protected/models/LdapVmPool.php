@@ -297,4 +297,62 @@ class LdapVmPool extends CLdapRecord {
 		return $retval;
 	}
 
+	public static function getAssignedPools($type=null, $attr=array()) {
+		$unique_pools = array();
+		if (Yii::app()->user->hasRight('vmPool', COsbdUser::$RIGHT_ACTION_VIEW, COsbdUser::$RIGHT_VALUE_ALL)) {
+			$criteria = array_merge_recursive(array('attr' => array('sstVirtualMachinePoolType' => $type)), array('attr'=> $attr));
+			echo '<pre>' . print_r($criteria, true) . '</pre>';
+			$pools = LdapVmPool::model()->findAll($criteria);
+			foreach($pools as $pool) {
+				$unique_pools[$pool->sstVirtualMachinePool] = $pool;
+			}
+		}
+		else if(Yii::app()->user->hasRight('vmPool', COsbdUser::$RIGHT_ACTION_VIEW, COsbdUser::$RIGHT_VALUE_OWNER)) {
+			$user = Yii::app()->user->getLdapUser();
+			//			echo 'User: ' . $user->cn . '<br/>';
+			$groups = $user->sstGroupUID;
+			if (!is_null($type)) {
+				$attr = array_merge_recursive(array('sstVirtualMachinePoolType' => $type), $attr);
+			}
+			$criteria = array('attr' => $attr);
+			$criteria['relattr'] = array();
+			$criteria['relattr']['groups'] = array('ou' => $groups);
+			//echo '<pre>criteria ' . print_r($criteria, true) . '</pre>';
+		
+			$pools = LdapVmPool::model()->findAll($criteria);
+			//echo '<h1>Pools</h1>';
+			//echo 'group poolcount ' . count($pools) . '<br/>';
+			foreach($pools as $pool) {
+				$unique_pools[$pool->sstVirtualMachinePool] = $pool;
+				//echo '<pre>	' . $pool->sstVirtualMachinePool . ', ' . $pool->sstDisplayName . '</pre>';
+			}
+			
+			$criteria = array('attr' => $attr);
+			$criteria['relattr'] = array();
+			$criteria['relattr']['people'] = array('ou' => $user->uid);
+			//echo '<pre>criteria ' . print_r($criteria, true) . '</pre>';
+					
+			$pools = LdapVmPool::model()->findAll($criteria);
+			//echo 'people poolcount ' . count($pools) . '<br/>';
+			foreach($pools as $pool) {
+				//echo '<pre>	' . $pool->sstVirtualMachinePool . ', ' . $pool->sstDisplayName . '</pre>';
+				if (!isset($unique_pools[$pool->sstVirtualMachinePool])) {
+					$unique_pools[$pool->sstVirtualMachinePool] = $pool;
+				}
+			}
+			//echo "$type poolcount " . count($unique_pools) . '<br />';
+			//foreach($unique_pools as $pool) {
+			//	echo '<pre>	' . $pool->sstVirtualMachinePool . ', ' . $pool->sstDisplayName . '</pre>';
+			//}
+		}
+		
+		return $unique_pools;
+	}
+	
+	public static function getAllAssignedPools($type, $attr=array()) {
+		$pools = self::getAssignedPools($type, $attr);
+		$pools = array_merge($pools, LdapVm::getPoolsFromAssignedVms($type, true, $attr));
+		
+		return $pools;
+	}
 }

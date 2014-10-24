@@ -53,6 +53,22 @@ $getrestoreactionurl = $this->createUrl('vm/getRestoreAction');
 $startrestoreactionurl = $this->createUrl('vm/startRestoreAction');
 $cancelrestoreactionurl = $this->createUrl('vm/cancelRestoreAction');
 
+if ('dynamic' != $vmtype) {
+	$vmEdit = Yii::app()->user->hasRight('persistentVM', 'Edit', 'All') ? 'true' : 'false';
+	$vmDelete = Yii::app()->user->hasRight('persistentVM', 'Delete', 'All') ? 'true' : 'false';
+	$vmManage = Yii::app()->user->hasRight('persistentVM', 'Manage', 'All') ? 'true' : 'false';
+	$vmUse = Yii::app()->user->hasRight('persistentVM', 'Use', 'All') ? 'true' : 'false';
+}
+else {
+	$vmEdit = Yii::app()->user->hasRight('dynamicVM', 'Edit', 'All') ? 'true' : 'false';
+	$vmDelete = Yii::app()->user->hasRight('dynamicVM', 'Delete', 'All') ? 'true' : 'false';
+	$vmManage = Yii::app()->user->hasRight('dynamicVM', 'Manage', 'All') ? 'true' : 'false';
+	$vmUse = Yii::app()->user->hasRight('dynamicVM', 'Use', 'All') ? 'true' : 'false';
+}
+$nodeView = Yii::app()->user->hasRight('node', 'View', 'All') ? 'true' : 'false';
+$userManage = Yii::app()->user->hasRight('user', 'Manage', 'All') ? 'true' : 'false';
+$groupManage = Yii::app()->user->hasRight('group', 'Manage', 'All') ? 'true' : 'false';
+
 //$imgcontroller = $this->createUrl('img/percent');
 $actrefreshtime = Yii::app()->getSession()->get('vm_refreshtime', 10000);
 
@@ -70,27 +86,35 @@ function refreshVmButtons(id, buttons) {
 		if (active != buttonState[id][key]) {
 			if (active) {
 				// This button was not active on last call
-				$('#' + key + '_' + id).css({cursor: 'pointer'});
-				$('#' + key + '_' + id).attr('src', '{$imagesurl}/' + key + '.png');
+				$('#' + key + '_' + id).css({cursor: 'pointer'}).removeClass('notallowed');
+				//$('#' + key + '_' + id).attr('src', '{$imagesurl}/' + key + '.png');
 				switch(key) {
 					case 'vm_start': $('#' + key + '_' + id).click(function(event) {event.stopPropagation(); startVm(id);}); break;
 					case 'vm_reboot': break;
 					case 'vm_shutdown': $('#' + key + '_' + id).click(function(event) {event.stopPropagation(); shutdownVm(id);}); break;
 					case 'vm_destroy': $('#' + key + '_' + id).click(function(event) {event.stopPropagation(); destroyVm(id);}); break;
-					case 'vm_migrate': break;
+					case 'vm_migrate': $('#' + key + '_' + id).click(function(event) {event.stopPropagation(); selectNode(id);});break;
 					case 'vm_edit': $('#' + key + '_' + id).click(function(event) {event.stopPropagation(); editVm(id);}); break;;
 					case 'vm_del': $('#' + key + '_' + id).click(function(event) {event.stopPropagation(); deleteRow(id);}); break;
 					case 'vm_login': $('#' + key + '_' + id).click(function(event) {event.stopPropagation(); loginVm(id);}); break;
+					case 'vm_user': $('#' + key + '_' + id).click(function(event) {event.stopPropagation(); assignUser(id);}); break;
+					case 'vm_group': $('#' + key + '_' + id).click(function(event) {event.stopPropagation(); assignGroup(id);}); break;
+					case 'vm_golden': $('#' + key + '_' + id).click(function(event) {event.stopPropagation(); goldenImage(id);}); break;
+					case 'vm_actgolden': $('#' + key + '_' + id).click(function(event) {event.stopPropagation(); activateGoldenImage(id);}); break;
 				}
 			}
 			else {
-				$('#' + key + '_' + id).css({cursor: 'auto'});
-				$('#' + key + '_' + id).attr('src', '{$imagesurl}/' + key + '_n.png');
+				$('#' + key + '_' + id).css({cursor: 'auto'}).addClass('notallowed');
+				//$('#' + key + '_' + id).attr('src', '{$imagesurl}/' + key + '_n.png');
 				$('#' + key + '_' + id).unbind('click');
 			}
 		}
 		buttonState[id][key] = active;
 	});
+}
+function resetButtons() {
+	return {'vm_start': false, 'vm_restart': false, 'vm_shutdown': false, 'vm_destroy': false, 'vm_migrate': false, 
+		'vm_edit': false, 'vm_del': false, 'vm_login': false, 'vm_user': false, 'vm_group': false, 'vm_golden': false, 'vm_actgolden': false};
 }
 var row;
 var cputimes = [];
@@ -148,137 +172,159 @@ function refreshNextVm()
 				var row = $('#{$gridid}_grid').getRowData(id);
 				if (data[row['uuid']] == undefined) continue;
 				var status = data[row['uuid']]['status'];
+				var buttons = resetButtons();
 				switch(status)
 				{
 					case 'unknown':
-						buttons = {'vm_start': false, 'vm_restart': false, 'vm_shutdown': false, 'vm_destroy': false, 'vm_migrate': true, 'vm_edit': false, 'vm_del': false, 'vm_login': false};
 						state = 'red';
 						break;
 					case 'running':
-						buttons = {'vm_start': false, 'vm_restart': true, 'vm_shutdown': true, 'vm_destroy': true, 'vm_migrate': true, 'vm_edit': false, 'vm_del': false, 'vm_login': true};
+						buttons.vm_restart = buttons.vm_shutdown = buttons.vm_destroy = buttons.vm_migrate = buttons.vm_login = true;
 						state = 'green';
 						break;
 					case 'migrating':
-						buttons = {'vm_start': false, 'vm_restart': false, 'vm_shutdown': false, 'vm_destroy': false, 'vm_migrate': false, 'vm_edit': false, 'vm_del': false, 'vm_login': false};
 						state = 'yellow';
 						break;
 					case 'stopped':
-						buttons = {'vm_start': true, 'vm_restart': false, 'vm_shutdown': false, 'vm_destroy': false, 'vm_migrate': true, 'vm_edit': true, 'vm_del': true, 'vm_login': false};
+						buttons.vm_start = buttons.vm_migrate = buttons.vm_edit = buttons.vm_del = buttons.vm_user = buttons.vm_group = true;
 						state = 'red';
 						break;
 					case 'shutdown':
-						buttons = {'vm_start': true, 'vm_restart': false, 'vm_shutdown': false, 'vm_destroy': false, 'vm_migrate': true, 'vm_edit': true, 'vm_del': true, 'vm_login': false};
+						buttons.vm_start = buttons.vm_migrate = buttons.vm_edit = buttons.vm_del = buttons.vm_user = buttons.vm_group = true;
 						state = 'red';
 						break;
 					case 'golden':
-						buttons = {'vm_start': true, 'vm_restart': false, 'vm_shutdown': false, 'vm_destroy': false, 'vm_migrate': false, 'vm_edit': true, 'vm_del': true, 'vm_login': false};
+						buttons.vm_start = buttons.vm_edit = buttons.vm_del = buttons.vm_user = buttons.vm_group = true;
 						state = 'golden';
 						break;
 					case 'golden_active':
-						buttons = {'vm_start': true, 'vm_restart': false, 'vm_shutdown': false, 'vm_destroy': false, 'vm_migrate': false, 'vm_edit': true, 'vm_del': true, 'vm_login': false};
+						buttons.vm_start = buttons.vm_edit = buttons.vm_del = buttons.vm_user = buttons.vm_group = true;
 						status = 'golden';
 						state = 'golden_active';
 						break;
 					case 'removed':
+						buttons = null;
 						// not a real status
 						gridReload = true;
 						$('#{$gridid}_grid').delRowData(id);
 						//return;
 						break;
 				}
-				status += data[row['uuid']]['statustxt'];
-
-				refreshVmButtons(id, buttons);
-				if (buttons['vm_edit'])
-				{
-					name = '<a href="${updateurl}?dn=' + row['dn']  + '&vmtype=' + row['type'] + '" title="created: ' + row['cts'];
-					if ('' != row['user']) {
-						name += '; user: ' + row['user'];
+				
+				if (null != buttons) {
+					buttons.vm_start = buttons.vm_start && {$vmManage};
+					buttons.vm_restart = buttons.vm_restart && {$vmManage};
+					buttons.vm_shutdown = buttons.vm_shutdown && {$vmManage};
+					buttons.vm_destroy = buttons.vm_destroy && {$vmManage};
+					buttons.vm_migrate = buttons.vm_migrate && {$vmEdit};
+					buttons.vm_edit = buttons.vm_edit && {$vmEdit};
+					buttons.vm_del = buttons.vm_del && {$vmDelete};
+					buttons.vm_login = buttons.vm_login && {$vmUse};
+					buttons.vm_user = buttons.vm_user && {$userManage};
+					buttons.vm_group = buttons.vm_group && {$groupManage};
+					buttons.vm_golden = buttons.vm_golden && {$vmManage};
+					buttons.vm_actgolden = buttons.vm_actgolden && {$vmManage};
+					
+					status += data[row['uuid']]['statustxt'];
+					if (data[row['uuid']]['progress'] != undefined) {
+						status += ' ' + data[row['uuid']]['progress'] + "%";
 					}
-					name += '">' + data[row['uuid']]['name'] + '</a>';
-				}
-				else
-				{
-					name = '<span title="created: ' + row['cts'];
-					if ('' != row['user']) {
-						name += '; user: ' + row['user'];
+	
+					refreshVmButtons(id, buttons);
+					if (buttons['vm_edit']) {
+						name = '<a href="${updateurl}?dn=' + row['dn']  + '&vmtype=' + row['type'] + '" title="created: ' + row['cts'];
+						if ('' != row['user']) {
+							name += '; user: ' + row['user'];
+						}
+						name += '">' + data[row['uuid']]['name'] + '</a>';
 					}
-					name += '">' + data[row['uuid']]['name'] + '</span>';
-				}
-				stateimg = 'vm_status_' + state;
-				if ('' != data[row['uuid']]['node']) {
-					node = '<a href="${nodeurl}?node=' + data[row['uuid']]['node'] + '">' + data[row['uuid']]['node'] + '</a>';
-				}
-				else {
-					node = '';
-				}
-
-				spice = data[row['uuid']]['spice'];
-				$('#{$gridid}_grid').setCell(id, 'spice', spice);
-				if ('green' == state) {
-					mem = data[row['uuid']]['mem'];
-					cpu = data[row['uuid']]['cpu'];
-					cputext = '<div id="cpu_' + id + '" style="float: left; height:16px;"></div><div style="float: right; background-color: #E7DFDA; width: 3em;">' + cpu + '%</div>';
-
-					if (cputimes[row['uuid']] == undefined) {
-						cputimes[row['uuid']] = [0];
+					else {
+						name = '<span title="created: ' + row['cts'];
+						if ('' != row['user']) {
+							name += '; user: ' + row['user'];
+						}
+						name += '">' + data[row['uuid']]['name'] + '</span>';
 					}
-	                		cputimes[row['uuid']].push(cpu);
-                			if (cputimes[row['uuid']].length > cputimes_max[0])
-                    				cputimes[row['uuid']].splice(0,1);
-
-					if (cputimes[row['uuid'] + 2] == undefined) {
-						cputimes[row['uuid'] + 2] = [0];
+					stateimg = 'vm_status_' + state;
+					if ('' != data[row['uuid']]['node']) {
+						if (${nodeView}) {
+							node = '<a href="${nodeurl}?node=' + data[row['uuid']]['node'] + '">' + data[row['uuid']]['node'] + '</a>';
+						}
+						else {
+							node = data[row['uuid']]['node'];
+						}
 					}
-	                		cputimes[row['uuid'] + 2].push(cpu);
-                			if (cputimes[row['uuid'] + 2].length > cputimes_max[1])
-                    				cputimes[row['uuid'] + 2].splice(0,1);
+					else {
+						node = '';
+					}
+	
+					spice = data[row['uuid']]['spice'];
+					$('#{$gridid}_grid').setCell(id, 'spice', spice);
+					if ('green' == state) {
+						mem = data[row['uuid']]['mem'];
+						cpu = data[row['uuid']]['cpu'];
+						cputext = '<div id="cpu_' + id + '" style="float: left; height:16px;"></div><div style="float: right; background-color: #E7DFDA; width: 3em;">' + cpu + '%</div>';
+	
+						if (cputimes[row['uuid']] == undefined) {
+							cputimes[row['uuid']] = [0];
+						}
+		                		cputimes[row['uuid']].push(cpu);
+	                			if (cputimes[row['uuid']].length > cputimes_max[0])
+	                    				cputimes[row['uuid']].splice(0,1);
+	
+						if (cputimes[row['uuid'] + 2] == undefined) {
+							cputimes[row['uuid'] + 2] = [0];
+						}
+		                		cputimes[row['uuid'] + 2].push(cpu);
+	                			if (cputimes[row['uuid'] + 2].length > cputimes_max[1])
+	                    				cputimes[row['uuid'] + 2].splice(0,1);
+					}
+					else {
+						mem = '---';
+						cpu = 0;
+						cputext = '---';
+					}
+					$('#{$gridid}_grid').setCell(id, 'status', status, {'padding-left': '20px', background: 'url({$imagesurl}/' + stateimg + '.png) no-repeat 3px 3px transparent'});
+	
+					var change = {};
+	
+					change['name'] = name;
+					change['mem'] = mem;
+					change['node'] = node;
+					$('#{$gridid}_grid').setRowData(id, change);
+
+					//$('#spice' + i).attr('href', spice);
+
+//					$('#{$gridid}_grid').setCell(id, 'cpu', cputext, {'font-weight': 'normal'});
+//					$('#cpu_' + id).sparkline(cputimes[row['uuid']], { lineColor: '#000000',
+//				                fillColor: '', //#E7DFDA',
+//				                spotColor: '#000000',
+//			                	chartRangeMin: 0,
+//			            	    chartRangeMax: 100,
+//	        			        //minSpotColor: '#000000',
+//			    	            //maxSpotColor: '#000000',
+//	        			        normalRangeMin: 0,
+//						normalRangeMax: 50,
+//						normalRangeColor: '#68C760',
+//			        	        spotRadius: 2,
+//	        			        lineWidth: 1,
+//					});
+//					$('#cpu2_' + id).sparkline(cputimes[row['uuid'] + 2], { lineColor: '#000000',
+//				                fillColor: '', //#E7DFDA',
+//		        		        spotColor: '#000000',
+//			                	chartRangeMin: 0,
+//	        		    	    chartRangeMax: 100,
+//			        	        width : '150px',
+//						height : '50px',
+//	        			        //minSpotColor: '#000000',
+//				                //maxSpotColor: '#000000',
+//		        		        normalRangeMin: 0,
+//						normalRangeMax: 50,
+//						normalRangeColor: '#68C760',
+//			    	            spotRadius: 2,
+//	        			        lineWidth: 1,
+//					 });
 				}
-				else {
-					mem = '---';
-					cpu = 0;
-					cputext = '---';
-				}
-				$('#{$gridid}_grid').setCell(id, 'status', status, {'padding-left': '20px', background: 'url({$imagesurl}/' + stateimg + '.png) no-repeat 3px 3px transparent'});
-
-				var change = {};
-
-				change['name'] = name;
-				change['mem'] = mem;
-				change['node'] = node;
-				$('#{$gridid}_grid').setRowData(id, change);
-
-				//$('#spice' + i).attr('href', spice);
-
-//				$('#{$gridid}_grid').setCell(id, 'cpu', cputext, {'font-weight': 'normal'});
-//				$('#cpu_' + id).sparkline(cputimes[row['uuid']], { lineColor: '#000000',
-//			                fillColor: '', //#E7DFDA',
-//			                spotColor: '#000000',
-//			                chartRangeMin: 0,
-//			                chartRangeMax: 100,
-//	        		        //minSpotColor: '#000000',
-//			                //maxSpotColor: '#000000',
-//	        		        normalRangeMin: 0,
-//					normalRangeMax: 50,
-//					normalRangeColor: '#68C760',
-//			                spotRadius: 2,
-//	        		        lineWidth: 1,
-//				 });
-//				$('#cpu2_' + id).sparkline(cputimes[row['uuid'] + 2], { lineColor: '#000000',
-//			                fillColor: '', //#E7DFDA',
-//	        		        spotColor: '#000000',
-//			                chartRangeMin: 0,
-//	        		        chartRangeMax: 100,
-//			                width : '150px',
-//					height : '50px',
-//	        		        //minSpotColor: '#000000',
-//			                //maxSpotColor: '#000000',
-//	        		        normalRangeMin: 0,
-//					normalRangeMax: 50,
-//					normalRangeColor: '#68C760',
-//			                spotRadius: 2,
-//	        		        lineWidth: 1,
-//				 });
 			}
 			if (0 < refreshDns.length) {
 				setTimeout(refreshNextVm, 100);
@@ -337,7 +383,7 @@ function reloadGrid()
 function startVm(id)
 {
 	var row = $('#{$gridid}_grid').getRowData(id);
-	buttons = {'vm_start': false, 'vm_restart': false, 'vm_shutdown': false, 'vm_destroy': false, 'vm_migrate': true};
+	buttons = resetButtons(); //{'vm_start': false, 'vm_restart': false, 'vm_shutdown': false, 'vm_destroy': false, 'vm_migrate': true};
 	refreshVmButtons(id, buttons);
 	$('#{$gridid}_grid').setCell(id, 'status', 'starting', {'padding-left': '20px', background: 'url({$imagesurl}/loading.gif) no-repeat 3px 3px transparent'});
 	$.ajax({
@@ -369,7 +415,7 @@ function startVm(id)
 function shutdownVm(id)
 {
 	var row = $('#{$gridid}_grid').getRowData(id);
-	buttons = {'vm_start': false, 'vm_restart': false, 'vm_shutdown': false, 'vm_destroy': false, 'vm_migrate': true};
+	buttons = resetButtons(); //{'vm_start': false, 'vm_restart': false, 'vm_shutdown': false, 'vm_destroy': false, 'vm_migrate': true};
 	refreshVmButtons(id, buttons);
 	$('#{$gridid}_grid').setCell(id, 'status', 'stopping', {'padding-left': '20px', background: 'url({$imagesurl}/loading.gif) no-repeat 3px 3px transparent'});
 	$.ajax({
@@ -393,7 +439,7 @@ function shutdownVm(id)
 function rebootVm(id)
 {
 	var row = $('#{$gridid}_grid').getRowData(id);
-	buttons = {'vm_start': false, 'vm_restart': false, 'vm_shutdown': false, 'vm_destroy': false, 'vm_migrate': true};
+	buttons = resetButtons(); //{'vm_start': false, 'vm_restart': false, 'vm_shutdown': false, 'vm_destroy': false, 'vm_migrate': true};
 	refreshVmButtons(id, buttons);
 	$('#{$gridid}_grid').setCell(id, 'status', 'rebooting', {'padding-left': '20px', background: 'url({$imagesurl}/loading.gif) no-repeat 3px 3px transparent'});
 	$.ajax({
@@ -416,7 +462,7 @@ function rebootVm(id)
 function destroyVm(id)
 {
 	var row = $('#{$gridid}_grid').getRowData(id);
-	buttons = {'vm_start': false, 'vm_restart': false, 'vm_shutdown': false, 'vm_destroy': false, 'vm_migrate': true};
+	buttons = resetButtons(); //{'vm_start': false, 'vm_restart': false, 'vm_shutdown': false, 'vm_destroy': false, 'vm_migrate': true};
 	refreshVmButtons(id, buttons);
 	$('#{$gridid}_grid').setCell(id, 'status', 'destroying', {'padding-left': '20px', background: 'url({$imagesurl}/loading.gif) no-repeat 3px 3px transparent'});
 	$.ajax({
@@ -451,7 +497,7 @@ function migrateVm(id, newnodedn)
 	$('#migrateNode').addClass('ui-state-disabled');
 
 	var row = $('#{$gridid}_grid').getRowData(id);
-	buttons = {'vm_start': false, 'vm_restart': false, 'vm_shutdown': false, 'vm_destroy': false, 'vm_migrate': false};
+	buttons = resetButtons(); //{'vm_start': false, 'vm_restart': false, 'vm_shutdown': false, 'vm_destroy': false, 'vm_migrate': false};
 	refreshVmButtons(id, buttons);
 	$('#{$gridid}_grid').setCell(id, 'status', 'migrating', {'padding-left': '20px', background: 'url({$imagesurl}/loading.gif) no-repeat 3px 3px transparent'});
 	$('#errorNode').css('display', 'none');
@@ -663,8 +709,11 @@ $savetxt = Yii::t('vm', 'Save');
 $saveUserAssignUrl = $this->createUrl('vm/saveUserAssign');
 
 Yii::app()->clientScript->registerScript('assignUser', <<<EOS
-function assignUser(dn)
+function assignUser(id)
 {
+	var row = $('#{$gridid}_grid').getRowData(id);
+	var dn = row['dn'];
+
 	$('#startuser').fancybox({
 		'modal'			: false,
 		'href'			: '{$userGuiUrl}?dn=' + dn,
@@ -718,8 +767,11 @@ $savetxt = Yii::t('vm', 'Save');
 $saveGroupAssignUrl = $this->createUrl('vm/saveGroupAssign');
 
 Yii::app()->clientScript->registerScript('assignGroup', <<<EOS
-function assignGroup(dn)
+function assignGroup(id)
 {
+	var row = $('#{$gridid}_grid').getRowData(id);
+	var dn = row['dn'];
+
 	$('#startgroup').fancybox({
 		'modal'			: false,
 		'href'			: '{$groupGuiUrl}?dn=' + dn,
@@ -805,131 +857,30 @@ EOS
 , CClientScript::POS_END);
 
 //Yii::app()->clientScript->registerScriptFile($baseurl . '/js/jquery.sparkline.min.js');
+
+$vmp = is_null($vmpool) ? '???' : $vmpool;
 ?>
 <div class="ui-widget">
 	<label>Vm Pool</label>
-<?php echo CHtml::dropDownList('vmpool', $vmpool, $vmpools, array('id' => 'vmpool', 'prompt' => '')); ?>
+<?php echo CHtml::dropDownList('vmpool', $vmp, $vmpools, array('id' => 'vmpool', 'prompt' => '')); ?>
 </div><br />
+<div id="poolerror" class="ui-widget" style="display: none;">
+<div class="ui-state-error ui-corner-all" style="padding: 10px;">
+<span class="ui-icon ui-icon-alert" style="float: left; margin-right: .3em;"></span>
+<?php echo  Yii::t('vmpool', 'no active Golden-Image')?> (<img alt="" src="<?php echo $imagesurl;?>/vm_active_goldenimage.png"/>)
+</div></div>
 <?php
-$vmpooljs = <<<EOS
+$vmpooljs = '';
+if ('dynamic' == $vmtype && !is_null($vmpool) && !$hasGoldenImage) {
+	$vmpooljs .= '$("#poolerror").show();';
+}
+$vmpooljs .= <<<EOS
 $('#vmpool').change(function() {
 	var vmpool = this.value;
-	if ('' != vmpool) {
-		$('#{$gridid}_grid').setGridParam({url: '{$getvmsurl}?vmtype={$vmtype}&vmpool=' + vmpool});
-		reloadVms();
- 	}
+	window.location.assign('?vmtype={$vmtype}&vmpool=' + vmpool);
 });
 EOS;
-/*
-$vmpooljs = <<<EOS
-	(function( $ ) {
-		$.widget( "ui.combobox", {
-			_create: function() {
-				var self = this,
-					select = this.element.hide(),
-					selected = select.children( ":selected" ),
-					value = selected.val() ? selected.text() : "";
-				var input = this.input = $( "<input>" )
-					.insertAfter( select )
-					.val( value )
-					.autocomplete({
-						delay: 0,
-						minLength: 0,
-						source: function( request, response ) {
-							var matcher = new RegExp( $.ui.autocomplete.escapeRegex(request.term), "i" );
-							response( select.children( "option" ).map(function() {
-								var text = $( this ).text();
-								if ( this.value && ( !request.term || matcher.test(text) ) )
-									return {
-										label: text.replace(
-											new RegExp(
-												"(?![^&;]+;)(?!<[^<>]*)(" +
-												$.ui.autocomplete.escapeRegex(request.term) +
-												")(?![^<>]*>)(?![^&;]+;)", "gi"
-											), "<strong>$1</strong>" ),
-										value: text,
-										option: this
-									};
-							}) );
-						},
-						select: function( event, ui ) {
-							ui.item.option.selected = true;
-							self._trigger( "selected", event, {
-								item: ui.item.option
-							});
-						},
-						change: function( event, ui ) {
-							if ( !ui.item ) {
-								var matcher = new RegExp( "^" + $.ui.autocomplete.escapeRegex( $(this).val() ) + "$", "i" ),
-									valid = false;
-								select.children( "option" ).each(function() {
-									if ( $( this ).text().match( matcher ) ) {
-										this.selected = valid = true;
-										return false;
-									}
-								});
-								if ( !valid ) {
-									// remove invalid value, as it didn't match anything
-									$( this ).val( "" );
-									select.val( "" );
-									input.data( "autocomplete" ).term = "";
-									return false;
-								}
-							}
-							var vmpool = ui.item.option.value;
-							if ('' != vmpool) {
-								$('#{$gridid}_grid').setGridParam({url: '{$getvmsurl}?vmtype={$vmtype}&vmpool=' + vmpool});
-								reloadVms();
-							}
-							//alert(ui.item.value);
-						}
-					})
-					.addClass( "ui-widget ui-widget-content ui-corner-left" );
 
-				input.data( "autocomplete" )._renderItem = function( ul, item ) {
-					return $( "<li></li>" )
-						.data( "item.autocomplete", item )
-						.append( "<a>" + item.label + "</a>" )
-						.appendTo( ul );
-				};
-
-				this.button = $( "<button type='button'>&nbsp;</button>" )
-					.attr( "tabIndex", -1 )
-					.attr( "title", "Show All Items" )
-					.insertAfter( input )
-					.button({
-						icons: {
-							primary: "ui-icon-triangle-1-s"
-						},
-						text: false
-					})
-					.removeClass( "ui-corner-all" )
-					.addClass( "ui-corner-right ui-button-icon" )
-					.click(function() {
-						// close if already visible
-						if ( input.autocomplete( "widget" ).is( ":visible" ) ) {
-							input.autocomplete( "close" );
-							return;
-						}
-
-						// work around a bug (likely same cause as #5265)
-						$( this ).blur();
-
-						// pass empty string as value to search for, displaying all results
-						input.autocomplete( "search", "" );
-						input.focus();
-					});
-			},
-			destroy: function() {
-				this.input.remove();
-				this.button.remove();
-				this.element.show();
-				$.Widget.prototype.destroy.call( this );
-			}
-		});
-	})( jQuery );
-EOS;
-*/
 Yii::app()->clientScript->registerScript( 'vmpool', $vmpooljs, CClientScript::POS_END);
 
 //Yii::app()->clientScript->registerScript('vmpool2', '$( "#vmpool" ).combobox();', CClientScript::POS_END);
@@ -950,7 +901,7 @@ $this->widget('ext.zii.CJqGrid', array(
 			'stringResult' => false,'searchOnEnter' => false
 		),
 	),
-     'options'=>array(
+	'options'=>array(
 		'pager'=>$gridid . '_pager',
 		'url'=>$getvmsurl . '?vmtype=' . $vmtype . '&vmpool=' . $vmpool,
 		'datatype'=>'xml',
@@ -968,12 +919,12 @@ $this->widget('ext.zii.CJqGrid', array(
 			array('name'=>'user','index'=>'user','hidden'=>true,'editable'=>false),
 			array('name'=>'name','index'=>'sstDisplayName','width'=>'70','editable'=>false),
 			array('name'=>'status','index'=>'status', 'sortable' =>false, 'search' =>false, 'editable'=>false),
-			array('name'=>'statusact','index'=>'statusact','width' => 70, 'fixed' => true, 'sortable' =>false, 'search' =>false, 'editable'=>false),
+			array('name'=>'statusact','index'=>'statusact','width' => 76, 'fixed' => true, 'sortable' =>false, 'search' =>false, 'editable'=>false),
 			array('name'=>'mem','index'=>'mem','width' => '100', 'fixed' => true, 'align'=>'center', 'sortable' =>false, 'search' => false, 'editable'=>false),
 			array('name'=>'cpu','index'=>'cpu','width' => '104', 'fixed' => true, 'align'=>'center', 'sortable' =>false, 'search' => false, 'editable'=>false, 'hidden'=>true),
 			array('name'=>'node','index'=>'sstNode','editable'=>false),
 			array('name'=>'nodename','index'=>'nodename','hidden'=>true,'editable'=>false),
-			array ('name' => 'act','index' => 'act','width' => 19 * 5, 'fixed' => true, 'sortable' => false, 'search' =>  false, 'editable'=>false)
+			array ('name' => 'act','index' => 'act','width' => ('persistent' == $vmtype ? 95 : 76), 'fixed' => true, 'sortable' => false, 'search' =>  false, 'editable'=>false)
 		),
 		//'toolbar' => array(true, "top"),
 		//'caption'=>'VMs',
@@ -985,10 +936,10 @@ $this->widget('ext.zii.CJqGrid', array(
 		'editurl'=>$deleteurl,
 		'subGrid' => true,
 //		'subGridUrl' =>$baseurl . '/vm/getVmInfo',
-      	'subGridRowExpanded' => 'js:' . <<<EOS
-      	function(pID, id) {
-      		$('#{$gridid}_grid_' + id).html('<img src="{$imagesurl}/loading.gif"/>');
-      		var row = $('#{$gridid}_grid').getRowData(id);
+		'subGridRowExpanded' => 'js:' . <<<EOS
+		function(pID, id) {
+			$('#{$gridid}_grid_' + id).html('<img src="{$imagesurl}/loading.gif"/>');
+			var row = $('#{$gridid}_grid').getRowData(id);
 			$.ajax({
 				url: "{$baseurl}/vm/getVmInfo",
 				cache: false,
@@ -1000,7 +951,7 @@ $this->widget('ext.zii.CJqGrid', array(
 					});
 				}
 			});
-      	}
+		}
 EOS
 ,
 		'gridComplete' =>  'js:' . <<<EOS
@@ -1013,52 +964,57 @@ EOS
 				name = row['name'];
 				var statusact = '';
 				if ('persistent' == row['type']) {
-					statusact += '<img id="vm_start_' + ids[i] + '" src="{$imagesurl}/vm_start_n.png" alt="" title="start VM" class="action" />';
-					statusact += '<img id="vm_shutdown_' + ids[i] + '" src="{$imagesurl}/vm_shutdown_n.png" alt="" title="shutdown VM" class="action" />';
-					statusact += '<img id="vm_destroy_' + ids[i] + '" src="{$imagesurl}/vm_destroy_n.png" alt="" title="destroy VM" class="action" />';
-					statusact += '<img id="vm_migrate_' + ids[i] + '" src="{$imagesurl}/vm_migrate.png" alt="" title="migrate VM" class="action" onclick="selectNode(\'' + ids[i] + '\');" />';
+					statusact += '<img id="vm_start_' + ids[i] + '" src="{$imagesurl}/vm_start.png" alt="" title="start VM" class="action notallowed" />';
+					statusact += '<img id="vm_shutdown_' + ids[i] + '" src="{$imagesurl}/vm_shutdown.png" alt="" title="shutdown VM" class="action notallowed" />';
+					statusact += '<img id="vm_destroy_' + ids[i] + '" src="{$imagesurl}/vm_destroy.png" alt="" title="destroy VM" class="action notallowed" />';
+					statusact += '<img id="vm_migrate_' + ids[i] + '" src="{$imagesurl}/vm_migrate.png" alt="" title="migrate VM" class="action notallowed" />';
 				}
 				else if ('System-Preparation' == row['subtype']) {
-					statusact += '<img id="vm_start_' + ids[i] + '" src="{$imagesurl}/vm_start_n.png" alt="" title="start VM" class="action" />';
-					statusact += '<img id="vm_shutdown_' + ids[i] + '" src="{$imagesurl}/vm_shutdown_n.png" alt="" title="shutdown VM" class="action" />';
+					statusact += '<img id="vm_start_' + ids[i] + '" src="{$imagesurl}/vm_start.png" alt="" title="start VM" class="action notallowed" />';
+					statusact += '<img id="vm_shutdown_' + ids[i] + '" src="{$imagesurl}/vm_shutdown.png" alt="" title="shutdown VM" class="action notallowed" />';
 				}
 				else if ('Golden-Image' == row['subtype']) {
-					statusact += '<img id="vm_start_' + ids[i] + '" src="{$imagesurl}/vm_start_n.png" alt="" title="start a test VM" class="action" />';
+					statusact += '<img id="vm_start_' + ids[i] + '" src="{$imagesurl}/vm_start.png" alt="" title="start a test VM" class="action notallowed" />';
 				}
 				else {
 					statusact += '<img src="{$imagesurl}/space.png" alt="" title="" class="action" />';
 					statusact += '<img src="{$imagesurl}/space.png" alt="" title="" class="action" />';
-					statusact += '<img id="vm_destroy_' + ids[i] + '" src="{$imagesurl}/vm_destroy_n.png" alt="" title="destroy VM" class="action" />';
-					statusact += '<img id="vm_migrate_' + ids[i] + '" src="{$imagesurl}/vm_migrate.png" alt="" title="migrate VM" class="action" onclick="selectNode(\'' + ids[i] + '\');" />';
+					statusact += '<img id="vm_destroy_' + ids[i] + '" src="{$imagesurl}/vm_destroy.png" alt="" title="destroy VM" class="action notallowed" />';
+					statusact += '<img id="vm_migrate_' + ids[i] + '" src="{$imagesurl}/vm_migrate.png" alt="" title="migrate VM" class="action notallowed" />';
 				}
 				var act = '';
 				if ('persistent' == row['type']) {
-					act += '<img id="vm_edit_' + ids[i] + '" src="{$imagesurl}/vm_edit_n.png" alt="" title="edit VM" class="action" />';
-					act += '<img id="vm_del_' + ids[i] + '" src="{$imagesurl}/vm_del_n.png" alt="" title="delete VM" class="action" />';
-					act += '<img id="vm_login_' + ids[i] + '" src="{$imagesurl}/vm_login_n.png" alt="" title="use VM" class="action" />';
-					act += '<img src="{$imagesurl}/vmuser_add.png" style="cursor: pointer;" alt="" title="Assign users to this VM" class="action" onclick="assignUser(\'' + row['dn'] + '\');" />';
-					act += '<img src="{$imagesurl}/vmgroup_add.png" style="cursor: pointer;" alt="" title="Assign groups to this VM" class="action" onclick="assignGroup(\'' + row['dn'] + '\');" />';
+					act += '<img id="vm_edit_' + ids[i] + '" src="{$imagesurl}/vm_edit.png" alt="" title="edit VM" class="action notallowed" />';
+					act += '<img id="vm_del_' + ids[i] + '" src="{$imagesurl}/vm_del.png" alt="" title="delete VM" class="action notallowed" />';
+					act += '<img id="vm_login_' + ids[i] + '" src="{$imagesurl}/vm_login.png" alt="" title="use VM" class="action notallowed" />';
+					act += '<img id="vm_user_' + ids[i] + '" src="{$imagesurl}/vmuser_add.png" alt="" title="assign users to VM" class="action notallowed" />';
+					act += '<img id="vm_group_' + ids[i] + '" src="{$imagesurl}/vmgroup_add.png" alt="" title="assign groups to VM" class="action notallowed" />';
 				}
 				else if('System-Preparation' == row['subtype']) {
-					act += '<img id="vm_edit_' + ids[i] + '" src="{$imagesurl}/vm_edit_n.png" alt="" title="edit VM" class="action" />';
-					act += '<img id="vm_del_' + ids[i] + '" src="{$imagesurl}/vm_del_n.png" alt="" title="delete VM" class="action" />';
-					act += '<img id="vm_login_' + ids[i] + '" src="{$imagesurl}/vm_login_n.png" alt="" title="use VM" class="action" />';
-					act += '<img src="{$imagesurl}/vm_goldenimage.png" style="cursor: pointer;" alt="" title="create Golden-Image VM" class="action" onclick="goldenImage(\'' + ids[i] + '\');" />';
+					act += '<img id="vm_edit_' + ids[i] + '" src="{$imagesurl}/vm_edit.png" alt="" title="edit VM" class="action notallowed" />';
+					act += '<img id="vm_del_' + ids[i] + '" src="{$imagesurl}/vm_del.png" alt="" title="delete VM" class="action notallowed" />';
+					act += '<img id="vm_login_' + ids[i] + '" src="{$imagesurl}/vm_login.png" alt="" title="use VM" class="actio notallowedn" />';
+					act += '<img id="vm_golden_' + ids[i] + '" src="{$imagesurl}/vm_goldenimage.png" alt="" title="create Golden-Image VM" class="action notallowed" />';
 				}
 				else if ('Golden-Image' == row['subtype']) {
-					act += '<img id="vm_edit_' + ids[i] + '" src="{$imagesurl}/vm_edit_n.png" alt="" title="edit VM" class="action" />';
-					act += '<img id="vm_del_' + ids[i] + '" src="{$imagesurl}/vm_del_n.png" alt="" title="delete VM" class="action" />';
+					act += '<img id="vm_edit_' + ids[i] + '" src="{$imagesurl}/vm_edit.png" alt="" title="edit VM" class="action notallowed" />';
+					act += '<img id="vm_del_' + ids[i] + '" src="{$imagesurl}/vm_del.png" alt="" title="delete VM" class="action notallowed" />';
 					if ('false' == row['agi']) {
 						act += '<img src="{$imagesurl}/space.png" alt="" title="" class="action" />';
-						act += '<img src="{$imagesurl}/vm_active_goldenimage.png" style="cursor: pointer;" alt="" title="activate Golden-Image" class="action" onclick="activateGoldenImage(\'' + ids[i] + '\');" />';
+						act += '<img id="vm_actgolden_' + ids[i] + '" src="{$imagesurl}/vm_active_goldenimage.png" alt="" title="activate Golden-Image" class="action notallowed" />';
 					}
 				}
 				else {
 					act += '<img src="{$imagesurl}/space.png" alt="" title="" class="action" />';
-					act += '<img id="vm_del_' + ids[i] + '" src="{$imagesurl}/vm_del_n.png" alt="" title="delete VM" class="action" />';
-					act += '<img id="vm_login_' + ids[i] + '" src="{$imagesurl}/vm_login_n.png" alt="" title="use VM" class="action" />';
+					act += '<img id="vm_del_' + ids[i] + '" src="{$imagesurl}/vm_del.png" alt="" title="delete VM" class="action notallowed" />';
+					act += '<img id="vm_login_' + ids[i] + '" src="{$imagesurl}/vm_login.png" alt="" title="use VM" class="action notallowed" />';
 				}
-				var node = '<a href="${nodeurl}?node=' + row['nodename'] + '">' + row['nodename'] + '</a>';
+				if (${nodeView}) {
+					var node = '<a href="${nodeurl}?node=' + row['nodename'] + '">' + row['nodename'] + '</a>';
+				}
+				else {
+					var node = row['nodename'];
+				}
 				$('#{$gridid}_grid').setRowData(ids[i],{/*'name': name,*/ 'act': act, 'statusact': statusact, 'node': node});
 			}
 			if (-1 == timeoutid) {

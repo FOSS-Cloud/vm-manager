@@ -207,4 +207,92 @@ class LdapVm extends CLdapRecord {
 			),
 		));
 	}
+
+	public static function getAssignedVms($type, $criteria) {
+		$unique_vms = array();
+		if (Yii::app()->user->hasRight($type . 'VM', COsbdUser::$RIGHT_ACTION_VIEW, COsbdUser::$RIGHT_VALUE_ALL)) {
+			//$criteria = array_merge_recursive(array('attr' => array('sstVirtualMachineType' => $type)), $crit);
+			$vms = LdapVm::model()->findAll($criteria);
+			foreach($vms as $vm) {
+				$unique_vms[$vm->sstVirtualMachine] = $vm;
+			}
+		}
+		else if(Yii::app()->user->hasRight($type . 'VM', COsbdUser::$RIGHT_ACTION_VIEW, COsbdUser::$RIGHT_VALUE_OWNER)) {
+			$user = Yii::app()->user->getLdapUser();
+			
+			//echo 'User: ' . $user->cn . '(' . $user->uid . ')<br/>';
+			$groups = $user->sstGroupUID;
+			//echo '<pre>groups ' . print_r($groups, true) . '</pre>';
+
+			$criteriaVms = $criteria;
+			if (!isset($criteria['attr']['sstVirtualMachinePool'])) {
+				$assignedPools = LdapVmPool::getAssignedPools($type);
+	
+				//echo '<h1>VMs</h1>';
+				$pools = array();
+				foreach($assignedPools as $pool) {
+					$pools[] = $pool->sstVirtualMachinePool;
+				}
+				$criteriaVms['attr']['sstVirtualMachinePool'] = $pools;
+			}
+			
+			//echo '<pre>criteria ' . print_r($criteriaVms, true) . '</pre>';
+			$vms = LdapVm::model()->findAll($criteriaVms);
+			//echo "$type pool vmcount " . count($vms) . '<br />';
+			foreach($vms as $vm) {
+				$unique_vms[$vm->sstVirtualMachine] = $vm;
+				//echo '<pre>	' . $vm->sstVirtualMachine . ', ' . $vm->sstDisplayName . ' (pool: ' . $vm->sstVirtualMachinePool . ')</pre>';
+			}
+
+			$criteriaVms = $criteria;
+			$criteriaVms['relattr'] = array();
+			$criteriaVms['relattr']['groups'] = array('ou' => $groups);
+			//echo '<pre>criteria ' . print_r($criteria, true) . '</pre>';
+					
+			$vms = LdapVm::model()->findAll($criteriaVms);
+			//echo 'group vmcount ' . count($vms) . '<br/>';
+			foreach($vms as $vm) {
+				//echo '<pre>	' . $vm->sstVirtualMachine . ', ' . $vm->sstDisplayName . ' (pool: ' . $vm->sstVirtualMachinePool . ')</pre>';
+				if (!isset($unique_vms[$vm->sstVirtualMachine])) {
+					$unique_vms[$vm->sstVirtualMachine] = $vm;
+				}
+			}
+	
+			$criteriaVms = $criteria;
+			$criteriaVms['relattr'] = array();
+			$criteriaVms['relattr']['people'] = array('ou' => $user->uid);
+			//echo '<pre>criteria ' . print_r($criteriaVms, true) . '</pre>';
+					
+			$vms = LdapVm::model()->findAll($criteriaVms);
+			//echo 'people vmcount ' . count($vms) . '<br/>';
+			foreach($vms as $vm) {
+				//echo '<pre>	' . $vm->sstVirtualMachine . ', ' . $vm->sstDisplayName . ' (pool: ' . $vm->sstVirtualMachinePool . ')</pre>';
+				if (!isset($unique_vms[$vm->sstVirtualMachine])) {
+					$unique_vms[$vm->sstVirtualMachine] = $vm;
+				}
+			}
+			//echo "$type vmcount " . count($unique_vms) . '<br />';
+			//foreach($unique_vms as $vm) {
+			//	echo '<pre>	' . $vm->sstVirtualMachine . ', ' . $vm->sstDisplayName . ' (pool: ' . $vm->sstVirtualMachinePool . ')</pre>';
+			//}
+		}
+		return $unique_vms;
+	}
+	
+	public static function getPoolsFromAssignedVms($type, $alsoFromPools=false, $attr=array()) {
+		$pools = array();
+		$vms = self::getAssignedVms($type, $attr);
+		foreach ($vms as $vm) {
+			if (!isset($pools[$vm->sstVirtualMachinePool])) {
+				$pools[$vm->sstVirtualMachinePool] = $vm->vmpool;
+			}
+		}
+
+		//echo "$type poolcount " . count($pools) . '<br />';
+		//foreach($pools as $pool) {
+		//	echo '<pre>	' . $pool->sstVirtualMachinePool . ', ' . $pool->sstDisplayName . '</pre>';
+		//}
+		
+		return $pools;
+	}
 }

@@ -101,13 +101,30 @@ class VmController extends Controller
 	public function accessRules()
 	{
 		return array(
-			array('allow', // allow authenticated user to perform 'create' and 'update' actions
-				'actions'=>array('index', 'view', 'update', 'delete', 'template', 'profile',
-					'getPoolInfo', 'getVms', 'getVmInfo', 'refreshTimeout', 'refreshVms', 'getUserGui', 'saveUserAssign', 'getGroupGui', 'saveGroupAssign', 'getNodeGui',
-					'saveVm', 'startVm', 'shutdownVm', 'rebootVm', 'destroyVm', 'migrateVm',
-					'makeGolden', 'activateGolden', 'restoreVm', 'waitForRestoreAction', 'getRestoreAction', 'startRestoreAction', 'cancelRestoreAction', 'handleRestoreAction'),
+			array('allow',
+				'actions'=>array('index', 'view', 'getPoolInfo', 'getVms', 'getVmInfo', 'refreshTimeout', 'refreshVms'),
 				'users'=>array('@'),
-				'expression'=>'Yii::app()->user->isAdmin'
+				'expression'=>'Yii::app()->user->hasRight(\'dynamicVM\', \'Access\', \'Enabled\') || Yii::app()->user->hasRight(\'persistentVM\', \'Access\', \'Enabled\')'
+			),
+// 			array('allow',
+// 		        'actions'=>array('create'),
+// 	        	'users'=>array('@'),
+// 				'expression'=>'Yii::app()->user->hasRight(\'dynamicVM\', \'Create\', \'Enabled\') || Yii::app()->user->hasRight(\'persistentVM\', \'Create\', \'Enabled\')'
+// 			),
+			array('allow',
+				'actions'=>array('update', 'makeGolden', 'activateGolden', 'getUserGui', 'saveUserAssign', 'getGroupGui', 'saveGroupAssign', 'getNodeGui'),
+				'users'=>array('@'),
+				'expression'=>'Yii::app()->user->hasOtherRight(\'dynamicVM\', \'Edit\', \'None\') || Yii::app()->user->hasOtherRight(\'persistentVM\', \'Edit\', \'None\')'
+			),
+			array('allow',
+				'actions'=>array('delete'),
+				'users'=>array('@'),
+				'expression'=>'Yii::app()->user->hasOtherRight(\'dynamicVM\', \'Delete\', \'None\') || Yii::app()->user->hasOtherRight(\'persistentVM\', \'Delete\', \'None\')'
+			),
+			array('allow',
+				'actions'=>array('startVm', 'shutdownVm', 'rebootVm', 'destroyVm', 'migrateVm', 'restoreVm', 'waitForRestoreAction', 'getRestoreAction', 'startRestoreAction', 'cancelRestoreAction', 'handleRestoreAction'),
+				'users'=>array('@'),
+				'expression'=>'Yii::app()->user->hasOtherRight(\'dynamicVM\', \'Manage\', \'None\') || Yii::app()->user->hasOtherRight(\'persistentVM\', \'Manage\', \'None\')'
 			),
 			array('deny',  // deny all users
 				'users'=>array('*'),
@@ -119,22 +136,58 @@ class VmController extends Controller
 		if ('persistent' != $vmtype && 'dynamic' != $vmtype) {
 			$vmtype = 'persistent';
 		}
-		$criteria = array('attr'=>array('sstVirtualMachinePoolType' => $vmtype));
-		$vmpools = CLdapRecord::model('LdapVmPool')->findAll($criteria);
-		$vmpool = Yii::app()->getSession()->get('vm.index.' . $vmtype . '.vmpool', null);
-		if (is_null($vmpool) && 1 == count($vmpools)) {
-			$vmpool = $vmpools[0]->sstVirtualMachinePool;
-		}
-		if (!is_null($vmpool)) {
-			Yii::app()->getSession()->add('vm.index.' . $vmtype . '.vmpool', $vmpool);
+		$sessionvars = Yii::app()->getSession()->get('vm.' . $vmtype . '.index', array('page' => 1, 
+			'refreshTime' => 10000, 
+			'filter' => array('pool' => null, 'name' => null, 'node' => null)
+		));
+		
+		$vmpool = null;
+		if (isset($_GET['vmpool'])) {
+			if ('' !== $_GET['vmpool']) {
+				$sessionvars['filter']['pool'] = $_GET['vmpool'];
+				$vmpool = $_GET['vmpool'];
+			}
+			else {
+				$vmpool = null;
+			}
 		}
 		else {
-			$vmpool = '???';
+			$vmpool = $sessionvars['filter']['pool'];
 		}
+		//$vmpools = CLdapRecord::model('LdapVmPool')->findAll($criteria);
+		$vmpools = LdapVmPool::getAssignedPools($vmtype);
+		$vmpools = array_values($vmpools);
+		if (is_null($vmpool) && 1 === count($vmpools)) {
+			$vmpool = $vmpools[0]->sstVirtualMachinePool;
+		}
+		if ('dynamic' === $vmtype) {
+			$hasGoldenImage = false;
+		}
+		else {
+			$hasGoldenImage = null;
+		}
+		if (!is_null($vmpool)) {
+			//Yii::app()->getSession()->add('vm.index.' . $vmtype . '.vmpool', $vmpool);
+			$sessionvars['filter']['pool'] = $vmpool;
+			if ('dynamic' == $vmtype) {
+				$criteria = array('attr'=>array('sstVirtualMachinePool' => $vmpool));
+				$pool = LdapVmPool::model()->findByAttributes($criteria);
+				if (!is_null($pool)) {
+					$hasGoldenImage = isset($pool->sstActiveGoldenImage);
+				}
+			}
+		}
+		else {
+			$hasGoldenImage = null;
+//			$vmpool = '???';
+		}
+		Yii::app()->getSession()->add('vm.' . $vmtype . '.index', $sessionvars);
 		$this->render('index', array(
 			'vmtype' => $vmtype,
 			'vmpools' => $this->createDropdownFromLdapRecords($vmpools, 'sstVirtualMachinePool', 'sstDisplayName'),
 			'vmpool' => $vmpool,
+			'hasGoldenImage' => $hasGoldenImage,
+			'sessionvars' => $sessionvars
 		));
 	}
 
@@ -302,6 +355,16 @@ class VmController extends Controller
 						
 						$libvirt->undefineVm(array('libvirt' => $vm->node->getLibvirtUri(), 'name' => $vm->sstVirtualMachine));
 
+						if ('Golden-Image' == $vm->sstVirtualMachineSubType) {
+							$criteria = array('attr' => array('sstActiveGoldenImage' => $vm->sstVirtualMachine));
+							$pools = LdapVmPool::model()->findAll($criteria);
+							$server = CLdapServer::getInstance();
+							foreach($pools as $pool) {
+								$data = array('sstActiveGoldenImage' => array());
+								$server->modify_del($pool->dn, $data);
+							}
+						}
+						
 						// delete VM
 						$vm->delete(true);
 					}
@@ -333,11 +396,17 @@ class VmController extends Controller
 	/**
 	 * Ajax functions for JqGrid
 	 */
-	public function actionGetVMs() {
+	public function actionGetVms() {
 		$this->disableWebLogRoutes();
+		if (isset($_GET['vmtype'])) {
+			$vmtype = $_GET['vmtype'];
+		}
+		$sessionvars = Yii::app()->getSession()->get('vm.' . $vmtype . '.index', array('page' => 1, 
+			'refreshTime' => 10000, 
+			'filter' => array('pool' => null, 'name' => null, 'node' => null)
+		));
 		if (isset($_GET['time'])) {
-			$session = Yii::app()->getSession();
-			$session->add('vm_refreshtime', (int) $_GET['time']);
+			$sessionvars['refreshTime'] = (int) $_GET['time'];
 		}
 
 		$page = $_GET['page'];
@@ -354,72 +423,61 @@ class VmController extends Controller
 
 		$criteria = array('attr'=>array());
 		if (isset($_GET['vmtype'])) {
-			$criteria['attr']['sstVirtualMachineType'] = $_GET['vmtype'];
+			$criteria['attr']['sstVirtualMachineType'] = $vmtype;
 		}
 		if (isset($_GET['vmpool'])) {
-			$criteria['attr']['sstVirtualMachinePool'] = $_GET['vmpool'];
-			Yii::app()->getSession()->add('vm.index.' . $_GET['vmtype'] . '.vmpool', $_GET['vmpool']);
+			if ('' != $_GET['vmpool']) {
+				$criteria['attr']['sstVirtualMachinePool'] = $_GET['vmpool'];
+				$sessionvars['filter']['pool'] = $_GET['vmpool'];
+			}
+			else {
+				$criteria['attr']['sstVirtualMachinePool'] = $sessionvars['filter']['pool'];
+			}
 		}
 		if (isset($_GET['sstDisplayName'])) {
 			$criteria['attr']['sstDisplayName'] = '*' . $_GET['sstDisplayName'] . '*';
+			$sessionvars['filter']['name'] = $_GET['sstDisplayName'];
 		}
 		if (isset($_GET['sstNode'])) {
 			$criteria['attr']['sstNode'] = '*' . $_GET['sstNode'] . '*';
+			$sessionvars['filter']['node'] = $_GET['sstNode'];
 		}
+
 		if ($sidx != '')
 		{
 			$criteria['sort'] = $sidx . '.' . $sord;
+			$sessionvars['sort'] = $criteria['sort'];
 		}
-		$vms = LdapVm::model()->findAll($criteria);
+		//echo '<pre>' . print_r($criteria, true) . '</pre>';
+		if (Yii::app()->user->hasRight($vmtype . 'VM', 'View', 'All')) {
+			$vms = LdapVm::model()->findAll($criteria);
+		}
+		else if (Yii::app()->user->hasRight($vmtype . 'VM', 'View', 'Owner')) {
+			$vms = LdapVm::getAssignedVms($vmtype, $criteria);
+			$vms = array_values($vms);
+		}
+		else {
+			$vms = array();
+		}
 		$count = count($vms);
+		$total_pages = ceil($count / $limit);
 
-		// calculate the total pages for the query
-		if( $count > 0 && $limit > 0)
-		{
-			$total_pages = ceil($count/$limit);
-		}
-		else
-		{
-			$total_pages = 0;
-		}
+		$s = '<?xml version="1.0" encoding="utf-8"?>';
+		$s .=  '<rows>';
+		$s .= '<page>' . $page . '</page>';
+		$s .= '<total>' . $total_pages . '</total>';
+		$s .= '<records>' . $count . '</records>';
 
-		// if for some reasons the requested page is greater than the total
-		// set the requested page to total page
-		if ($page > $total_pages)
-		{
-			$page = $total_pages;
-		}
-
-		// calculate the starting position of the rows
-		$start = $limit * $page - $limit;
-
-		// if for some reasons start position is negative set it to 0
-		// typical case is that the user type 0 for the requested page
-		if($start < 0)
-		{
-			$start = 0;
-		}
-
-		$criteria['limit'] = $limit;
-		$criteria['offset'] = $start;
-
-		$vms = LdapVm::model()->findAll($criteria);
-
-		// we should set the appropriate header information. Do not forget this.
-		//header("Content-type: text/xml;charset=utf-8");
-
-		$s = "<?xml version='1.0' encoding='utf-8'?>";
-		$s .=  "<rows>";
-		$s .= "<page>" . $page . "</page>";
-		$s .= "<total>" . $total_pages . "</total>";
-		$s .= "<records>" . $count . "</records>";
-
-		$i = 1;
-		foreach ($vms as $vm) {
-			//	'colNames'=>array('No.', 'DN', 'UUID', , 'Spice', 'Type', 'SubType', 'active Golden-Image', 'Name', 'Status', 'Run Action', 'Memory', 'CPU', 'Node', 'Action'),
+		$start = $limit * ($page - 1);
+		$start = $start > $count ? 0 : $start;
+		$end = $start + $limit;
+		$end = $end > $count ? $count : $end;
+		for ($i=$start; $i<$end; $i++) {
+			$vm = $vms[$i];
+					//	'colNames'=>array('No.', 'DN', 'UUID', , 'Spice', 'Type', 'SubType', 'active Golden-Image', 'Name', 'Status', 'Run Action', 'Memory', 'CPU', 'Node', 'Action'),
 
 			$s .= '<row id="' . $i . '">';
-			$s .= '<cell>'. $i ."</cell>\n";
+			$s .= '<cell>'. ($i+1) ."</cell>\n";
 			$s .= '<cell>'.$vm->dn ."</cell>\n";
 			$s .= '<cell>'. $vm->sstVirtualMachine ."</cell>\n";
 			$s .= '<cell><![CDATA['. $vm->getSpiceUri() . "]]></cell>\n";
@@ -455,7 +513,6 @@ class VmController extends Controller
 			}
 			$s .= "<cell></cell>\n";
 			$s .= "</row>\n";
-			$i++;
 		}
 		$s .= '</rows>';
 
@@ -491,10 +548,10 @@ class VmController extends Controller
 		echo <<<EOS
     <table style="margin-bottom: 0px; font-size: 90%; width: auto;"><tbody>
     <tr>
-      <td style="text-align: right"><b>Type:</b></td>
-      <td>{$vm->sstVirtualMachineType}, {$vm->sstVirtualMachineSubType}</td>
-      <td style="text-align: right"><b>VM UUID:</b></td>
-      <td>{$vm->sstVirtualMachine}</td>
+       <td style="text-align: right; vertical-align: top;"><b>Type:</b></td>
+      <td style="vertical-align: top;">{$vm->sstVirtualMachineType}, {$vm->sstVirtualMachineSubType}</td>
+      <td style="text-align: right; vertical-align: top;"><b>VM:</b></td>
+      <td>{$vm->sstDisplayName}<br/>{$vm->sstVirtualMachine}</td>
     </tr>
     <tr>
       <td style="text-align: right; vertical-align: top;"><b>Memory:</b></td>
@@ -505,8 +562,14 @@ class VmController extends Controller
     <tr>
       <td style="text-align: right"><b>CPUs:</b></td>
       <td>{$vm->sstVCPU}</td>
-    </tr>
 EOS;
+		if ('dynamic' === $vm->sstVirtualMachineType && 'Golden-Image' !== $vm->sstVirtualMachineSubType) {
+			echo <<< EOS
+      <td style="text-align: right;vertical-align: top;"><b>Golden:</b></td>
+      <td>{$vm->vmpool->sstActiveGoldenImage}</td>
+EOS;
+		}
+		echo '    </tr>';
 		if ('Golden-Image' !== $vm->sstVirtualMachineSubType) {
 			echo <<< EOS
     <tr>
@@ -927,7 +990,10 @@ EOS;
 				$answer = array();
 				$libvirt = CPhpLibvirt::getInstance();
 				if ('persistent' == $vm->sstVirtualMachineType) {
-					$retval = $libvirt->startVm($vm->getStartParams());
+					$data = $vm->getStartParams();
+					$data['name'] = $data['sstName'];
+					$libvirt->redefineVm($data);
+					$retval = $libvirt->startVm($data);
 					if ($retval) {
 						$vm->setOverwrite(true);
 						$vm->sstStatus = 'running';
