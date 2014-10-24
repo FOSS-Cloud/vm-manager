@@ -47,8 +47,24 @@ else {
 		echo '<ul class="list">';
 		foreach($data['vms'] as $name => $vm) {
 			echo '<li class="ui-widget-content" style="border-top: 0px;border-right: 0px;border-left: 0px;">';
-			echo '<a href="' . $vm['spiceuri'] . '" style="float: left;">' . $name . '</a>';
-			echo '<a href="' . $vm['spiceuri'] . '" style="float: right; padding-top: 3px;"><img src="' . $baseUrl . '/images/vm_login.png" title="use VM"/></a>';
+			echo '<a href="#" onclick="launch(\'' . $vm['spiceuri'] . '\');" style="float: left;">' . $name . '</a>';
+			echo '<div style="float: right; padding-top: 3px; ">';
+			if (Yii::app()->user->hasRight('persistentVM', 'Manage', 'All')) {
+				if (!$vm['active']) {
+					echo '<a href="#" onclick="startPersistentVm(\'' . $vm['dn'] . '\');" style="float: left; margin-right: 30px;"><img src="' . $baseUrl . '/images/vm_start.png" title="start VM"/></a>';
+				}
+				else {
+					echo '<img src="' . $baseUrl . '/images/vm_start.png" class="notallowed" title="start VM" style="float: left; margin-right: 30px;" />';
+				}
+				//echo '<a href="#" onclick="shutdown(\'' . $vm['uuid'] . '\');" style="float: left; margin-right: 10px;"><img src="' . $baseUrl . '/images/vm_shutdown.png" title="shutdown VM"/></a>';
+			}
+			if (!$vm['active']) {
+				echo '<img src="' . $baseUrl . '/images/vm_login.png"  class="notallowed" title="use VM" style="float: left;" />';
+			}
+			else {
+				echo '<a href="#" onclick="launch(\'' . $vm['spiceuri'] . '\');" style="float: left;"><img src="' . $baseUrl . '/images/vm_login.png" title="use VM"/></a>';
+			}
+			echo '</div>';
 			echo '<br class="clear" />';
 			echo $vm['description'];
 			echo '</li>';
@@ -61,8 +77,8 @@ else {
 		foreach($data['vmpools'] as $name => $vmpool) {
 			echo '<li class="ui-widget-content" style="border-top: 0px;border-right: 0px;border-left: 0px;">';
 			if (isset($vmpool['spiceuri'])) {
-				echo '<a href="' . $vmpool['spiceuri'] . '" style="float: left;">' . $name . '</a>';
-				echo '<a href="' . $vmpool['spiceuri'] . '" style="float: right; padding-top: 3px;"><img src="' . $baseUrl . '/images/vm_login.png" title="use VM"/></a>';
+				echo '<a href="#" onclick="launch(\'' . $vmpool['spiceuri'] . '\');" style="float: left;">' . $name . '</a>';
+				echo '<a href="#" onclick="launch(\'' . $vmpool['spiceuri'] . '\');" style="float: right; padding-top: 3px;"><img src="' . $baseUrl . '/images/vm_login.png" title="use VM"/></a>';
 			}
 			else {
 				echo '<a href="#" style="float: left;" onclick="assignVm(\'' . $vmpool['dn'] . '\');">' . $name . '</a>';
@@ -175,6 +191,24 @@ EOS
 		var loc = window.location;
 		window.location = uri;
 		setTimeout('window.location = "' + loc + '";window.location.reload();', 1000);
+	}
+	function startPersistentVm(dn)
+	{
+		$.ajax({
+			url: "{$baseUrl}/vm/startVm",
+			cache: false,
+			dataType: 'xml',
+			data: 'dn=' + dn,
+			success: function(xml){
+				var err = $(xml).find('error');
+				err = err.text();
+				if (0 == err) {
+				}
+				else {
+					alert($(xml).find('message').text());
+				}
+			}
+		});
 	}
 EOS
 	, CClientScript::POS_END);
