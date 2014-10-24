@@ -47,13 +47,4 @@ class LdapVmBackup extends CLdapRecord {
 			'backups' => array(self::HAS_MANY, 'dn', 'LdapVmSingleBackup', '$model->getDn()', array('ou' => '*')),
 		);
 	}
-
-	/**
-	 * @return array customized attribute labels (name=>label)
-	 */
-	public function attributeLabels()
-	{
-		return array();
-	}
-
 }
