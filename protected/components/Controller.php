@@ -101,231 +101,304 @@ class Controller extends CController
 		}
 		//echo "action: $action; " . $this->id , '<br/>';
 
-		if (Yii::app()->user->isAdmin) {
-			$this->submenu = array(
-				'vm' => array(
-					'label' => Yii::t('menu', 'Virtual Machine'),
-					'items' => array(
-						'vm' => array(
-							'label' => Yii::t('menu', 'Persistent Virtual Machines'),
-							'url' => array('/vm/index', 'vmtype' => 'persistent'),
-							'itemOptions' => array('title' => Yii::t('menu', 'Persistent Virtual Machines Tooltip')),
-							'active' => ($this->id == 'vm' && $action == 'index' && isset($_GET['vmtype']) && 'persistent' == $_GET['vmtype'])
-						),
-						'vmdyn' => array(
-							'label' => Yii::t('menu', 'Dynamic Virtual Machines'),
-							'url' => array('/vm/index', 'vmtype' => 'dynamic'),
-							'itemOptions' => array('title' => Yii::t('menu', 'Dynamic Virtual Machines Tooltip')),
-							'active' => ($this->id == 'vmdyn' && $action == 'index' && isset($_GET['vmtype']) && 'dynamic' == $_GET['vmtype'])
-						),
-						'vmtemplate' => array(
-							'label' => Yii::t('menu', 'Virtual Machine Templates'),
-							'url' => array('/vmTemplate/index'),
-							'itemOptions' => array('title' => Yii::t('menu', 'Virtual Machine Templates Tooltip')),
-							'active' => ($this->id == 'vmTemplate' && $action == 'index'),
-							'items' => array(
-								array(
-									'label' => Yii::t('menu', 'Create'),
-									'url' => array('/vmTemplate/create'),
-									'itemOptions' => array('title' => Yii::t('menu', 'Virtual Machine Template Create Tooltip')),
-									'active' => ($this->id == 'vmTemplate' && $action == 'create'),
-								),
-							),
-						),
-						'vmprofile' => array(
-							'label' => Yii::t('menu', 'Virtual Machine Profiles'),
-							'url' => array('/vmProfile/index'),
-							'itemOptions' => array('title' => Yii::t('menu', 'Virtual Machine Profiles Tooltip')),
-							'active' => ($this->id == 'vmProfile' && $action == 'index'),
-							'items' => array(
-								array(
-									'label' => Yii::t('menu', 'Create'),
-									'url' => array('/vmProfile/create'),
-									'itemOptions' => array('title' => Yii::t('menu', 'Virtual Machine Profile Create Tooltip')),
-									'active' => ($this->id == 'vmProfile' && $action == 'create'),
-								),
-								array(
-									'label' => Yii::t('menu', 'Upload Iso File'),
-									'url' => array('/vmProfile/uploadIso'), // 'http://www.foss-cloud.org/en/wiki/Upload_ISO-Files', 
-									'itemOptions' => array('title' => Yii::t('menu', 'Virtual Machine Profile UploadIso Tooltip')),
-									'active' => ($this->id == 'vmProfile' && $action == 'uploadIso'),
-								),
-							),
-						)
+		$user = Yii::app()->user;
+		
+		$coremenu = array(
+			'vm' => array(
+				'label' => Yii::t('menu', 'Virtual Machine'),
+				'items' => array()
+			),
+			'vmpool' => array(
+				'label' => Yii::t('menu', 'VM Pool'),
+				'items' => array()
+			),
+			'storagepool' => array(
+				'label' => Yii::t('menu', 'Storage Pool'),
+				'items' => array()
+			),
+			'node' => array(
+				'label' => Yii::t('menu', 'Node'),
+				'items' => array()
+			),
+			'network' => array(
+				'label' => Yii::t('menu', 'Network'),
+				'items' => array()
+			),
+			'user' => array(
+				'label' => Yii::t('menu', 'User'),
+				'items' => array()
+			),
+			'config' => array(
+				'label' => Yii::t('menu', 'Configuration'),
+				'items' => array(
+					'global' => array(
+						'label' => Yii::t('menu', 'Global'),
+						'url' => array('/configuration/global'),
+						'active' => ($this->id == 'configuration' && $action == 'global'),
+					),
+					'backup' => array(
+						'label' => Yii::t('menu', 'Backup'),
+						'url' => array('/configuration/backup'),
+						'active' => ($this->id == 'configuration' && $action == 'backup'),
+					),
+					'patch' => array(
+						'label' => Yii::t('menu', 'Patch'),
+						'url' => array('/patch/patch/index'),
+						'active' => ($this->id == 'configuration' && $action == 'patch'),
 					),
 				),
-				'vmpool' => array(
-					'label' => Yii::t('menu', 'VM Pool'),
-					'items' => array(
-						'vmpool' => array(
-							'label' => Yii::t('menu', 'VM Pools'),
-							'url' => array('/vmPool/index'),
-							'itemOptions' => array('title' => Yii::t('menu', 'VM Pools Tooltip')),
-							'active' => ($this->id == 'vmpool' && $action == 'index'),
-							'items' => array(
-								array(
-									'label' => Yii::t('menu', 'Create'),
-									'url' => array('/vmPool/create'),
-									'itemOptions' => array('title' => Yii::t('menu', 'VM Pool Create Tooltip')),
-									'active' => ($this->id == 'node' && $action == 'create'),
-								),
-							),
-						),
-					),
-				),
-				'storagepool' => array(
-					'label' => Yii::t('menu', 'Storage Pool'),
-					'items' => array(
-						'node' => array(
-							'label' => Yii::t('menu', 'Storage Pools'),
-							'url' => array('/storagePool/index'),
-							'itemOptions' => array('title' => Yii::t('menu', 'Storage Pools Tooltip')),
-							'active' => ($this->id == 'storagePool' && $action == 'index'),
-							'items' => array(
-								array(
-									'label' => Yii::t('menu', 'Create'),
-									'url' => array('/storagePool/create'),
-									'itemOptions' => array('title' => Yii::t('menu', 'Storage Pool Create Tooltip')),
-									'active' => ($this->id == 'storagePool' && $action == 'create'),
-								),
-							),
-						),
-					),
-				),
-				'node' => array(
-					'label' => Yii::t('menu', 'Node'),
-					'items' => array(
-						'node' => array(
-							'label' => Yii::t('menu', 'Nodes'),
-							'url' => array('/node/index'),
-							'itemOptions' => array('title' => Yii::t('menu', 'Nodes Tooltip')),
-							'active' => ($this->id == 'node' && $action == 'index'),
-							'items' => array(
-								array(
-									'label' => Yii::t('menu', 'Create'),
-									'url' => array('/node/wizard'),
-									'itemOptions' => array('title' => Yii::t('menu', 'Node Create Tooltip')),
-									'active' => ($this->id == 'node' && $action == 'wizard'),
-								),
-							),
-						),
-					),
-				),
-				'network' => array(
-					'label' => Yii::t('menu', 'Network'),
-					'items' => array(
-						'subnet' => array(
-							'label' => Yii::t('menu', 'Subnets'),
-							'url' => array('/subnet/index'),
-							'itemOptions' => array('title' => Yii::t('menu', 'Subnet Tooltip')),
-							'active' => ($this->id == 'subnet' && $action == 'index'),
-							'items' => array(
-								array(
-									'label' => Yii::t('menu', 'Create'),
-									'url' => array('/subnet/create'),
-									'itemOptions' => array('title' => Yii::t('menu', 'Subnet Create Tooltip')),
-									'active' => ($this->id == 'subnet' && $action == 'create'),
-								),
-							),
-						),
-					),
-				),
-				'user' => array(
-					'label' => Yii::t('menu', 'User'),
-					'items' => array(
-						'user' => array(
-							'label' => Yii::t('menu', 'User'),
-							'url' => array('/user/index'),
-							'itemOptions' => array('title' => Yii::t('menu', 'User Tooltip')),
-							'active' => ($this->id == 'user' && $action == 'index'),
-							'items' => array(
-								array(
-									'label' => Yii::t('menu', 'Create'),
-									'url' => array('/user/create'),
-									'itemOptions' => array('title' => Yii::t('menu', 'User Create Tooltip')),
-									'active' => ($this->id == 'user' && $action == 'create'),
-								),
-							),
-						),
-						'group' => array(
-							'label' => Yii::t('menu', 'Group'),
-							'url' => array('/group/index'),
-							'itemOptions' => array('title' => Yii::t('menu', 'Group Tooltip')),
-							'active' => ($this->id == 'group' && $action == 'index'),
-							'items' => array(
-								array(
-									'label' => Yii::t('menu', 'Create'),
-									'url' => array('/group/create'),
-									'itemOptions' => array('title' => Yii::t('menu', 'Group Create Tooltip')),
-									'active' => ($this->id == 'group' && $action == 'create'),
-								),
-								array(
-									'label' => Yii::t('menu', 'Import'),
-									'url' => array('/group/import'),
-									'itemOptions' => array('title' => Yii::t('menu', 'Group Import Tooltip')),
-									'active' => ($this->id == 'group' && $action == 'import'),
-									'visible' => Yii::app()->user->getState('externalLDAP', false)
-								),
-							),
-						),
-					),
-				),
-				'config' => array(
-					'label' => Yii::t('menu', 'Configuration'),
-					'items' => array(
-						'global' => array(
-							'label' => Yii::t('menu', 'Global'),
-							'url' => array('/configuration/global'),
-							'active' => ($this->id == 'configuration' && $action == 'global'),
-						),
-						'backup' => array(
-							'label' => Yii::t('menu', 'Backup'),
-							'url' => array('/configuration/backup'),
-							'active' => ($this->id == 'configuration' && $action == 'backup'),
-						),
-						'patch' => array(
-							'label' => Yii::t('menu', 'Patch'),
-							'url' => array('/patch/patch/index'),
-							'active' => ($this->id == 'configuration' && $action == 'patch'),
-						),
-					),
-				),
-				'diag' => array(
-					'label' => 'Diagnostics',
-					'items' => array(
-						'vminfos' => array(
-							'label' => 'VM Infos',
-							'url' => array('/diagnostics/vminfos'),
-							'active' => ($this->id == 'diagnostics' && $action == 'vminfos'),
-						),
-						'vmtemplateinfos' => array(
-							'label' => 'VM Template Infos',
-							'url' => array('/diagnostics/vmtemplateinfos'),
-							'active' => ($this->id == 'diagnostics' && $action == 'vmtemplateinfos'),
-						),
-						'vmcounter' => array(
-							'label' => 'VM Counter',
-							'url' => array('/diagnostics/vmcounter'),
-							'active' => ($this->id == 'diagnostics' && $action == 'vmcounter'),
-						),
-						'ldapattrtypes' => array(
-							'label' => 'LDAP Attribute Types',
-							'url' => array('/diagnostics/ldapattrtypes'),
-							'active' => ($this->id == 'diagnostics' && $action == 'ldapattrtypes'),
-						),
-						'ldapobjclasses' => array(
-							'label' => 'LDAP Object Classes',
-							'url' => array('/diagnostics/ldapobjclasses'),
-							'active' => ($this->id == 'diagnostics' && $action == 'ldapobjclasses'),
-						),
-					),
-				),
+			),
+			'diag' => array(
+				'label' => 'Diagnostics',
+				'items' => array()
+			),
+		);
+
+		if ($user->hasRight('persistentVM', COsbdUser::$RIGHT_ACTION_ACCESS, COsbdUser::$RIGHT_VALUE_ENABLED) ||
+			$user->hasRight('dynamicVM', COsbdUser::$RIGHT_ACTION_ACCESS, COsbdUser::$RIGHT_VALUE_ENABLED) ||
+			$user->hasRight('templateVM', COsbdUser::$RIGHT_ACTION_ACCESS, COsbdUser::$RIGHT_VALUE_ENABLED) ||
+			$user->hasRight('profile', COsbdUser::$RIGHT_ACTION_ACCESS, COsbdUser::$RIGHT_VALUE_ENABLED)) {
+			if ($user->hasRight('persistentVM', COsbdUser::$RIGHT_ACTION_ACCESS, COsbdUser::$RIGHT_VALUE_ENABLED)) {
+				$coremenu['vm']['items']['vm'] = array(
+					'label' => Yii::t('menu', 'Persistent Virtual Machines'),
+					'url' => array('/vm/index', 'vmtype' => 'persistent'),
+					'itemOptions' => array('title' => Yii::t('menu', 'Persistent Virtual Machines Tooltip')),
+					'active' => ($this->id == 'vm' && $action == 'index' && isset($_GET['vmtype']) && 'persistent' == $_GET['vmtype'])
+				);
+			}
+			if ($user->hasRight('dynamicVM', COsbdUser::$RIGHT_ACTION_ACCESS, COsbdUser::$RIGHT_VALUE_ENABLED)) {
+				$coremenu['vm']['items']['vmdyn'] = array(
+					'label' => Yii::t('menu', 'Dynamic Virtual Machines'),
+					'url' => array('/vm/index', 'vmtype' => 'dynamic'),
+					'itemOptions' => array('title' => Yii::t('menu', 'Dynamic Virtual Machines Tooltip')),
+					'active' => ($this->id == 'vm' && $action == 'index' && isset($_GET['vmtype']) && 'dynamic' == $_GET['vmtype'])
+				);
+			}
+			if ($user->hasRight('templateVM', COsbdUser::$RIGHT_ACTION_ACCESS, COsbdUser::$RIGHT_VALUE_ENABLED)) {
+				$coremenu['vm']['items']['vmtemplate'] = array(
+					'label' => Yii::t('menu', 'Virtual Machine Templates'),
+					'url' => array('/vmTemplate/index'),
+					'itemOptions' => array('title' => Yii::t('menu', 'Virtual Machine Templates Tooltip')),
+					'active' => ($this->id == 'vmTemplate' &&  $action == 'index'),
+					'items' => array()
+				);
+				if ($user->hasRight('templateVM', COsbdUser::$RIGHT_ACTION_CREATE, COsbdUser::$RIGHT_VALUE_ENABLED)) {
+					$coremenu['vm']['items']['vmtemplate']['items'][] = array(
+						'label' => Yii::t('menu', 'Create'),
+						'url' => array('/vmTemplate/create'),
+						'itemOptions' => array('title' => Yii::t('menu', 'Virtual Machine Template Create Tooltip')),
+						'active' => ($this->id == 'vmTemplate' && $action == 'create')
+					);
+				}
+			}
+			if ($user->hasRight('profile', COsbdUser::$RIGHT_ACTION_ACCESS, COsbdUser::$RIGHT_VALUE_ENABLED)) {
+				$coremenu['vm']['items']['vmprofile'] = array(
+					'label' => Yii::t('menu', 'Virtual Machine Profiles'),
+					'url' => array('/vmProfile/index'),
+					'itemOptions' => array('title' => Yii::t('menu', 'Virtual Machine Profiles Tooltip')),
+					'active' => ($this->id == 'vmProfile' &&  $action == 'index'),
+					'items' => array()
+				);
+				if ($user->hasRight('profile', COsbdUser::$RIGHT_ACTION_CREATE, COsbdUser::$RIGHT_VALUE_ENABLED)) {
+					$coremenu['vm']['items']['vmprofile']['items'][] = array(
+						'label' => Yii::t('menu', 'Create'),
+						'url' => array('/vmProfile/create'),
+						'itemOptions' => array('title' => Yii::t('menu', 'Virtual Machine Profile Create Tooltip')),
+						'active' => ($this->id == 'vmProfile' && $action == 'create')
+					);
+				}
+				if ($user->hasRight('profile', COsbdUser::$RIGHT_ACTION_MANAGE, COsbdUser::$RIGHT_VALUE_ALL)) {
+					$coremenu['vm']['items']['vmprofile']['items'][] = array(
+						'label' => Yii::t('menu', 'Upload Iso File'),
+						'url' => array('/vmProfile/uploadIso'),
+						'itemOptions' => array('title' => Yii::t('menu', 'Virtual Machine Profile UploadIso Tooltip')),
+						'active' => ($this->id == 'vmProfile' && $action == 'uploadIso')
+					);
+				}
+			}
+			}
+		else {
+			unset($coremenu['vm']);
+		}
+		if ($user->hasRight('vmPool', COsbdUser::$RIGHT_ACTION_ACCESS, COsbdUser::$RIGHT_VALUE_ENABLED)) {
+			$coremenu['vmpool']['items']['vmpool'] = array(
+				'label' => Yii::t('menu', 'VM Pools'),
+				'url' => array('/vmPool/index'),
+				'itemOptions' => array('title' => Yii::t('menu', 'VM Pools Tooltip')),
+				'active' => ($this->id == 'vmpool' &&  $action == 'index'),
+				'items' => array()
 			);
+			if ($user->hasRight('vmPool', COsbdUser::$RIGHT_ACTION_CREATE, COsbdUser::$RIGHT_VALUE_ENABLED)) {
+				$coremenu['vmpool']['items']['vmpool']['items'][] = array(
+					'label' => Yii::t('menu', 'Create'),
+					'url' => array('/vmPool/create'),
+					'itemOptions' => array('title' => Yii::t('menu', 'VM Pool Create Tooltip')),
+					'active' => ($this->id == 'vmpool' && $action == 'create')
+				);
+			}
 		}
 		else {
-			$this->submenu = array();
+			unset($coremenu['vmpool']);
 		}
-		$this->submenu['vmlist'] = array(
+		if ($user->hasRight('storagePool', COsbdUser::$RIGHT_ACTION_ACCESS, COsbdUser::$RIGHT_VALUE_ENABLED)) {
+			$coremenu['storagepool']['items']['storagepool'] = array(
+				'label' => Yii::t('menu', 'Storage Pools'),
+				'url' => array('/storagePool/index'),
+				'itemOptions' => array('title' => Yii::t('menu', 'Storage Pools Tooltip')),
+				'active' => ($this->id == 'storagePool' &&  $action == 'index'),
+				'items' => array()
+			);
+			if ($user->hasRight('storagePool', COsbdUser::$RIGHT_ACTION_CREATE, COsbdUser::$RIGHT_VALUE_ENABLED)) {
+				$coremenu['storagepool']['items']['storagepool']['items'][] = array(
+					'label' => Yii::t('menu', 'Create'),
+					'url' => array('/storagePool/create'),
+					'itemOptions' => array('title' => Yii::t('menu', 'Storage Pool Create Tooltip')),
+					'active' => ($this->id == 'storagePool' && $action == 'create')
+				);
+			}
+		}
+		else {
+			unset($coremenu['storagepool']);
+		}
+		
+		if ($user->hasRight('node', COsbdUser::$RIGHT_ACTION_ACCESS, COsbdUser::$RIGHT_VALUE_ENABLED)) {
+			$coremenu['node']['items']['node'] = array(
+				'label' => Yii::t('menu', 'Nodes'),
+				'url' => array('/node/index'),
+				'itemOptions' => array('title' => Yii::t('menu', 'Nodes Tooltip')),
+				'active' => ($this->id == 'node' &&  $action == 'index'),
+				'items' => array()
+			);
+			if ($user->hasRight('node', COsbdUser::$RIGHT_ACTION_CREATE, COsbdUser::$RIGHT_VALUE_ENABLED)) {
+				$coremenu['node']['items']['node']['items'][] = array(
+					'label' => Yii::t('menu', 'Create'),
+					'url' => array('/node/wizard'),
+					'itemOptions' => array('title' => Yii::t('menu', 'Node Create Tooltip')),
+					'active' => ($this->id == 'node' && $action == 'wizard')
+				);
+			}
+		}
+		else {
+			unset($coremenu['node']);
+		}
+
+		if ($user->hasRight('network', COsbdUser::$RIGHT_ACTION_ACCESS, COsbdUser::$RIGHT_VALUE_ENABLED)) {
+			$coremenu['network']['items']['subnet'] = array(
+				'label' => Yii::t('menu', 'Subnets'),
+				'url' => array('/subnet/index'),
+				'itemOptions' => array('title' => Yii::t('menu', 'Subnet Tooltip')),
+				'active' => ($this->id == 'subnet' &&  $action == 'index'),
+				'items' => array()
+			);
+			if ($user->hasRight('network', COsbdUser::$RIGHT_ACTION_CREATE, COsbdUser::$RIGHT_VALUE_ENABLED)) {
+				$coremenu['network']['items']['subnet']['items'][] = array(
+					'label' => Yii::t('menu', 'Create'),
+					'url' => array('/subnet/create'),
+					'itemOptions' => array('title' => Yii::t('menu', 'Subnet Create Tooltip')),
+					'active' => ($this->id == 'subnet' && $action == 'create')
+				);
+			}
+		}
+		else {
+			unset($coremenu['network']);
+		}
+
+		if ($user->hasRight('user', COsbdUser::$RIGHT_ACTION_ACCESS, COsbdUser::$RIGHT_VALUE_ENABLED) ||
+			$user->hasRight('group', COsbdUser::$RIGHT_ACTION_ACCESS, COsbdUser::$RIGHT_VALUE_ENABLED)) {
+			if ($user->hasRight('user', COsbdUser::$RIGHT_ACTION_ACCESS, COsbdUser::$RIGHT_VALUE_ENABLED)) {
+				$coremenu['user']['items']['user'] = array(
+					'label' => Yii::t('menu', 'User'),
+					'url' => array('/user/index'),
+					'itemOptions' => array('title' => Yii::t('menu', 'User Tooltip')),
+					'active' => ($this->id == 'user' &&  $action == 'index'),
+					'items' => array()
+				);
+				if ($user->hasRight('user', COsbdUser::$RIGHT_ACTION_CREATE, COsbdUser::$RIGHT_VALUE_ENABLED)) {
+					$coremenu['user']['items']['user']['items'][] = array(
+						'label' => Yii::t('menu', 'Create'),
+						'url' => array('/user/create'),
+						'itemOptions' => array('title' => Yii::t('menu', 'User Create Tooltip')),
+						'active' => ($this->id == 'user' && $action == 'create')
+					);
+				}
+			}
+			if ($user->hasRight('group', COsbdUser::$RIGHT_ACTION_ACCESS, COsbdUser::$RIGHT_VALUE_ENABLED)) {
+				$coremenu['user']['items']['group'] = array(
+					'label' => Yii::t('menu', 'Group'),
+					'url' => array('/group/index'),
+					'itemOptions' => array('title' => Yii::t('menu', 'Group Tooltip')),
+					'active' => ($this->id == 'group' &&  $action == 'index'),
+					'items' => array()
+				);
+				if ($user->hasRight('group', COsbdUser::$RIGHT_ACTION_CREATE, COsbdUser::$RIGHT_VALUE_ENABLED)) {
+					$coremenu['user']['items']['group']['items'][] = array(
+						'label' => Yii::t('menu', 'Create'),
+						'url' => array('/group/create'),
+						'itemOptions' => array('title' => Yii::t('menu', 'Group Create Tooltip')),
+						'active' => ($this->id == 'group' && $action == 'create')
+					);
+					$coremenu['user']['items']['group']['items'][] = array(
+						'label' => Yii::t('menu', 'Import'),
+						'url' => array('/group/import'),
+						'itemOptions' => array('title' => Yii::t('menu', 'Group Import Tooltip')),
+						'active' => ($this->id == 'group' && $action == 'import'),
+						'visible' => $user->getState('externalLDAP', false)
+					);
+				}
+			}
+		}
+		else {
+			unset($coremenu['user']);
+		}
+			
+		if (!$user->hasRight('configuration', COsbdUser::$RIGHT_ACTION_ACCESS, COsbdUser::$RIGHT_VALUE_ENABLED)) {
+			unset($coremenu['config']);
+		}
+		if ($user->hasRight('diagnostic', COsbdUser::$RIGHT_ACTION_ACCESS, COsbdUser::$RIGHT_VALUE_ENABLED)) {
+			if ($user->hasOtherRight('persistentVM', COsbdUser::$RIGHT_ACTION_VIEW, COsbdUser::$RIGHT_VALUE_NONE)) {
+				$coremenu['diag']['items']['persistentvminfos'] = array(
+					'label' => 'Persistent VM Infos',
+					'url' => array('/diagnostics/persistentvminfos'),
+					'active' => ($this->id == 'diagnostics' && $action == 'persistentvminfos'),
+				);
+			}
+			if ($user->hasOtherRight('dynamicVM', COsbdUser::$RIGHT_ACTION_VIEW, COsbdUser::$RIGHT_VALUE_NONE)) {
+				$coremenu['diag']['items']['dynamicvminfos'] = array(
+					'label' => 'Dynamic VM Infos',
+					'url' => array('/diagnostics/dynamicvminfos'),
+					'active' => ($this->id == 'diagnostics' && $action == 'dynamicvminfos'),
+				);
+			}
+			if ($user->hasOtherRight('templateVM', COsbdUser::$RIGHT_ACTION_VIEW, COsbdUser::$RIGHT_VALUE_NONE)) {
+				$coremenu['diag']['items']['vmtemplateinfos'] = array(
+					'label' => 'VM Template Infos',
+					'url' => array('/diagnostics/vmtemplateinfos'),
+					'active' => ($this->id == 'diagnostics' && $action == 'vmtemplateinfos'),
+				);
+			}
+			if ($user->hasRight('diagnostic', COsbdUser::$RIGHT_ACTION_MANAGE, COsbdUser::$RIGHT_VALUE_ENABLED)) {
+				$coremenu['diag']['items']['vmcounter'] = array(
+					'label' => 'VM Counter',
+					'url' => array('/diagnostics/vmcounter'),
+					'active' => ($this->id == 'diagnostics' && $action == 'vmcounter'),
+				);
+				$coremenu['diag']['items']['ldapattrtypes'] = array(
+					'label' => 'LDAP Attribute Types',
+					'url' => array('/diagnostics/ldapattrtypes'),
+					'active' => ($this->id == 'diagnostics' && $action == 'ldapattrtypes'),
+				);
+				$coremenu['diag']['items']['ldapobjclasses'] = array(
+					'label' => 'LDAP Object Classes',
+					'url' => array('/diagnostics/ldapobjclasses'),
+					'active' => ($this->id == 'diagnostics' && $action == 'ldapobjclasses'),
+				);
+			}
+		}
+		else {
+			unset($coremenu['diag']);
+		}
+
+		$coremenu['vmlist'] = array(
 			'label' => Yii::t('menu', 'Assigned VMs'),
 			'items' => array(
 				array(
@@ -336,6 +409,14 @@ class Controller extends CController
 				),
 			),
 		);
+		$modules = Yii::app()->getModules();
+		foreach($modules as $id => $config) {
+			$module = Yii::app()->getModule($id);
+			if ($module instanceof IOsbdModule) {
+				$module->getMenu($coremenu, Yii::app()->user->isAdmin);
+			}
+		}
+		$this->submenu = $coremenu;
 	}
 
 	/**
