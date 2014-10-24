@@ -54,7 +54,7 @@ foreach($vms as $dn => $vm) {
 if (!is_null($libvirturi)) {
 	echo '<li><b>Libvirt URI</b><br/><pre>' . $libvirturi . '</pre></li>';
 }
-if (!is_null($spiceuri) && $vmUser) {
+if (!is_null($spiceuri) && $vmUse) {
 	echo '<li><b>SPICE URI</b><br/><a href="' . $spiceuri . '"><pre>' . $spiceuri . '</pre></a></li>';
 }
 if (!is_null($startxml)) {
