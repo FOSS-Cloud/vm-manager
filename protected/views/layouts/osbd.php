@@ -114,6 +114,17 @@
 	<div class="container">
 <?php
 	if (isset($this->submenu) && 0 < count($this->submenu) && !Yii::app()->user->isGuest) {
+		if (!is_null(Yii::app()->getSession()->get('simpleLink', null))) {
+			$simplelink = Yii::app()->getSession()->get('simpleLink');
+			//echo '<pre>' . print_r($simplelink, true) . '</pre>';
+			Yii::app()->controller->submenu['simpleLink'] = array(
+				'label' => 'Temporary links',
+				'items' => array('s1' => array(
+					'label' => $simplelink['label'],
+					'url' => $simplelink['url'],
+				))
+			);
+		}
 ?>
 		<div id="submenu" class="span-5">
 <?php
