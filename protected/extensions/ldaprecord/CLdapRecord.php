@@ -177,6 +177,11 @@ abstract class CLdapRecord extends CModel {
 				}
 			}
 		}
+		else {
+			return $this->getRelated($name, false, $args[0]);
+		}
+		throw new CLdapException(Yii::t('LdapComponent.record', 'Method "{class}.{method}" is not defined.',
+			array('{class}'=>$class, '{property}'=>$name)));
 	}
 
 	/**
@@ -674,7 +679,21 @@ abstract class CLdapRecord extends CModel {
 			$item->_dn = $entries[$i]['dn'];
 			$item->_readDn = $item->_dn;
 			$item->_branchDn = $this->getParentDn($item->_dn);
-			$retval[] = $item;
+			if (isset($criteria['relattr'])) {
+				foreach($criteria['relattr'] as $relation => $attrs) {
+					//echo 'relation: ' . $relation . '<br/>';
+					//echo 'attr: ' . print_r($attrs, true) . '<br/>';
+					$relation = $item->$relation($attrs);
+					//echo '<pre>relation ' . print_r($relation, true) . '</pre>';
+					if (is_null($relation) || $relation == array()) {
+						$item = null;
+						break;
+					}
+				}
+			}
+			if (!is_null($item)) {
+				$retval[] = $item;
+			}
 		}
 		if (isset($criteria['sort']) && '' != $criteria['sort']) {
 			$sort = explode('.', $criteria['sort']);
@@ -928,7 +947,7 @@ abstract class CLdapRecord extends CModel {
 		$entry = array();
 		foreach($this->_attributes as $key => $value) {
 			if ('member' == $key) continue;
-			if ('dn' !== $key && isset($value['value']) && '' !== $value['value'] && (!isset($value['readOnly']) || !$value['readOnly'])) {
+			if ('dn' !== $key && !is_null($value['value']) && (!isset($value['readOnly']) || !$value['readOnly'])) {
 				if (is_array($value['value'])) {
 					if ('assozarray' == $value['type']) {
 						$retval = array();
@@ -942,7 +961,7 @@ abstract class CLdapRecord extends CModel {
 						$entry[$key] = $value['value'];
 					}
 				}
-				else {
+				else if (isset($value['value']) && '' !== $value['value']) {
 					$entry[$key][] = $value['value'];
 				}
 			}
@@ -1278,18 +1297,18 @@ class CLdapBelongsToDn extends CLdapBaseRelation {
  * @since 0.4
  */
 class CLdapHasMany extends CLdapBaseRelation {
-	public function createRelationalRecord($model) {
+	public function createRelationalRecord($model, $params=array()) {
 		if ('dn' == $this->attribute) {
 			$template = $this->foreignAttribute;
 			eval("\$branchDn = $template;");
 			//echo "branchDn: $branchDn" . '<br/>';
 			$criteria = array();
 			$criteria['branchDn'] = $branchDn;
-			$criteria['attr'] = array();
+			$criteria['attr'] = $params;
 		}
 		else {
 			$attr = $this->attribute;
-			$criteria = array('attr' => array($this->foreignAttribute => $model->$attr));
+			$criteria = array('attr' => array_merge($params, array($this->foreignAttribute => $model->$attr)));
 		}
 		foreach($this->options as $key => $value) {
 			$criteria['attr'][$key] = $value;
