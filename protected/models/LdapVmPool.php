@@ -301,7 +301,6 @@ class LdapVmPool extends CLdapRecord {
 		$unique_pools = array();
 		if (Yii::app()->user->hasRight('vmPool', COsbdUser::$RIGHT_ACTION_VIEW, COsbdUser::$RIGHT_VALUE_ALL)) {
 			$criteria = array_merge_recursive(array('attr' => array('sstVirtualMachinePoolType' => $type)), array('attr'=> $attr));
-			echo '<pre>' . print_r($criteria, true) . '</pre>';
 			$pools = LdapVmPool::model()->findAll($criteria);
 			foreach($pools as $pool) {
 				$unique_pools[$pool->sstVirtualMachinePool] = $pool;
