@@ -47,8 +47,8 @@ $deleteUrl = $this->createUrl('user/delete');
 
 $savetxt = Yii::t('user', 'Save');
 
-$userEdit = Yii::app()->user->hasRight('user', 'Edit', 'All') ? 'true' : 'false';
-$userDelete = Yii::app()->user->hasRight('user', 'Delete', 'All') ? 'true' : 'false';
+$userEdit = Yii::app()->user->hasRight('user', COsbdUser::$RIGHT_ACTION_EDIT, COsbdUser::$RIGHT_VALUE_ALL) ? 'true' : 'false';
+$userDelete = Yii::app()->user->hasRight('user', COsbdUser::$RIGHT_ACTION_DELETE, COsbdUser::$RIGHT_VALUE_ALL) ? 'true' : 'false';
 
 Yii::app()->clientScript->registerScript('assignVMs', <<<EOS
 function assignVMs(dn)
