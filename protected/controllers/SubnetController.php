@@ -70,22 +70,22 @@ class SubnetController extends Controller
 			array('allow',
 				'actions'=>array('index', 'getSubnets'),
 				'users'=>array('@'),
-				'expression'=>'Yii::app()->user->hasRight(\'network\', \'Access\', \'Enabled\')'
+				'expression'=>'Yii::app()->user->hasRight(\'network\', COsbdUser::$RIGHT_ACTION_ACCESS, COsbdUser::$RIGHT_VALUE_ALL)'
 			),
 			array('allow',
 				'actions'=>array('create', 'createRange'),
 				'users'=>array('@'),
-				'expression'=>'Yii::app()->user->hasRight(\'network\', \'Create\', \'Enabled\')'
+				'expression'=>'Yii::app()->user->hasRight(\'network\', COsbdUser::$RIGHT_ACTION_CREATE, COsbdUser::$RIGHT_VALUE_ALL)'
 			),
 			array('allow',
 				'actions'=>array('update', 'updateRange'),
 				'users'=>array('@'),
-				'expression'=>'Yii::app()->user->hasOtherRight(\'network\', \'Edit\', \'Enabled\', \'None\')'
+				'expression'=>'Yii::app()->user->hasRight(\'network\', COsbdUser::$RIGHT_ACTION_EDIT, COsbdUser::$RIGHT_VALUE_ALL)'
 			),
 			array('allow',
 				'actions'=>array('delete'),
 				'users'=>array('@'),
-				'expression'=>'Yii::app()->user->hasOtherRight(\'network\', \'Delete\', \'Enabled\', \'None\')'
+				'expression'=>'Yii::app()->user->hasRight(\'network\', COsbdUser::$RIGHT_ACTION_DELETE, COsbdUser::$RIGHT_VALUE_ALL)'
 			),
 			array('deny',  // deny all users
 				'users'=>array('*'),

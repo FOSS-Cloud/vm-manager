@@ -91,32 +91,32 @@ class VmPoolController extends Controller
 			array('allow',
 				'actions'=>array('index', 'getVmPools'),
 				'users'=>array('@'),
-				'expression'=>'Yii::app()->user->hasRight(\'vmPool\', \'Access\', \'Enabled\')'
+				'expression'=>'Yii::app()->user->hasRight(\'vmPool\', COsbdUser::$RIGHT_ACTION_ACCESS, COsbdUser::$RIGHT_VALUE_ALL)'
 			),
 			array('allow',
 				'actions'=>array('create', 'getDynData'),
 				'users'=>array('@'),
-				'expression'=>'Yii::app()->user->hasRight(\'vmPool\', \'Create\', \'Enabled\')'
+				'expression'=>'Yii::app()->user->hasRight(\'vmPool\', COsbdUser::$RIGHT_ACTION_CREATE, COsbdUser::$RIGHT_VALUE_ALL)'
 			),
 			array('allow',
 				'actions'=>array('update', 'getDynData'),
 				'users'=>array('@'),
-				'expression'=>'Yii::app()->user->hasOtherRight(\'vmPool\', \'Edit\', \'None\')'
+				'expression'=>'Yii::app()->user->hasRight(\'vmPool\', COsbdUser::$RIGHT_ACTION_EDIT, COsbdUser::$RIGHT_VALUE_ALL)'
 			),
 			array('allow',
 				'actions'=>array('delete'),
 				'users'=>array('@'),
-				'expression'=>'Yii::app()->user->hasOtherRight(\'vmPool\', \'Delete\', \'None\')'
+				'expression'=>'Yii::app()->user->hasRight(\'vmPool\', COsbdUser::$RIGHT_ACTION_DELETE, COsbdUser::$RIGHT_VALUE_ALL)'
 			),
 			array('allow',
 				'actions'=>array('getUserGui', 'saveUserAssign'),
 				'users'=>array('@'),
-				'expression'=>'Yii::app()->user->hasOtherRight(\'user\', \'Manage\', \'None\')'
+				'expression'=>'Yii::app()->user->hasRight(\'user\', COsbdUser::$RIGHT_ACTION_MANAGE, COsbdUser::$RIGHT_VALUE_ALL)'
 			),
 			array('allow',
 				'actions'=>array('getGroupGui', 'saveGroupAssign'),
 				'users'=>array('@'),
-				'expression'=>'Yii::app()->user->hasOtherRight(\'group\', \'Manage\', \'None\')'
+				'expression'=>'Yii::app()->user->hasRight(\'group\', COsbdUser::$RIGHT_ACTION_MANAGE, COsbdUser::$RIGHT_VALUE_ALL)'
 			),
 			array('deny',  // deny all users
 				'users'=>array('*'),
@@ -184,10 +184,10 @@ class VmPoolController extends Controller
 		if (isset($_GET['sstDisplayName'])) {
 			$attr['sstDisplayName'] = '*' . $_GET['sstDisplayName'] . '*';
 		}
-		if (Yii::app()->user->hasRight('vmPool', 'View', 'All')) {
+		if (Yii::app()->user->hasRight('vmPool', COsbdUser::$RIGHT_ACTION_VIEW, COsbdUser::$RIGHT_VALUE_ALL)) {
 			$pools = LdapVmPool::model()->findAll(array('attr' => $attr));
 		}
-		else if (Yii::app()->user->hasRight('vmPool', 'View', 'Owner')) {
+		else if (Yii::app()->user->hasRight('vmPool', COsbdUser::$RIGHT_ACTION_VIEW, COsbdUser::$RIGHT_VALUE_OWNER)) {
 			$pools = LdapVmPool::getAssignedPools();
 			$pools = array_values($pools);
 		}

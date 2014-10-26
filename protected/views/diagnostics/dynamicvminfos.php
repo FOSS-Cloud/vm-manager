@@ -34,7 +34,7 @@ $this->breadcrumbs=array(
 );
 $this->title = 'Dynamic VM Infos';
 
-$vmUse = Yii::app()->user->hasRight('dynamicVM', 'Use', 'All');
+$vmUse = Yii::app()->user->hasRight('dynamicVM', COsbdUser::$RIGHT_ACTION_USE, COsbdUser::$RIGHT_VALUE_ALL);
 
 ?>
 <ul>

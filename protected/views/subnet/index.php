@@ -43,9 +43,9 @@ $updateurl = $this->createUrl('subnet/update');
 $addrangeurl = $this->createUrl('subnet/createRange');
 $updaterangeurl = $this->createUrl('subnet/updateRange');
 
-$networkEdit = Yii::app()->user->hasRight('network', 'Edit', 'All') ? 'true' : 'false';
-$networkDelete = Yii::app()->user->hasRight('network', 'Delete', 'All') ? 'true' : 'false';
-$networkCreate = Yii::app()->user->hasOtherRight('network', 'Create', 'None') ? 'true' : 'false';
+$networkEdit = Yii::app()->user->hasRight('network', COsbdUser::$RIGHT_ACTION_EDIT, COsbdUser::$RIGHT_VALUE_ALL) ? 'true' : 'false';
+$networkDelete = Yii::app()->user->hasRight('network', COsbdUser::$RIGHT_ACTION_DELETE, COsbdUser::$RIGHT_VALUE_ALL) ? 'true' : 'false';
+$networkCreate = Yii::app()->user->hasOtherRight('network', COsbdUser::$RIGHT_ACTION_CREATE, COsbdUser::$RIGHT_VALUE_NONE) ? 'true' : 'false';
 
 Yii::app()->clientScript->registerScript('actions', <<<EOS
 function deleteRow(id)

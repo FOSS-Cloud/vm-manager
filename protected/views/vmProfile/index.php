@@ -39,8 +39,8 @@ $gridid = 'vmprofiles';
 $baseurl = Yii::app()->baseUrl;
 $imagesUrl = $baseurl . '/images';
 
-$profileEdit = Yii::app()->user->hasRight('profile', 'Edit', 'All') ? 'true' : 'false';
-$profileDelete = Yii::app()->user->hasRight('profile', 'Delete', 'All') ? 'true' : 'false';
+$profileEdit = Yii::app()->user->hasRight('profile', COsbdUser::$RIGHT_ACTION_EDIT, COsbdUser::$RIGHT_VALUE_ALL) ? 'true' : 'false';
+$profileDelete = Yii::app()->user->hasRight('profile', COsbdUser::$RIGHT_ACTION_DELETE, COsbdUser::$RIGHT_VALUE_ALL) ? 'true' : 'false';
 
 
 Yii::app()->clientScript->registerScript('funcs', <<<EOS

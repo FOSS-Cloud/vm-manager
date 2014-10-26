@@ -34,7 +34,7 @@ $this->breadcrumbs=array(
 );
 $this->title = 'VM Template Infos';
 
-$vmUse = Yii::app()->user->hasRight('templateVM', 'Use', 'All');
+$vmUse = Yii::app()->user->hasRight('templateVM', COsbdUser::$RIGHT_ACTION_USE, COsbdUser::$RIGHT_VALUE_ALL);
 
 ?>
 <ul>

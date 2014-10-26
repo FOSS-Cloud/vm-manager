@@ -47,8 +47,8 @@ $deleteUrl = $this->createUrl('group/delete');
 
 $savetxt = Yii::t('group', 'Save');
 
-$groupEdit = Yii::app()->user->hasRight('group', 'Edit', 'All') ? 'true' : 'false';
-$groupDelete = Yii::app()->user->hasRight('group', 'Delete', 'All') ? 'true' : 'false';
+$groupEdit = Yii::app()->user->hasRight('group', COsbdUser::$RIGHT_ACTION_EDIT, COsbdUser::$RIGHT_VALUE_ALL) ? 'true' : 'false';
+$groupDelete = Yii::app()->user->hasRight('group', COsbdUser::$RIGHT_ACTION_DELETE, COsbdUser::$RIGHT_VALUE_ALL) ? 'true' : 'false';
 
 Yii::app()->clientScript->registerScript('assignVMs', <<<EOS
 function assignVMs(dn)

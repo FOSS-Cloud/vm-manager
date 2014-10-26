@@ -49,7 +49,7 @@ else {
 			echo '<li class="ui-widget-content" style="border-top: 0px;border-right: 0px;border-left: 0px;">';
 			echo '<a href="#" onclick="launch(\'' . $vm['spiceuri'] . '\');" style="float: left;">' . $name . '</a>';
 			echo '<div style="float: right; padding-top: 3px; ">';
-			if (Yii::app()->user->hasRight('persistentVM', 'Manage', 'All')) {
+			if (Yii::app()->user->hasRight('persistentVM', COsbdUser::$RIGHT_ACTION_MANAGE, COsbdUser::$RIGHT_VALUE_ALL)) {
 				if (!$vm['active']) {
 					echo '<a href="#" onclick="startPersistentVm(\'' . $vm['dn'] . '\');" style="float: left; margin-right: 30px;"><img src="' . $baseUrl . '/images/vm_start.png" title="start VM"/></a>';
 				}

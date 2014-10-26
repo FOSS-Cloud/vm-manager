@@ -85,27 +85,27 @@ class VmProfileController extends Controller
 			array('allow',
 				'actions'=>array('index', 'getVmProfiles', 'getCheckCopyGui', 'checkCopy'),
 				'users'=>array('@'),
-				'expression'=>'Yii::app()->user->hasRight(\'profile\', \'Access\', \'Enabled\')'
+				'expression'=>'Yii::app()->user->hasRight(\'profile\', COsbdUser::$RIGHT_ACTION_ACCESS, COsbdUser::$RIGHT_VALUE_ALL)'
 			),
 			array('allow',
 				'actions'=>array('create', 'getDefaults'),
 				'users'=>array('@'),
-				'expression'=>'Yii::app()->user->hasRight(\'profile\', \'Create\', \'Enabled\')'
+				'expression'=>'Yii::app()->user->hasRight(\'profile\', COsbdUser::$RIGHT_ACTION_CREATE, COsbdUser::$RIGHT_VALUE_ALL)'
 			),
 			array('allow',
 				'actions'=>array('update', 'getDefaults'),
 				'users'=>array('@'),
-				'expression'=>'Yii::app()->user->hasOtherRight(\'profile\', \'Edit\', \'Enabled\', \'None\')'
+				'expression'=>'Yii::app()->user->hasRight(\'profile\', COsbdUser::$RIGHT_ACTION_EDIT, COsbdUser::$RIGHT_VALUE_ALL)'
 			),
 			array('allow',
 				'actions'=>array('delete'),
 				'users'=>array('@'),
-				'expression'=>'Yii::app()->user->hasOtherRight(\'profile\', \'Delete\', \'Enabled\', \'None\')'
+				'expression'=>'Yii::app()->user->hasRight(\'profile\', COsbdUser::$RIGHT_ACTION_DELETE, COsbdUser::$RIGHT_VALUE_ALL)'
 			),
 			array('allow',
 				'actions'=>array('uploadIso', 'uploadIsoPart', 'requestInfo'),
 				'users'=>array('@'),
-				'expression'=>'Yii::app()->user->hasOtherRight(\'profile\', \'Manage\', \'Enabled\', \'None\')'
+				'expression'=>'Yii::app()->user->hasRight(\'profile\', COsbdUser::$RIGHT_ACTION_MANAGE, COsbdUser::$RIGHT_VALUE_ALL)'
 			),
 			array('deny',  // deny all users
 				'users'=>array('*'),
@@ -831,7 +831,7 @@ class VmProfileController extends Controller
 		}
 */
 		$items = array();
-		if(Yii::app()->user->hasRight('profile', 'View', 'All')) {
+		if(Yii::app()->user->hasRight('profile', COsbdUser::$RIGHT_ACTION_VIEW, COsbdUser::$RIGHT_VALUE_ALL)) {
 			$subtree = CLdapRecord::model('LdapSubTree');
 			$subtree->setBranchDn('ou=virtual machine profiles,ou=virtualization,ou=services');
 			$result = $subtree->findSubTree(array());

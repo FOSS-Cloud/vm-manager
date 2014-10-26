@@ -44,12 +44,12 @@ $deleteUrl = $this->createUrl('vmPool/delete');
 $viewNodeUrl = $this->createUrl('node/view');
 $updateStoragePoolUrl = $this->createUrl('storagePool/update');
 
-$poolEdit = Yii::app()->user->hasRight('vmPool', 'Edit', 'All') ? 'true' : 'false';
-$poolDelete = Yii::app()->user->hasRight('vmPool', 'Delete', 'All') ? 'true' : 'false';
-$nodeView = Yii::app()->user->hasRight('node', 'View', 'All') ? 'true' : 'false';
-$storagePoolEdit = Yii::app()->user->hasRight('storagePool', 'Edit', 'All') ? 'true' : 'false';
-$userManage = Yii::app()->user->hasRight('user', 'Manage', 'All') ? 'true' : 'false';
-$groupManage = Yii::app()->user->hasRight('group', 'Manage', 'All') ? 'true' : 'false';
+$poolEdit = Yii::app()->user->hasRight('vmPool', COsbdUser::$RIGHT_ACTION_EDIT, COsbdUser::$RIGHT_VALUE_ALL) ? 'true' : 'false';
+$poolDelete = Yii::app()->user->hasRight('vmPool', COsbdUser::$RIGHT_ACTION_DELETE, COsbdUser::$RIGHT_VALUE_ALL) ? 'true' : 'false';
+$nodeView = Yii::app()->user->hasRight('node', COsbdUser::$RIGHT_ACTION_VIEW, COsbdUser::$RIGHT_VALUE_ALL) ? 'true' : 'false';
+$storagePoolEdit = Yii::app()->user->hasRight('storagePool', COsbdUser::$RIGHT_ACTION_EDIT, COsbdUser::$RIGHT_VALUE_ALL) ? 'true' : 'false';
+$userManage = Yii::app()->user->hasRight('user', COsbdUser::$RIGHT_ACTION_MANAGE, COsbdUser::$RIGHT_VALUE_ALL) ? 'true' : 'false';
+$groupManage = Yii::app()->user->hasRight('group', COsbdUser::$RIGHT_ACTION_MANAGE, COsbdUser::$RIGHT_VALUE_ALL) ? 'true' : 'false';
 
 $savetxt = Yii::t('vmpool', 'Save');
 
@@ -172,7 +172,7 @@ function assignGroup(dn)
 EOS
 , CClientScript::POS_END);
 
-if (Yii::app()->user->hasRight('vmPool', 'Edit', 'All')) {
+if (Yii::app()->user->hasRight('vmPool', COsbdUser::$RIGHT_ACTION_EDIT, COsbdUser::$RIGHT_VALUE_ALL)) {
 	$displayname = '\'<a href="' . $updateUrl . '?dn=\' + row[\'dn\'] + \'">\' + row[\'name\'] + \'</a>\'';
 }
 else {

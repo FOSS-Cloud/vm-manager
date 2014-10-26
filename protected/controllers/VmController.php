@@ -102,28 +102,34 @@ class VmController extends Controller
 	{
 		return array(
 			array('allow',
-				'actions'=>array('index', 'view', 'getPoolInfo', 'getVms', 'getVmInfo', 'refreshTimeout', 'refreshVms'),
+				'actions'=>array('index'),
 				'users'=>array('@'),
-				'expression'=>'(isset($_GET[\'vmtype\']) && \'dynamic\' === $_GET[\'vmtype\'] && $user->hasRight(\'dynamicVM\', COsbdUser::$RIGHT_ACTION_ACCESS, COsbdUser::$RIGHT_VALUE_ENABLED)) || ' . 
-					'((!isset($_GET[\'vmtype\']) || \'persistent\' === $_GET[\'vmtype\']) && $user->hasRight(\'persistentVM\', COsbdUser::$RIGHT_ACTION_ACCESS, COsbdUser::$RIGHT_VALUE_ENABLED))'
+				'expression'=>'(isset($_GET[\'vmtype\']) && \'dynamic\' === $_GET[\'vmtype\'] && $user->hasRight(\'dynamicVM\', COsbdUser::$RIGHT_ACTION_ACCESS, COsbdUser::$RIGHT_VALUE_ALL)) || ' . 
+					'((!isset($_GET[\'vmtype\']) || \'persistent\' === $_GET[\'vmtype\']) && $user->hasRight(\'persistentVM\', COsbdUser::$RIGHT_ACTION_ACCESS, COsbdUser::$RIGHT_VALUE_ALL))'
+			),
+			array('allow',
+				'actions'=>array('view', 'getPoolInfo', 'getVms', 'getVmInfo', 'refreshTimeout', 'refreshVms'),
+				'users'=>array('@'),
+				'expression'=>'$user->hasRight(\'dynamicVM\', COsbdUser::$RIGHT_ACTION_ACCESS, COsbdUser::$RIGHT_VALUE_ALL) || ' . 
+					'$user->hasRight(\'persistentVM\', COsbdUser::$RIGHT_ACTION_ACCESS, COsbdUser::$RIGHT_VALUE_ALL)'
 			),
 			array('allow',
 				'actions'=>array('update', 'makeGolden', 'activateGolden', 'getUserGui', 'saveUserAssign', 'getGroupGui', 'saveGroupAssign', 'getNodeGui'),
 				'users'=>array('@'),
-				'expression'=>'(isset($_GET[\'vmtype\']) && \'dynamic\' === $_GET[\'vmtype\'] && $user->hasOtherRight(\'dynamicVM\', COsbdUser::$RIGHT_ACTION_EDIT, COsbdUser::$RIGHT_VALUE_NONE)) || ' . 
-					'((!isset($_GET[\'vmtype\']) || \'persistent\' === $_GET[\'vmtype\']) && $user->hasOtherRight(\'persistentVM\', COsbdUser::$RIGHT_ACTION_EDIT, COsbdUser::$RIGHT_VALUE_NONE))'
+				'expression'=>'$user->hasRight(\'dynamicVM\', COsbdUser::$RIGHT_ACTION_EDIT, COsbdUser::$RIGHT_VALUE_ALL) || ' . 
+					'$user->hasRight(\'persistentVM\', COsbdUser::$RIGHT_ACTION_EDIT, COsbdUser::$RIGHT_VALUE_ALL)'
 			),
 			array('allow',
 				'actions'=>array('delete'),
 				'users'=>array('@'),
-				'expression'=>'(isset($_GET[\'vmtype\']) && \'dynamic\' === $_GET[\'vmtype\'] && $user->hasOtherRight(\'dynamicVM\', COsbdUser::$RIGHT_ACTION_DELETE, COsbdUser::$RIGHT_VALUE_NONE)) || ' . 
-					'((!isset($_GET[\'vmtype\']) || \'persistent\' === $_GET[\'vmtype\']) && $user->hasOtherRight(\'persistentVM\', COsbdUser::$RIGHT_ACTION_DELETE, COsbdUser::$RIGHT_VALUE_NONE))'
+				'expression'=>'$user->hasRight(\'dynamicVM\', COsbdUser::$RIGHT_ACTION_DELETE, COsbdUser::$RIGHT_VALUE_ALL) || ' . 
+					'$user->hasRight(\'persistentVM\', COsbdUser::$RIGHT_ACTION_DELETE, COsbdUser::$RIGHT_VALUE_ALL)'
 			),
 			array('allow',
 				'actions'=>array('startVm', 'shutdownVm', 'rebootVm', 'destroyVm', 'migrateVm', 'restoreVm', 'waitForRestoreAction', 'getRestoreAction', 'startRestoreAction', 'cancelRestoreAction', 'handleRestoreAction'),
 				'users'=>array('@'),
-				'expression'=>'(isset($_GET[\'vmtype\']) && \'dynamic\' === $_GET[\'vmtype\'] && $user->hasOtherRight(\'dynamicVM\', COsbdUser::$RIGHT_ACTION_MANAGE, COsbdUser::$RIGHT_VALUE_NONE)) || ' . 
-					'((!isset($_GET[\'vmtype\']) || \'persistent\' === $_GET[\'vmtype\']) && $user->hasOtherRight(\'persistentVM\', COsbdUser::$RIGHT_ACTION_MANAGE, COsbdUser::$RIGHT_VALUE_NONE))'
+				'expression'=>'$user->hasRight(\'dynamicVM\', COsbdUser::$RIGHT_ACTION_MANAGE, COsbdUser::$RIGHT_VALUE_ALL) || ' . 
+					'$user->hasRight(\'persistentVM\', COsbdUser::$RIGHT_ACTION_MANAGE, COsbdUser::$RIGHT_VALUE_ALL)'
 			),
 			array('deny',  // deny all users
 				'users'=>array('*'),
@@ -448,10 +454,10 @@ class VmController extends Controller
 			$sessionvars['sort'] = $criteria['sort'];
 		}
 		//echo '<pre>' . print_r($criteria, true) . '</pre>';
-		if (Yii::app()->user->hasRight($vmtype . 'VM', 'View', 'All')) {
+		if (Yii::app()->user->hasRight($vmtype . 'VM', COsbdUser::$RIGHT_ACTION_VIEW, COsbdUser::$RIGHT_VALUE_ALL)) {
 			$vms = LdapVm::model()->findAll($criteria);
 		}
-		else if (Yii::app()->user->hasRight($vmtype . 'VM', 'View', 'Owner')) {
+		else if (Yii::app()->user->hasRight($vmtype . 'VM', COsbdUser::$RIGHT_ACTION_VIEW, COsbdUser::$RIGHT_VALUE_OWNER)) {
 			$vms = LdapVm::getAssignedVms($vmtype, $criteria);
 			$vms = array_values($vms);
 		}

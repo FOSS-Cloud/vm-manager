@@ -54,20 +54,20 @@ $startrestoreactionurl = $this->createUrl('vm/startRestoreAction');
 $cancelrestoreactionurl = $this->createUrl('vm/cancelRestoreAction');
 
 if ('dynamic' != $vmtype) {
-	$vmEdit = Yii::app()->user->hasRight('persistentVM', 'Edit', 'All') ? 'true' : 'false';
-	$vmDelete = Yii::app()->user->hasRight('persistentVM', 'Delete', 'All') ? 'true' : 'false';
-	$vmManage = Yii::app()->user->hasRight('persistentVM', 'Manage', 'All') ? 'true' : 'false';
-	$vmUse = Yii::app()->user->hasRight('persistentVM', 'Use', 'All') ? 'true' : 'false';
+	$vmEdit = Yii::app()->user->hasRight('persistentVM', COsbdUser::$RIGHT_ACTION_EDIT, COsbdUser::$RIGHT_VALUE_ALL) ? 'true' : 'false';
+	$vmDelete = Yii::app()->user->hasRight('persistentVM', COsbdUser::$RIGHT_ACTION_DELETE, COsbdUser::$RIGHT_VALUE_ALL) ? 'true' : 'false';
+	$vmManage = Yii::app()->user->hasRight('persistentVM', COsbdUser::$RIGHT_ACTION_MANAGE, COsbdUser::$RIGHT_VALUE_ALL) ? 'true' : 'false';
+	$vmUse = Yii::app()->user->hasRight('persistentVM', COsbdUser::$RIGHT_ACTION_USE, COsbdUser::$RIGHT_VALUE_ALL) ? 'true' : 'false';
 }
 else {
-	$vmEdit = Yii::app()->user->hasRight('dynamicVM', 'Edit', 'All') ? 'true' : 'false';
-	$vmDelete = Yii::app()->user->hasRight('dynamicVM', 'Delete', 'All') ? 'true' : 'false';
-	$vmManage = Yii::app()->user->hasRight('dynamicVM', 'Manage', 'All') ? 'true' : 'false';
-	$vmUse = Yii::app()->user->hasRight('dynamicVM', 'Use', 'All') ? 'true' : 'false';
+	$vmEdit = Yii::app()->user->hasRight('dynamicVM', COsbdUser::$RIGHT_ACTION_EDIT, COsbdUser::$RIGHT_VALUE_ALL) ? 'true' : 'false';
+	$vmDelete = Yii::app()->user->hasRight('dynamicVM', COsbdUser::$RIGHT_ACTION_DELETE, COsbdUser::$RIGHT_VALUE_ALL) ? 'true' : 'false';
+	$vmManage = Yii::app()->user->hasRight('dynamicVM', COsbdUser::$RIGHT_ACTION_MANAGE, COsbdUser::$RIGHT_VALUE_ALL) ? 'true' : 'false';
+	$vmUse = Yii::app()->user->hasRight('dynamicVM', COsbdUser::$RIGHT_ACTION_USE, COsbdUser::$RIGHT_VALUE_ALL) ? 'true' : 'false';
 }
-$nodeView = Yii::app()->user->hasRight('node', 'View', 'All') ? 'true' : 'false';
-$userManage = Yii::app()->user->hasRight('user', 'Manage', 'All') ? 'true' : 'false';
-$groupManage = Yii::app()->user->hasRight('group', 'Manage', 'All') ? 'true' : 'false';
+$nodeView = Yii::app()->user->hasRight('node', COsbdUser::$RIGHT_ACTION_VIEW, COsbdUser::$RIGHT_VALUE_ALL) ? 'true' : 'false';
+$userManage = Yii::app()->user->hasRight('user', COsbdUser::$RIGHT_ACTION_MANAGE, COsbdUser::$RIGHT_VALUE_ALL) ? 'true' : 'false';
+$groupManage = Yii::app()->user->hasRight('group', COsbdUser::$RIGHT_ACTION_MANAGE, COsbdUser::$RIGHT_VALUE_ALL) ? 'true' : 'false';
 
 //$imgcontroller = $this->createUrl('img/percent');
 $actrefreshtime = Yii::app()->getSession()->get('vm_refreshtime', 10000);

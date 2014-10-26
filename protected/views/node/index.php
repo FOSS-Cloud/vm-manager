@@ -42,8 +42,8 @@ if(Yii::app()->user->hasFlash('notice')) {
 $gridid = 'nodes';
 $baseurl = Yii::app()->baseUrl;
 
-$nodeEdit = Yii::app()->user->hasRight('node', 'Edit', 'All') ? 'true' : 'false';
-$nodeDelete = Yii::app()->user->hasRight('node', 'Delete', 'All') ? 'true' : 'false';
+$nodeEdit = Yii::app()->user->hasRight('node', COsbdUser::$RIGHT_ACTION_EDIT, COsbdUser::$RIGHT_VALUE_ALL) ? 'true' : 'false';
+$nodeDelete = Yii::app()->user->hasRight('node', COsbdUser::$RIGHT_ACTION_DELETE, COsbdUser::$RIGHT_VALUE_ALL) ? 'true' : 'false';
 
 Yii::app()->clientScript->registerScript('rowEdit', <<<EOS
 var {$gridid}_lastsel=-1;

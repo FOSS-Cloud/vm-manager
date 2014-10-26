@@ -75,22 +75,22 @@ class UserController extends Controller
 			array('allow',
 				'actions'=>array('index', 'getUser', 'getRoles'),
 				'users'=>array('@'),
-				'expression'=>'Yii::app()->user->hasRight(\'user\', \'Access\', \'Enabled\')'
+				'expression'=>'Yii::app()->user->hasRight(\'user\', COsbdUser::$RIGHT_ACTION_ACCESS, COsbdUser::$RIGHT_VALUE_ALL)'
 			),
 			array('allow',
 				'actions'=>array('create'),
 				'users'=>array('@'),
-				'expression'=>'Yii::app()->user->hasRight(\'user\', \'Create\', \'Enabled\')'
+				'expression'=>'Yii::app()->user->hasRight(\'user\', COsbdUser::$RIGHT_ACTION_CREATE, COsbdUser::$RIGHT_VALUE_ALL)'
 			),
 			array('allow',
 				'actions'=>array('update', 'getVMsGui', 'saveVMsAssign'),
 				'users'=>array('@'),
-				'expression'=>'Yii::app()->user->hasOtherRight(\'user\', \'Edit\', \'Enabled\', \'None\')'
+				'expression'=>'Yii::app()->user->hasRight(\'user\', COsbdUser::$RIGHT_ACTION_EDIT, COsbdUser::$RIGHT_VALUE_ALL)'
 			),
 			array('allow',
 				'actions'=>array('delete'),
 				'users'=>array('@'),
-				'expression'=>'Yii::app()->user->hasOtherRight(\'user\', \'Delete\', \'Enabled\', \'None\')'
+				'expression'=>'Yii::app()->user->hasRight(\'user\', COsbdUser::$RIGHT_ACTION_DELETE, COsbdUser::$RIGHT_VALUE_ALL)'
 			),
 			array('deny',  // deny all users
 				'users'=>array('*'),
@@ -315,7 +315,7 @@ class UserController extends Controller
 		if (isset($_GET['role'])) {
 			$attr['sstRoleUid'] = $_GET['role'];
 		}
-		if(Yii::app()->user->hasRight('user', 'View', 'All')) {
+		if(Yii::app()->user->hasRight('user', COsbdUser::$RIGHT_ACTION_VIEW, COsbdUser::$RIGHT_VALUE_ALL)) {
 			$users = LdapUser::model()->findAll(array('attr' => $attr));
 		}
 		else {

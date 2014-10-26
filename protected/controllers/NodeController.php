@@ -105,27 +105,27 @@ class NodeController extends WizardController
 			array('allow',
 				'actions'=>array('index', 'getNodes'),
 				'users'=>array('@'),
-				'expression'=>'Yii::app()->user->hasRight(\'node\', \'Access\', \'Enabled\')'
+				'expression'=>'Yii::app()->user->hasRight(\'node\', COsbdUser::$RIGHT_ACTION_ACCESS, COsbdUser::$RIGHT_VALUE_ALL)'
 			),
 			array('allow',
 				'actions'=>array('view'),
 				'users'=>array('@'),
-				'expression'=>'Yii::app()->user->hasOtherRight(\'node\', \'View\', \'Enabled\', \'None\')'
+				'expression'=>'Yii::app()->user->hasRight(\'node\', COsbdUser::$RIGHT_ACTION_VIEW, COsbdUser::$RIGHT_VALUE_ALL)'
 			),
 				array('allow',
 				'actions'=>array('wizard', 'handleWizardAction'),
 				'users'=>array('@'),
-				'expression'=>'Yii::app()->user->hasRight(\'node\', \'Create\', \'Enabled\')'
+				'expression'=>'Yii::app()->user->hasRight(\'node\', COsbdUser::$RIGHT_ACTION_CREATE, COsbdUser::$RIGHT_VALUE_ALL)'
 			),
 			array('allow',
 				'actions'=>array('maintainVmNode'),
 				'users'=>array('@'),
-				'expression'=>'Yii::app()->user->hasOtherRight(\'node\', \'Edit\', \'Enabled\', \'None\')'
+				'expression'=>'Yii::app()->user->hasRight(\'node\', COsbdUser::$RIGHT_ACTION_EDIT, COsbdUser::$RIGHT_VALUE_ALL)'
 			),
 			array('allow',
 				'actions'=>array('delete'),
 				'users'=>array('@'),
-				'expression'=>'Yii::app()->user->hasOtherRight(\'node\', \'Delete\', \'Enabled\', \'None\')'
+				'expression'=>'Yii::app()->user->hasRight(\'node\', COsbdUser::$RIGHT_ACTION_DELETE, COsbdUser::RIGHT_VALUE_ALL)'
 			),
 			array('deny',  // deny all users
 				'users'=>array('*'),
@@ -197,7 +197,7 @@ class NodeController extends WizardController
 			$criteria['attr']['sstNode'] = '*' . $_GET['sstNode'] . '*';
 		}
 		
-		if(Yii::app()->user->hasRight('node', 'View', 'All')) {
+		if(Yii::app()->user->hasRight('node', COsbdUser::$RIGHT_ACTION_VIEW, COsbdUser::$RIGHT_VALUE_ALL)) {
 			$nodes = LdapNode::model()->findAll($criteria);
 		}
 		else {
@@ -238,7 +238,7 @@ class NodeController extends WizardController
 			$criteria['sort'] = $sidx . '.' . $sord;
 		}
 
-		if (Yii::app()->user->hasRight('node', 'View', 'All')) {
+		if (Yii::app()->user->hasRight('node', COsbdUser::$RIGHT_ACTION_VIEW, COsbdUser::$RIGHT_VALUE_ALL)) {
 			$nodes = CLdapRecord::model('LdapNode')->findAll($criteria);
 		}
 		else {

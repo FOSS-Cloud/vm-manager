@@ -75,22 +75,22 @@ class DiagnosticsController extends Controller
 			array('allow',
 				'actions'=>array('index', 'ldapattrtypes', 'ldapobjclasses', 'vmcounter'),
 				'users'=>array('@'),
-				'expression'=>'Yii::app()->user->hasRight(\'diagnostic\', \'Access\', \'Enabled\')'
+				'expression'=>'Yii::app()->user->hasRight(\'diagnostic\', COsbdUser::$RIGHT_ACTION_ACCESS, COsbdUser::$RIGHT_VALUE_ALL)'
 			),
 			array('allow',
 				'actions'=>array('persistentvminfos'),
 				'users'=>array('@'),
-				'expression'=>'Yii::app()->user->hasOtherRight(\'persistentVM\', \'View\', \'None\')'
+				'expression'=>'Yii::app()->user->hasOtherRight(\'persistentVM\', COsbdUser::$RIGHT_ACTION_VIEW, COsbdUser::$RIGHT_VALUE_NONE)'
 			),
 			array('allow',
 				'actions'=>array('dynamicvminfos'),
 				'users'=>array('@'),
-				'expression'=>'Yii::app()->user->hasOtherRight(\'dynamicVM\', \'View\', \'None\')'
+				'expression'=>'Yii::app()->user->hasOtherRight(\'dynamicVM\', COsbdUser::$RIGHT_ACTION_VIEW, COsbdUser::$RIGHT_VALUE_NONE)'
 			),
 			array('allow',
 				'actions'=>array('vmtemplateinfos'),
 				'users'=>array('@'),
-				'expression'=>'Yii::app()->user->hasOtherRight(\'templateVM\', \'View\', \'None\')'
+				'expression'=>'Yii::app()->user->hasOtherRight(\'templateVM\', COsbdUser::$RIGHT_ACTION_VIEW, COsbdUser::$RIGHT_VALUE_NONE)',
 			),
 			array('deny',  // deny all users
 				'users'=>array('*'),
@@ -102,10 +102,10 @@ class DiagnosticsController extends Controller
 	{
 		$vms = array();
 		$criteria = array('filter'=>'(&(sstVirtualMachineType=persistent))');
-		if (Yii::app()->user->hasRight('persistentVM', 'View', 'All')) {
+		if (Yii::app()->user->hasRight('persistentVM', COsbdUser::$RIGHT_ACTION_VIEW, COsbdUser::$RIGHT_VALUE_ALL)) {
 			$result = LdapVm::model()->findAll($criteria);
 		}
-		else if (Yii::app()->user->hasRight('persistentVM', 'View', 'Owner')) {
+		else if (Yii::app()->user->hasRight('persistentVM', COsbdUser::$RIGHT_ACTION_VIEW, COsbdUser::$RIGHT_VALUE_OWNER)) {
 			$result = LdapVm::getAssignedVms('persistent', $criteria);
 			$result = array_values($result);
 		}
@@ -131,10 +131,10 @@ class DiagnosticsController extends Controller
 	{
 		$vms = array();
 		$criteria = array('filter'=>'(&(sstVirtualMachineType=dynamic))');
-		if (Yii::app()->user->hasRight('dynamicVM', 'View', 'All')) {
+		if (Yii::app()->user->hasRight('dynamicVM', COsbdUser::$RIGHT_ACTION_VIEW, COsbdUser::$RIGHT_VALUE_ALL)) {
 			$result = LdapVm::model()->findAll($criteria);
 		}
-		else if (Yii::app()->user->hasRight('dynamicVM', 'View', 'Owner')) {
+		else if (Yii::app()->user->hasRight('dynamicVM', COsbdUser::$RIGHT_ACTION_VIEW, COsbdUser::$RIGHT_VALUE_OWNER)) {
 			$result = LdapVm::getAssignedVms('dynamic', $criteria);
 			$result = array_values($result);
 		}
@@ -162,7 +162,7 @@ class DiagnosticsController extends Controller
 	{
 		$vms = array();
 		$criteria = array('filter'=>'(&(sstVirtualMachineType=template))');
-		if (Yii::app()->user->hasRight('templateVM', 'View', 'All')) {
+		if (Yii::app()->user->hasRight('templateVM', COsbdUser::$RIGHT_ACTION_VIEW, COsbdUser::$RIGHT_VALUE_ALL)) {
 			$result = LdapVmFromTemplate::model()->findAll($criteria);
 		}
 		else {

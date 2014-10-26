@@ -97,27 +97,27 @@ class VmTemplateController extends Controller
 			array('allow',
 				'actions'=>array('index', 'view', 'getPoolInfo', 'getVmTemplates', 'getVmInfo', 'refreshTimeout', 'refreshVMs', 'getCheckCopyGui', 'checkCopy'),
 				'users'=>array('@'),
-				'expression'=>'Yii::app()->user->hasRight(\'templateVM\', \'Access\', \'Enabled\') || Yii::app()->user->hasRight(\'persistentVM\', \'Access\', \'Enabled\')'
+				'expression'=>'Yii::app()->user->hasRight(\'templateVM\', COsbdUser::$RIGHT_ACTION_ACCESS, COsbdUser::$RIGHT_VALUE_ALL) || Yii::app()->user->hasRight(\'persistentVM\', COsbdUser::$RIGHT_ACTION_ACCESS, COsbdUser::$RIGHT_VALUE_ALL)'
 			),
 			array('allow',
 				'actions'=>array('create', 'toggleBoot'),
 				'users'=>array('@'),
-				'expression'=>'Yii::app()->user->hasRight(\'templateVM\', \'Create\', \'Enabled\') || Yii::app()->user->hasRight(\'persistentVM\', \'Create\', \'Enabled\')'
+				'expression'=>'Yii::app()->user->hasRight(\'templateVM\', COsbdUser::$RIGHT_ACTION_CREATE, COsbdUser::$RIGHT_VALUE_ALL) || Yii::app()->user->hasRight(\'persistentVM\', COsbdUser::$RIGHT_ACTION_CREATE, COsbdUser::$RIGHT_VALUE_ALL)'
 			),
 			array('allow',
 				'actions'=>array('update', 'finish', 'finishDynamic', 'getDefaults', 'getDynData', 'getStaticPoolGui', 'getDynamicPoolGui'),
 				'users'=>array('@'),
-				'expression'=>'Yii::app()->user->hasOtherRight(\'templateVM\', \'Edit\', \'None\') || Yii::app()->user->hasOtherRight(\'persistentVM\', \'Edit\', \'None\')'
+				'expression'=>'Yii::app()->user->hasRight(\'templateVM\', COsbdUser::$RIGHT_ACTION_EDIT, COsbdUser::$RIGHT_VALUE_ALL) || Yii::app()->user->hasRight(\'persistentVM\', COsbdUser::$RIGHT_ACTION_EDIT, COsbdUser::$RIGHT_VALUE_ALL)'
 			),
 			array('allow',
 				'actions'=>array('delete'),
 				'users'=>array('@'),
-				'expression'=>'Yii::app()->user->hasOtherRight(\'templateVM\', \'Delete\', \'None\') || Yii::app()->user->hasOtherRight(\'persistentVM\', \'Delete\', \'None\')'
+				'expression'=>'Yii::app()->user->hasRight(\'templateVM\', COsbdUser::$RIGHT_ACTION_DELETE, COsbdUser::$RIGHT_VALUE_ALL) || Yii::app()->user->hasRight(\'persistentVM\', COsbdUser::$RIGHT_ACTION_DELETE, COsbdUser::$RIGHT_VALUE_ALL)'
 			),
 			array('allow',
 				'actions'=>array('startVm', 'shutdownVm', 'rebootVm', 'destroyVm', 'migrateVm', 'restoreVm', 'getNodeGui', 'waitForRestoreAction', 'getRestoreAction', 'startRestoreAction', 'cancelRestoreAction', 'handleRestoreAction'),
 				'users'=>array('@'),
-				'expression'=>'Yii::app()->user->hasOtherRight(\'templateVM\', \'Manage\', \'None\') || Yii::app()->user->hasOtherRight(\'persistentVM\', \'Manage\', \'None\')'
+				'expression'=>'Yii::app()->user->hasRight(\'templateVM\', COsbdUser::$RIGHT_ACTION_MANAGE, COsbdUser::$RIGHT_VALUE_ALL) || Yii::app()->user->hasRight(\'persistentVM\', COsbdUser::$RIGHT_ACTION_MANAGE, COsbdUser::$RIGHT_VALUE_ALL)'
 			),
 			array('deny',  // deny all users
 				'users'=>array('*'),
@@ -951,7 +951,7 @@ class VmTemplateController extends Controller
 		
 		Yii::app()->getSession()->add('vmTemplate.index', $sessionvars);
 		
-		if (Yii::app()->user->hasRight('templateVM', 'View', 'All')) {
+		if (Yii::app()->user->hasRight('templateVM', COsbdUser::$RIGHT_ACTION_VIEW, COsbdUser::$RIGHT_VALUE_ALL)) {
 			$vms = LdapVmFromTemplate::model()->findAll($criteria);
 		}
 		else {

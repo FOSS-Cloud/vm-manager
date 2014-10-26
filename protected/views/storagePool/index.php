@@ -44,8 +44,8 @@ $deleteUrl = $this->createUrl('storagePool/delete');
 
 $savetxt = Yii::t('storagepool', 'Save');
 
-$poolEdit = Yii::app()->user->hasRight('storagePool', 'Edit', 'All') ? 'true' : 'false';
-$poolDelete = Yii::app()->user->hasRight('storagePool', 'Delete', 'All') ? 'true' : 'false';
+$poolEdit = Yii::app()->user->hasRight('storagePool', COsbdUser::$RIGHT_ACTION_EDIT, COsbdUser::$RIGHT_VALUE_ALL) ? 'true' : 'false';
+$poolDelete = Yii::app()->user->hasRight('storagePool', COsbdUser::$RIGHT_ACTION_DELETE, COsbdUser::$RIGHT_VALUE_ALL) ? 'true' : 'false';
 
 Yii::app()->clientScript->registerScript('javascript', <<<EOS
 function deleteRow(id)

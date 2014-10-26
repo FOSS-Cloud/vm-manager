@@ -53,14 +53,14 @@ $cancelrestoreactionurl = $this->createUrl('vmTemplate/cancelRestoreAction');
 
 $actrefreshtime = Yii::app()->getSession()->get('vm_refreshtime', 10000);
 
-$vmTemplateCreate = Yii::app()->user->hasRight('templateVM', 'Create', 'Enabled') ? 'true' : 'false';
-$vmTemplateEdit = Yii::app()->user->hasRight('templateVM', 'Edit', 'All') ? 'true' : 'false';
-$vmTemplateDelete = Yii::app()->user->hasRight('templateVM', 'Delete', 'All') ? 'true' : 'false';
-$vmTemplateManage = Yii::app()->user->hasRight('templateVM', 'Manage', 'All') ? 'true' : 'false';
-$vmTemplateUse = Yii::app()->user->hasRight('templateVM', 'Use', 'All') ? 'true' : 'false';
-$persistentVmCreate = Yii::app()->user->hasRight('persistentVM', 'Create', 'Enabled') ? 'true' : 'false';
-$dynamicVmCreate = Yii::app()->user->hasRight('dynamicVM', 'Create', 'Enabled') ? 'true' : 'false';
-$nodeView = Yii::app()->user->hasRight('node', 'View', 'All') ? 'true' : 'false';
+$vmTemplateCreate = Yii::app()->user->hasRight('templateVM', COsbdUser::$RIGHT_ACTION_CREATE, COsbdUser::$RIGHT_VALUE_ALL) ? 'true' : 'false';
+$vmTemplateEdit = Yii::app()->user->hasRight('templateVM', COsbdUser::$RIGHT_ACTION_EDIT, COsbdUser::$RIGHT_VALUE_ALL) ? 'true' : 'false';
+$vmTemplateDelete = Yii::app()->user->hasRight('templateVM', COsbdUser::$RIGHT_ACTION_DELETE, COsbdUser::$RIGHT_VALUE_ALL) ? 'true' : 'false';
+$vmTemplateManage = Yii::app()->user->hasRight('templateVM', COsbdUser::$RIGHT_ACTION_MANAGE, COsbdUser::$RIGHT_VALUE_ALL) ? 'true' : 'false';
+$vmTemplateUse = Yii::app()->user->hasRight('templateVM', COsbdUser::$RIGHT_ACTION_USE, COsbdUser::$RIGHT_VALUE_ALL) ? 'true' : 'false';
+$persistentVmCreate = Yii::app()->user->hasRight('persistentVM', COsbdUser::$RIGHT_ACTION_CREATE, COsbdUser::$RIGHT_VALUE_ALL) ? 'true' : 'false';
+$dynamicVmCreate = Yii::app()->user->hasRight('dynamicVM', COsbdUser::$RIGHT_ACTION_CREATE, COsbdUser::$RIGHT_VALUE_ALL) ? 'true' : 'false';
+$nodeView = Yii::app()->user->hasRight('node', COsbdUser::$RIGHT_ACTION_VIEW, COsbdUser::$RIGHT_VALUE_ALL) ? 'true' : 'false';
 
 Yii::app()->clientScript->registerScript('refresh', <<<EOS
 var refreshTimeout = {$sessionvars['refreshTime']};

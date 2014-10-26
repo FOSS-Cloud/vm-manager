@@ -34,7 +34,7 @@ $this->breadcrumbs=array(
 );
 $this->title = 'Persistent VM Infos';
 
-$vmUse = Yii::app()->user->hasRight('persistentVM', 'Use', 'All');
+$vmUse = Yii::app()->user->hasRight('persistentVM', COsbdUser::$RIGHT_ACTION_USE, COsbdUser::$RIGHT_VALUE_ALL);
 
 ?>
 <ul>

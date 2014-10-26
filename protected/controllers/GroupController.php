@@ -76,22 +76,22 @@ class GroupController extends Controller
 			array('allow',
 				'actions'=>array('index', 'getGroups'),
 				'users'=>array('@'),
-				'expression'=>'Yii::app()->user->hasRight(\'group\', \'Access\', \'Enabled\')'
+				'expression'=>'Yii::app()->user->hasRight(\'group\', COsbdUser::$RIGHT_ACTION_ACCESS, COsbdUser::$RIGHT_VALUE_ALL)'
 			),
 			array('allow',
 				'actions'=>array('create'),
 				'users'=>array('@'),
-				'expression'=>'Yii::app()->user->hasRight(\'group\', \'Create\', \'Enabled\')'
+				'expression'=>'Yii::app()->user->hasRight(\'group\', COsbdUser::$RIGHT_ACTION_CREATE, COsbdUser::$RIGHT_VALUE_ALL)'
 			),
 			array('allow',
 				'actions'=>array('update', 'import'),
 				'users'=>array('@'),
-				'expression'=>'Yii::app()->user->hasOtherRight(\'group\', \'Edit\', \'Enabled\', \'None\')'
+				'expression'=>'Yii::app()->user->hasRight(\'group\', COsbdUser::$RIGHT_ACTION_EDIT, COsbdUser::$RIGHT_VALUE_ALL)'
 			),
 			array('allow',
 				'actions'=>array('delete'),
 				'users'=>array('@'),
-				'expression'=>'Yii::app()->user->hasOtherRight(\'group\', \'Delete\', \'Enabled\', \'None\')'
+				'expression'=>'Yii::app()->user->hasRight(\'group\', COsbdUser::$RIGHT_ACTION_DELETE, COsbdUser::$RIGHT_VALUE_ALL)'
 			),
 			array('deny',  // deny all users
 				'users'=>array('*'),
@@ -336,7 +336,7 @@ class GroupController extends Controller
 		if (isset($_GET['extname']) && '' != $_GET['extname']) {
 			$attr['name'] = '*' . $_GET['extname'] . '*';
 		}
-		if(Yii::app()->user->hasRight('group', 'View', 'All')) {
+		if(Yii::app()->user->hasRight('group', COsbdUser::$RIGHT_ACTION_VIEW, COsbdUser::$RIGHT_VALUE_ALL)) {
 			$groups = CLdapRecord::model('LdapGroup')->findAll(array('attr' => $attr));
 		}
 		else {

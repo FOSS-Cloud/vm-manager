@@ -79,7 +79,7 @@ class ConfigurationController extends Controller
 			array('allow', // allow authenticated user to perform 'create' and 'update' actions
 		        'actions'=>array('global', 'backup'),
 				'users'=>array('@'),
-				'expression'=>'Yii::app()->user->hasRight(\'configuration\', COsbdUser::$RIGHT_ACTION_ACCESS, COsbdUser::$RIGHT_VALUE_ENABLED)'
+				'expression'=>'Yii::app()->user->hasRight(\'configuration\', COsbdUser::$RIGHT_ACTION_ACCESS, COsbdUser::$RIGHT_VALUE_ALL)'
 			),
 			array('deny',  // deny all users
 				'users'=>array('*'),
