@@ -33,6 +33,5 @@ return array(
 	'components'=>array(
 	),
 	'modules' => array(
-		)
 	),
 );
