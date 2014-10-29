@@ -154,11 +154,11 @@ class Controller extends CController
 			),
 		);
 
-		if ($user->hasRight('persistentVM', COsbdUser::$RIGHT_ACTION_ACCESS, COsbdUser::$RIGHT_VALUE_ENABLED) ||
-			$user->hasRight('dynamicVM', COsbdUser::$RIGHT_ACTION_ACCESS, COsbdUser::$RIGHT_VALUE_ENABLED) ||
-			$user->hasRight('templateVM', COsbdUser::$RIGHT_ACTION_ACCESS, COsbdUser::$RIGHT_VALUE_ENABLED) ||
-			$user->hasRight('profile', COsbdUser::$RIGHT_ACTION_ACCESS, COsbdUser::$RIGHT_VALUE_ENABLED)) {
-			if ($user->hasRight('persistentVM', COsbdUser::$RIGHT_ACTION_ACCESS, COsbdUser::$RIGHT_VALUE_ENABLED)) {
+		if ($user->hasRight('persistentVM', COsbdUser::$RIGHT_ACTION_ACCESS, COsbdUser::$RIGHT_VALUE_ALL) ||
+			$user->hasRight('dynamicVM', COsbdUser::$RIGHT_ACTION_ACCESS, COsbdUser::$RIGHT_VALUE_ALL) ||
+			$user->hasRight('templateVM', COsbdUser::$RIGHT_ACTION_ACCESS, COsbdUser::$RIGHT_VALUE_ALL) ||
+			$user->hasRight('profile', COsbdUser::$RIGHT_ACTION_ACCESS, COsbdUser::$RIGHT_VALUE_ALL)) {
+			if ($user->hasRight('persistentVM', COsbdUser::$RIGHT_ACTION_ACCESS, COsbdUser::$RIGHT_VALUE_ALL)) {
 				$coremenu['vm']['items']['vm'] = array(
 					'label' => Yii::t('menu', 'Persistent Virtual Machines'),
 					'url' => array('/vm/index', 'vmtype' => 'persistent'),
@@ -166,7 +166,7 @@ class Controller extends CController
 					'active' => ($this->id == 'vm' && $action == 'index' && isset($_GET['vmtype']) && 'persistent' == $_GET['vmtype'])
 				);
 			}
-			if ($user->hasRight('dynamicVM', COsbdUser::$RIGHT_ACTION_ACCESS, COsbdUser::$RIGHT_VALUE_ENABLED)) {
+			if ($user->hasRight('dynamicVM', COsbdUser::$RIGHT_ACTION_ACCESS, COsbdUser::$RIGHT_VALUE_ALL)) {
 				$coremenu['vm']['items']['vmdyn'] = array(
 					'label' => Yii::t('menu', 'Dynamic Virtual Machines'),
 					'url' => array('/vm/index', 'vmtype' => 'dynamic'),
@@ -174,7 +174,7 @@ class Controller extends CController
 					'active' => ($this->id == 'vm' && $action == 'index' && isset($_GET['vmtype']) && 'dynamic' == $_GET['vmtype'])
 				);
 			}
-			if ($user->hasRight('templateVM', COsbdUser::$RIGHT_ACTION_ACCESS, COsbdUser::$RIGHT_VALUE_ENABLED)) {
+			if ($user->hasRight('templateVM', COsbdUser::$RIGHT_ACTION_ACCESS, COsbdUser::$RIGHT_VALUE_ALL)) {
 				$coremenu['vm']['items']['vmtemplate'] = array(
 					'label' => Yii::t('menu', 'Virtual Machine Templates'),
 					'url' => array('/vmTemplate/index'),
@@ -182,7 +182,7 @@ class Controller extends CController
 					'active' => ($this->id == 'vmTemplate' &&  $action == 'index'),
 					'items' => array()
 				);
-				if ($user->hasRight('templateVM', COsbdUser::$RIGHT_ACTION_CREATE, COsbdUser::$RIGHT_VALUE_ENABLED)) {
+				if ($user->hasRight('templateVM', COsbdUser::$RIGHT_ACTION_CREATE, COsbdUser::$RIGHT_VALUE_ALL)) {
 					$coremenu['vm']['items']['vmtemplate']['items'][] = array(
 						'label' => Yii::t('menu', 'Create'),
 						'url' => array('/vmTemplate/create'),
@@ -191,7 +191,7 @@ class Controller extends CController
 					);
 				}
 			}
-			if ($user->hasRight('profile', COsbdUser::$RIGHT_ACTION_ACCESS, COsbdUser::$RIGHT_VALUE_ENABLED)) {
+			if ($user->hasRight('profile', COsbdUser::$RIGHT_ACTION_ACCESS, COsbdUser::$RIGHT_VALUE_ALL)) {
 				$coremenu['vm']['items']['vmprofile'] = array(
 					'label' => Yii::t('menu', 'Virtual Machine Profiles'),
 					'url' => array('/vmProfile/index'),
@@ -199,7 +199,7 @@ class Controller extends CController
 					'active' => ($this->id == 'vmProfile' &&  $action == 'index'),
 					'items' => array()
 				);
-				if ($user->hasRight('profile', COsbdUser::$RIGHT_ACTION_CREATE, COsbdUser::$RIGHT_VALUE_ENABLED)) {
+				if ($user->hasRight('profile', COsbdUser::$RIGHT_ACTION_CREATE, COsbdUser::$RIGHT_VALUE_ALL)) {
 					$coremenu['vm']['items']['vmprofile']['items'][] = array(
 						'label' => Yii::t('menu', 'Create'),
 						'url' => array('/vmProfile/create'),
@@ -220,7 +220,7 @@ class Controller extends CController
 		else {
 			unset($coremenu['vm']);
 		}
-		if ($user->hasRight('vmPool', COsbdUser::$RIGHT_ACTION_ACCESS, COsbdUser::$RIGHT_VALUE_ENABLED)) {
+		if ($user->hasRight('vmPool', COsbdUser::$RIGHT_ACTION_ACCESS, COsbdUser::$RIGHT_VALUE_ALL)) {
 			$coremenu['vmpool']['items']['vmpool'] = array(
 				'label' => Yii::t('menu', 'VM Pools'),
 				'url' => array('/vmPool/index'),
@@ -228,7 +228,7 @@ class Controller extends CController
 				'active' => ($this->id == 'vmpool' &&  $action == 'index'),
 				'items' => array()
 			);
-			if ($user->hasRight('vmPool', COsbdUser::$RIGHT_ACTION_CREATE, COsbdUser::$RIGHT_VALUE_ENABLED)) {
+			if ($user->hasRight('vmPool', COsbdUser::$RIGHT_ACTION_CREATE, COsbdUser::$RIGHT_VALUE_ALL)) {
 				$coremenu['vmpool']['items']['vmpool']['items'][] = array(
 					'label' => Yii::t('menu', 'Create'),
 					'url' => array('/vmPool/create'),
@@ -240,7 +240,7 @@ class Controller extends CController
 		else {
 			unset($coremenu['vmpool']);
 		}
-		if ($user->hasRight('storagePool', COsbdUser::$RIGHT_ACTION_ACCESS, COsbdUser::$RIGHT_VALUE_ENABLED)) {
+		if ($user->hasRight('storagePool', COsbdUser::$RIGHT_ACTION_ACCESS, COsbdUser::$RIGHT_VALUE_ALL)) {
 			$coremenu['storagepool']['items']['storagepool'] = array(
 				'label' => Yii::t('menu', 'Storage Pools'),
 				'url' => array('/storagePool/index'),
@@ -248,7 +248,7 @@ class Controller extends CController
 				'active' => ($this->id == 'storagePool' &&  $action == 'index'),
 				'items' => array()
 			);
-			if ($user->hasRight('storagePool', COsbdUser::$RIGHT_ACTION_CREATE, COsbdUser::$RIGHT_VALUE_ENABLED)) {
+			if ($user->hasRight('storagePool', COsbdUser::$RIGHT_ACTION_CREATE, COsbdUser::$RIGHT_VALUE_ALL)) {
 				$coremenu['storagepool']['items']['storagepool']['items'][] = array(
 					'label' => Yii::t('menu', 'Create'),
 					'url' => array('/storagePool/create'),
@@ -261,7 +261,7 @@ class Controller extends CController
 			unset($coremenu['storagepool']);
 		}
 		
-		if ($user->hasRight('node', COsbdUser::$RIGHT_ACTION_ACCESS, COsbdUser::$RIGHT_VALUE_ENABLED)) {
+		if ($user->hasRight('node', COsbdUser::$RIGHT_ACTION_ACCESS, COsbdUser::$RIGHT_VALUE_ALL)) {
 			$coremenu['node']['items']['node'] = array(
 				'label' => Yii::t('menu', 'Nodes'),
 				'url' => array('/node/index'),
@@ -269,7 +269,7 @@ class Controller extends CController
 				'active' => ($this->id == 'node' &&  $action == 'index'),
 				'items' => array()
 			);
-			if ($user->hasRight('node', COsbdUser::$RIGHT_ACTION_CREATE, COsbdUser::$RIGHT_VALUE_ENABLED)) {
+			if ($user->hasRight('node', COsbdUser::$RIGHT_ACTION_CREATE, COsbdUser::$RIGHT_VALUE_ALL)) {
 				$coremenu['node']['items']['node']['items'][] = array(
 					'label' => Yii::t('menu', 'Create'),
 					'url' => array('/node/wizard'),
@@ -282,7 +282,7 @@ class Controller extends CController
 			unset($coremenu['node']);
 		}
 
-		if ($user->hasRight('network', COsbdUser::$RIGHT_ACTION_ACCESS, COsbdUser::$RIGHT_VALUE_ENABLED)) {
+		if ($user->hasRight('network', COsbdUser::$RIGHT_ACTION_ACCESS, COsbdUser::$RIGHT_VALUE_ALL)) {
 			$coremenu['network']['items']['subnet'] = array(
 				'label' => Yii::t('menu', 'Subnets'),
 				'url' => array('/subnet/index'),
@@ -290,7 +290,7 @@ class Controller extends CController
 				'active' => ($this->id == 'subnet' &&  $action == 'index'),
 				'items' => array()
 			);
-			if ($user->hasRight('network', COsbdUser::$RIGHT_ACTION_CREATE, COsbdUser::$RIGHT_VALUE_ENABLED)) {
+			if ($user->hasRight('network', COsbdUser::$RIGHT_ACTION_CREATE, COsbdUser::$RIGHT_VALUE_ALL)) {
 				$coremenu['network']['items']['subnet']['items'][] = array(
 					'label' => Yii::t('menu', 'Create'),
 					'url' => array('/subnet/create'),
@@ -303,9 +303,9 @@ class Controller extends CController
 			unset($coremenu['network']);
 		}
 
-		if ($user->hasRight('user', COsbdUser::$RIGHT_ACTION_ACCESS, COsbdUser::$RIGHT_VALUE_ENABLED) ||
-			$user->hasRight('group', COsbdUser::$RIGHT_ACTION_ACCESS, COsbdUser::$RIGHT_VALUE_ENABLED)) {
-			if ($user->hasRight('user', COsbdUser::$RIGHT_ACTION_ACCESS, COsbdUser::$RIGHT_VALUE_ENABLED)) {
+		if ($user->hasRight('user', COsbdUser::$RIGHT_ACTION_ACCESS, COsbdUser::$RIGHT_VALUE_ALL) ||
+			$user->hasRight('group', COsbdUser::$RIGHT_ACTION_ACCESS, COsbdUser::$RIGHT_VALUE_ALL)) {
+			if ($user->hasRight('user', COsbdUser::$RIGHT_ACTION_ACCESS, COsbdUser::$RIGHT_VALUE_ALL)) {
 				$coremenu['user']['items']['user'] = array(
 					'label' => Yii::t('menu', 'User'),
 					'url' => array('/user/index'),
@@ -313,7 +313,7 @@ class Controller extends CController
 					'active' => ($this->id == 'user' &&  $action == 'index'),
 					'items' => array()
 				);
-				if ($user->hasRight('user', COsbdUser::$RIGHT_ACTION_CREATE, COsbdUser::$RIGHT_VALUE_ENABLED)) {
+				if ($user->hasRight('user', COsbdUser::$RIGHT_ACTION_CREATE, COsbdUser::$RIGHT_VALUE_ALL)) {
 					$coremenu['user']['items']['user']['items'][] = array(
 						'label' => Yii::t('menu', 'Create'),
 						'url' => array('/user/create'),
@@ -322,7 +322,7 @@ class Controller extends CController
 					);
 				}
 			}
-			if ($user->hasRight('group', COsbdUser::$RIGHT_ACTION_ACCESS, COsbdUser::$RIGHT_VALUE_ENABLED)) {
+			if ($user->hasRight('group', COsbdUser::$RIGHT_ACTION_ACCESS, COsbdUser::$RIGHT_VALUE_ALL)) {
 				$coremenu['user']['items']['group'] = array(
 					'label' => Yii::t('menu', 'Group'),
 					'url' => array('/group/index'),
@@ -330,7 +330,7 @@ class Controller extends CController
 					'active' => ($this->id == 'group' &&  $action == 'index'),
 					'items' => array()
 				);
-				if ($user->hasRight('group', COsbdUser::$RIGHT_ACTION_CREATE, COsbdUser::$RIGHT_VALUE_ENABLED)) {
+				if ($user->hasRight('group', COsbdUser::$RIGHT_ACTION_CREATE, COsbdUser::$RIGHT_VALUE_ALL)) {
 					$coremenu['user']['items']['group']['items'][] = array(
 						'label' => Yii::t('menu', 'Create'),
 						'url' => array('/group/create'),
@@ -351,10 +351,10 @@ class Controller extends CController
 			unset($coremenu['user']);
 		}
 			
-		if (!$user->hasRight('configuration', COsbdUser::$RIGHT_ACTION_ACCESS, COsbdUser::$RIGHT_VALUE_ENABLED)) {
+		if (!$user->hasRight('configuration', COsbdUser::$RIGHT_ACTION_ACCESS, COsbdUser::$RIGHT_VALUE_ALL)) {
 			unset($coremenu['config']);
 		}
-		if ($user->hasRight('diagnostic', COsbdUser::$RIGHT_ACTION_ACCESS, COsbdUser::$RIGHT_VALUE_ENABLED)) {
+		if ($user->hasRight('diagnostic', COsbdUser::$RIGHT_ACTION_ACCESS, COsbdUser::$RIGHT_VALUE_ALL)) {
 			if ($user->hasOtherRight('persistentVM', COsbdUser::$RIGHT_ACTION_VIEW, COsbdUser::$RIGHT_VALUE_NONE)) {
 				$coremenu['diag']['items']['persistentvminfos'] = array(
 					'label' => 'Persistent VM Infos',
@@ -376,7 +376,7 @@ class Controller extends CController
 					'active' => ($this->id == 'diagnostics' && $action == 'vmtemplateinfos'),
 				);
 			}
-			if ($user->hasRight('diagnostic', COsbdUser::$RIGHT_ACTION_MANAGE, COsbdUser::$RIGHT_VALUE_ENABLED)) {
+			if ($user->hasRight('diagnostic', COsbdUser::$RIGHT_ACTION_MANAGE, COsbdUser::$RIGHT_VALUE_ALL)) {
 				$coremenu['diag']['items']['vmcounter'] = array(
 					'label' => 'VM Counter',
 					'url' => array('/diagnostics/vmcounter'),
