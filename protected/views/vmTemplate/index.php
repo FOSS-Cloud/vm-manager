@@ -198,11 +198,11 @@ function refreshNextVm()
 					refreshVmButtons(id, buttons);
 					if (buttons['vm_edit'])
 					{
-						displayname = '<a href="${updateurl}?dn=' + row['dn'] + '" title="created: ' + row['cts'] + '">' + data[row['uuid']]['name'] + '</a>';
+						displayname = '<a href="${updateurl}?dn=' + row['dn'] + '" title="created: ' + row['cts'] + '">' + row['name'] + '</a>';
 					}
 					else
 					{
-						displayname = '<span title="created: ' + row['cts'] + '">' + data[row['uuid']]['name'] + '</span>';
+						displayname = '<span title="created: ' + row['cts'] + '">' + row['name'] + '</span>';
 					}
 					stateimg = 'vm_status_' + state;
 					if ('' != data[row['uuid']]['node']) {
