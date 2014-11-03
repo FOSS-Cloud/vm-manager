@@ -36,4 +36,10 @@ $this->breadcrumbs=array(
 $this->title = Yii::t('vm', 'Edit VM "{name}" ({type})', array('{name}' => $model->name,'{type}' => $model->type . ', ' . $model->subtype));
 //$this->helpurl = Yii::t('help', 'updateVM');
 
-echo $this->renderPartial('_form', array('model'=>$model,'nodes'=>$nodes,'ranges'=>$ranges,'defaults'=>$defaults,'submittext'=>Yii::t('vm','Save')));
+echo $this->renderPartial('_form', array(
+		'model'=>$model,
+		'nodes'=>$nodes,
+		'ranges'=>$ranges,
+		'defaults'=>$defaults,
+		'screens' => $screens,
+		'submittext'=>Yii::t('vm','Save')));

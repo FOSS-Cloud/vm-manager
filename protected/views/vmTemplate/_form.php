@@ -174,6 +174,10 @@ function(data) {
 	if (0 == nodeCount) {
 		$('#VmTemplateForm_node_em_').html('No Node found! Please <a href="$subnetcreate">create</a> one.').show();
 	}
+	$('#VmTemplateForm_sstNumberOfScreens').children().remove();
+	for (i=1; i<=data['screens']; i++) {
+		$('#VmTemplateForm_sstNumberOfScreens').append($('<option value="' + i + '">' + i + '</option>'));
+	}
 }
 EOS
 ,))); ?>
@@ -375,7 +379,7 @@ EOS
 			<?php echo $form->error($model,'sstVolumeCapacity'); ?>
 		</div>
 		<br/>
-		<div class="column span-4">
+		<div class="column span-3">
 			<div class="row">
 				<?php echo $form->labelEx($model,'sstVCPU'); ?>
 				<?php echo $form->dropDownList($model,'sstVCPU',(null != $defaults ? $this->createDropdown($defaults->sstVCPUValues) : array())); ?>
@@ -383,11 +387,19 @@ EOS
 			</div>
 			<br/>
 		</div>
-		<div class="column">
+		<div class="column span-4">
 			<div class="row">
 				<?php echo $form->labelEx($model,'sstClockOffset'); ?>
 				<?php echo $form->dropDownList($model,'sstClockOffset',(null != $defaults ? $this->createDropdown($defaults->sstClockOffsetValues) : array())); ?>
 				<?php echo $form->error($model,'sstClockOffset'); ?>
+			</div>
+			<br/>
+		</div>
+		<div class="column">
+			<div class="row">
+				<?php echo $form->labelEx($model,'sstNumberOfScreens'); ?>
+				<?php echo $form->dropDownList($model,'sstNumberOfScreens', (null != $defaults ? $screens : array())); ?>
+				<?php echo $form->error($model,'sstNumberOfScreens'); ?>
 			</div>
 			<br/>
 		</div>

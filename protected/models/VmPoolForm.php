@@ -48,6 +48,7 @@ class VmPoolForm extends CFormModel {
 	public $poolBackupActive;
 	public $sstBackupNumberOfIterations;
 	public $sstVirtualizationVirtualMachineForceStart;
+	public $sstNumberOfScreens = 1;
 	
 	public $poolCronActive;
 	public $sstCronMinute;
@@ -67,15 +68,69 @@ class VmPoolForm extends CFormModel {
 	
 	public function rules()
 	{
-		return array(
-			array('storagepool, displayName, description, nodes, range, type', 'required', 'on' => 'create'),
-			array('dn', 'safe', 'on' => 'create'),
-			array('dn, storagepool, displayName, description, nodes, range', 'required', 'on' => 'update'),
-			array('type', 'safe', 'on' => 'update'),
-			array('brokerMin, brokerMax, brokerPreStart, brokerPreStartInterval, nodes, range, poolSound, allowSound, poolUsb, allowUsb, poolBackupActive, sstBackupNumberOfIterations, sstVirtualizationVirtualMachineForceStart, poolCronActive, sstCronMinute, sstCronHour, sstCronDayOfWeek, cronTime, everyDay, poolShutdown, poolShutdownActive, poolShutdownMinute, poolShutdownHour, poolShutdownDayOfWeek, poolShutdownTime, poolShutdownEveryDay', 'safe'),
-		);
+		Yii::log('Scenario: ' . $this->getScenario(), 'profile', 'VmPoolForm.rules');
+		if ('update' === $this->getScenario()) {
+			$required = array('dn', 'storagepool', 'displayName', 'description', 'nodes', 'range', 'sstNumberOfScreens', 'poolBackupActive');
+			$safe = array('brokerMin', 'brokerMax', 'brokerPreStart', 'brokerPreStartInterval', 'nodes', 'range', 'poolSound', 'allowSound', 'poolUsb', 'allowUsb', 
+					'sstBackupNumberOfIterations', 'sstVirtualizationVirtualMachineForceStart', 'poolCronActive', 'sstCronMinute', 'sstCronHour', 'sstCronDayOfWeek', 'cronTime', 'everyDay', 
+					'poolShutdown', 'poolShutdownActive', 'poolShutdownMinute', 'poolShutdownHour', 'poolShutdownDayOfWeek', 'poolShutdownTime', 'poolShutdownEveryDay');
+			Yii::log('required: ' . print_r($required, true), 'profile', 'VmPoolForm.rules');
+			//Yii::log('safe: ' . print_r($safe, true), 'profile', 'VmPoolForm.rules');
+			Yii::log('poolBackupActive: ' . $this->poolBackupActive, 'profile', 'VmPoolForm.rules');
+			if ('TRUE' === $this->poolBackupActive) {
+				$required[] = 'sstBackupNumberOfIterations';
+				$required[] = 'sstVirtualizationVirtualMachineForceStart';
+				unset($safe[array_search('sstBackupNumberOfIterations', $safe)]);
+				unset($safe[array_search('sstVirtualizationVirtualMachineForceStart', $safe)]);
+			}
+			if ('TRUE' === $this->poolCronActive) {
+				$required[] = 'cronTime';
+				$required[] = 'everyDay';
+				unset($safe[array_search('cronTime', $safe)]);
+				unset($safe[array_search('everyDay', $safe)]);
+				if ('FALSE' === $this->everyDay) {
+					$required[] = 'sstCronDayOfWeek';
+					unset($safe[array_search('sstCronDayOfWeek', $safe)]);
+				}
+			}
+			Yii::log('required: ' . print_r($required, true), 'profile', 'VmPoolForm.rules');
+			Yii::log('safe: ' . print_r($safe, true), 'profile', 'VmPoolForm.rules');
+			return array(
+					array(implode(',', $required), 'required', 'on' => 'update'),
+					array('type', 'safe', 'on' => 'update'),
+					array(implode(',', $safe), 'safe'),
+			);
+		}
+		else {
+			return array(
+				array('storagepool, displayName, description, nodes, range, type, sstNumberOfScreens', 'required', 'on' => 'create'),
+				array('dn', 'safe', 'on' => 'create'),
+				array('dn, storagepool, displayName, description, nodes, range, sstNumberOfScreens', 'required', 'on' => 'update'),
+				array('type', 'safe', 'on' => 'update'),
+				array('brokerMin, brokerMax, brokerPreStart, brokerPreStartInterval, nodes, range, poolSound, allowSound, poolUsb, allowUsb, poolBackupActive, sstBackupNumberOfIterations, sstVirtualizationVirtualMachineForceStart, poolCronActive, sstCronMinute, sstCronHour, sstCronDayOfWeek, cronTime, everyDay, poolShutdown, poolShutdownActive, poolShutdownMinute, poolShutdownHour, poolShutdownDayOfWeek, poolShutdownTime, poolShutdownEveryDay', 'safe'),
+			);
+				
+		}
 	}
 
+	public function validate($attributes=null, $clearErrors=true)
+	{
+		Yii::log("validate", 'profile', 'VmPoolForm.validate');
+		if ('' != $this->poolBackupActive) {
+			try {
+				throw new Exception ($this->poolBackupActive);
+			}
+			catch (Exception $e) {
+				Yii::log("\n" . $e->getTraceAsString(), 'profile', 'VmPoolForm.validate');
+			}
+		}
+		$retval = parent::validate($attributes, $clearErrors);
+		if ($retval) {
+			
+		}
+		return $retval;
+	}
+	
 	/**
 	 * @return array customized attribute labels (name=>label)
 	 */
@@ -109,6 +164,7 @@ class VmPoolForm extends CFormModel {
 			'poolUsb' => Yii::t('vmpool', 'poolUsb'),
 			'allowUsbTrue' => Yii::t('vmpool', 'allowUsb (gloabal: YES)'),
 			'allowUsbFalse' => Yii::t('vmpool', 'allowUsb (gloabal: NO)'),
+			'sstNumberOfScreens' => Yii::t('vmpool', 'sstNumberOfScreens'),
 		);
 	}
 }

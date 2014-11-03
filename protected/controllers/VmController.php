@@ -231,6 +231,7 @@ class VmController extends Controller
 			$result->sstClockOffset = $model->sstClockOffset;
 			$result->sstMemory = $model->sstMemory;
 			$result->sstVCPU = $model->sstVCPU;
+			$result->sstNumberOfScreens = $model->sstNumberOfScreens;
 			$result->description = $model->description;
 			$result->sstDisplayName = $model->name;
 			//$result->sstNode = $model->node;
@@ -308,6 +309,7 @@ class VmController extends Controller
 			$model->sstClockOffset = $vm->sstClockOffset;
 			$model->sstMemory = $vm->sstMemory;
 			$model->sstVCPU = $vm->sstVCPU;
+			$model->sstNumberOfScreens = $vm->sstNumberOfScreens;
 			$result = $vm->devices->getDiskByName('vda');
 			if (isset($result->sstVolumeCapacity)) {
 				$model->sstVolumeCapacity = $result->sstVolumeCapacity;
@@ -317,11 +319,18 @@ class VmController extends Controller
 				$model->sstVolumeCapacity = $defaults->VolumeCapacityMin;
 			}
 
+			$screens = array();
+			$config = CLdapRecord::model('LdapVmPoolDefinition')->findByAttributes(array('attr'=>array('ou'=>$vm->vmpool->sstVirtualMachinePoolType)));
+			for($i=1; $i<=$config->sstNumberOfScreens; $i++) {
+				$screens[$i] = $i;
+			}
+
 			$this->render('update',array(
 				'model' => $model,
 				'nodes' => $this->createDropdownFromLdapRecords($nodes, 'sstNode', 'sstNode'),
 				'ranges' => $allRanges,
 				'defaults' => $defaults,
+				'screens' => $screens,
 			));
 		}
 	}

@@ -38,6 +38,7 @@ class VmTemplateForm extends CFormModel {
 	public $sstClockOffset;
 	public $sstMemory;
 	public $sstVCPU;
+	public $sstNumberOfScreens;
 	public $description;
 	public $node;
 	public $useStaticIP = 0;
@@ -48,8 +49,8 @@ class VmTemplateForm extends CFormModel {
 	public function rules()
 	{
 		return array(
-			array('path, basis, node, name, description, vmpool, sstVolumeCapacity, sstClockOffset, sstMemory, sstVCPU', 'required', 'on' => 'create'),
-			array('name, description, vmpool, sstVolumeCapacity, sstClockOffset, sstMemory, sstVCPU', 'required', 'on' => 'update'),
+			array('path, basis, node, name, description, vmpool, sstVolumeCapacity, sstClockOffset, sstMemory, sstVCPU, sstNumberOfScreens', 'required', 'on' => 'create'),
+			array('name, description, vmpool, sstVolumeCapacity, sstClockOffset, sstMemory, sstVCPU, sstNumberOfScreens', 'required', 'on' => 'update'),
 			array('name', 'uniqueName',
 				'branches'=>array('ou=virtual machines,ou=virtualization,ou=services'),
 				'filter'=>'(&(sstDisplayName={name})(sstVirtualMachineType=template))',
@@ -149,6 +150,7 @@ class VmTemplateForm extends CFormModel {
 			'sstVolumeCapacity' => Yii::t('vmtemplate', 'sstVolumeCapacity'),
 			'sstVCPU' => Yii::t('vmtemplate', 'sstVCPU'),
 			'sstClockOffset' => Yii::t('vmtemplate', 'sstClockOffset'),
+			'sstNumberOfScreens' => Yii::t('vmtemplate', 'sstNumberOfScreens'),
 			'description' => Yii::t('vmtemplate', 'Description'),
 			'profile' => Yii::t('vmtemplate', 'Profile'),
 			'node' => Yii::t('vmtemplate', 'Node'),

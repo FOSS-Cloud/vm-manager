@@ -86,6 +86,12 @@ function(data) {
 	if (0 == rangeCount) {
 		$('#VmPoolForm_range_em_').html('No Range found! Please <a href="$subnetcreate">create</a> one.').show();
 	}
+	$('#VmPoolForm_sstNumberOfScreens').children().remove();
+	for(i=1; i<=data['screens']; i++) {
+		$('#VmPoolForm_sstNumberOfScreens').append($('<option value="' + i + '">' + i + '</option>'));
+	}
+	$('#VmPoolForm_sstNumberOfScreens').removeProp('disabled');
+				
 	if ('dynamic' == data['type']) {
 		$('#shutdownschedule').show();
 		$('#VmPoolForm_brokerMin').val(data['brokerMin']);
@@ -201,6 +207,20 @@ else {
 }
 ?>
 		</div>
+		<div class="row">
+			<?php echo $form->labelEx($model,'sstNumberOfScreens'); ?>
+<?php
+if (is_null($model->dn)) {
+	echo $form->dropDownList($model,'sstNumberOfScreens', $screens, array('disabled' => 'disabled'));
+	echo $form->error($model,'sstNumberOfScreens');
+}
+else {
+	echo $form->dropDownList($model,'sstNumberOfScreens', $screens);
+	echo $form->error($model,'sstNumberOfScreens');
+}
+?>
+		</div>
+		<br/>
 		<div id="brokerMin" class="row" <?php echo -1 == $model->brokerMin ? 'style="display: none;"' : '';?>>
 			<?php echo $form->labelEx($model,'brokerMin'); ?>
 			<?php echo $form->textField($model,'brokerMin',array('size'=>5, 'style'=>'float: left;')); ?>

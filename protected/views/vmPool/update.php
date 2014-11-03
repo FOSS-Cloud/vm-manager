@@ -37,12 +37,13 @@ $this->title = Yii::t('vmpool', 'Edit VM Pool "{name}"', array('{name}' => $mode
 //$this->helpurl = Yii::t('help', 'updateUser');
 
 echo $this->renderPartial('_form', array(
-		'model'=>$model,
-		'storagepools'=>$storagepools,
-		'nodes'=>$nodes,
-		'ranges'=>$ranges,
-		'types'=>$types,
-		'vmcount'=>$vmcount,
-		'globalSound'=>$globalSound,
-		'globalUsb'=>$globalUsb,
+		'model' => $model,
+		'storagepools' => $storagepools,
+		'nodes' => $nodes,
+		'ranges' => $ranges,
+		'types' => $types,
+		'vmcount' => $vmcount,
+		'globalSound' => $globalSound,
+		'globalUsb' => $globalUsb,
+		'screens' => $screens,
 		'submittext'=>Yii::t('vmpool','Save')));

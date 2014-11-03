@@ -222,7 +222,7 @@ EOS
 			<?php echo $form->error($model,'sstVolumeCapacity'); ?>
 		</div>
 		<br/>
-		<div class="column span-4">
+		<div class="column span-3">
 			<div class="row">
 				<?php echo $form->labelEx($model,'sstVCPU'); ?>
 				<?php echo $form->dropDownList($model,'sstVCPU',(null != $defaults ? $this->createDropdown($defaults->sstVCPUValues) : array())); ?>
@@ -230,11 +230,19 @@ EOS
 			</div>
 			<br/>
 		</div>
-		<div class="column">
+		<div class="column span-4">
 			<div class="row">
 				<?php echo $form->labelEx($model,'sstClockOffset'); ?>
 				<?php echo $form->dropDownList($model,'sstClockOffset',(null != $defaults ? $this->createDropdown($defaults->sstClockOffsetValues) : array())); ?>
 				<?php echo $form->error($model,'sstClockOffset'); ?>
+			</div>
+			<br/>
+		</div>
+		<div class="column">
+			<div class="row">
+				<?php echo $form->labelEx($model,'sstNumberOfScreens'); ?>
+				<?php echo $form->dropDownList($model,'sstNumberOfScreens', $screens); ?>
+				<?php echo $form->error($model,'sstNumberOfScreens'); ?>
 			</div>
 			<br/>
 		</div>

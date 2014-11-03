@@ -37,6 +37,7 @@ class VmForm extends CFormModel {
 	public $sstClockOffset;
 	public $sstMemory;
 	public $sstVCPU;
+	public $sstNumberOfScreens;
 	public $description;
 	public $node;
 	public $useStaticIP = 0;
@@ -47,7 +48,7 @@ class VmForm extends CFormModel {
 	public function rules()
 	{
 		return array(
-			array('name, description, sstVolumeCapacity, sstClockOffset, sstMemory, sstVCPU', 'required', 'on' => 'update'),
+			array('name, description, sstVolumeCapacity, sstClockOffset, sstMemory, sstVCPU, sstNumberOfScreens', 'required', 'on' => 'update'),
 			//array('useStaticIP, range, staticIP', 'safe'),
 			array('name', 'uniqueName',
 				'branches'=>array('ou=virtual machines,ou=virtualization,ou=services'),
@@ -148,6 +149,7 @@ class VmForm extends CFormModel {
 			'sstVolumeCapacity' => Yii::t('vm', 'sstVolumeCapacity'),
 			'sstVCPU' => Yii::t('vm', 'sstVCPU'),
 			'sstClockOffset' => Yii::t('vm', 'sstClockOffset'),
+			'sstNumberOfScreens' => Yii::t('vm', 'sstNumberOfScreens'),
 			'description' => Yii::t('vm', 'Description'),
 			'node' => Yii::t('vmtemplate', 'Node'),
 			'ip' => Yii::t('vm', 'ip'),

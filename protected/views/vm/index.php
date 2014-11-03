@@ -868,7 +868,7 @@ $vmp = is_null($vmpool) ? '???' : $vmpool;
 <div class="ui-state-error ui-corner-all" style="padding: 10px;">
 <span class="ui-icon ui-icon-alert" style="float: left; margin-right: .3em;"></span>
 <?php echo  Yii::t('vmpool', 'no active Golden-Image')?> (<img alt="" src="<?php echo $imagesurl;?>/vm_active_goldenimage.png"/>)
-</div></div>
+</div></div><br/>
 <?php
 $vmpooljs = '';
 if ('dynamic' == $vmtype && !is_null($vmpool) && !$hasGoldenImage) {

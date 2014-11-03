@@ -36,11 +36,12 @@ $this->title = Yii::t('vmpool', 'Create VM Pool');
 //$this->helpurl = Yii::t('help', 'createUser');
 
 echo $this->renderPartial('_form', array(
-		'model'=>$model,
-		'storagepools'=>$storagepools,
-		'nodes'=>$nodes,
-		'ranges'=>$ranges,
-		'types'=>$types,
-		'globalSound'=>$globalSound,
-		'globalUsb'=>$globalUsb,
-		'submittext'=>Yii::t('vmpool','Create')));
+		'model' => $model,
+		'storagepools' => $storagepools,
+		'nodes' => $nodes,
+		'ranges' => $ranges,
+		'types' => $types,
+		'globalSound' => $globalSound,
+		'globalUsb' => $globalUsb,
+		'screens' => $screens,
+		'submittext' => Yii::t('vmpool','Create')));

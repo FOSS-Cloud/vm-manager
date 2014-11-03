@@ -274,6 +274,10 @@ class VmPoolController extends Controller
 		if ($config->hasAttribute('sstBrokerPreStartInterval')) {
 			$retval['brokerPreStartInterval'] = $config->sstBrokerPreStartInterval;
 		}
+		if ($config->hasAttribute('sstNumberOfScreens')) {
+			$retval['screens'] = $config->sstNumberOfScreens;
+		}
+		
 		$this->sendJsonAnswer($retval);
 	}
 
@@ -452,7 +456,7 @@ class VmPoolController extends Controller
 				$pool->sstVirtualMachinePool = CPhpLibvirt::getInstance()->generateUUID();
 				$pool->sstDisplayName = $model->displayName;
 				$pool->description = $model->description;
-				//$pool->sstNumberOfScreens = $model->sstNumberOfScreens;
+				$pool->sstNumberOfScreens = $model->sstNumberOfScreens;
 				$pool->sstVirtualMachinePoolType = $storagepool->sstStoragePoolType;
 				if ('dynamic' === $storagepool->sstStoragePoolType) {
 					$pool->sstBrokerMinimalNumberOfVirtualMachines = $model->brokerMin;
@@ -699,6 +703,7 @@ class VmPoolController extends Controller
 				'types' => array('dynamic'=>'dynamic', 'persistent'=>'persistent', 'template'=>'template'),
 				'globalSound' => $globalSettings->isSoundAllowed(),
 				'globalUsb' => $globalSettings->isUsbAllowed(),
+				'screens' => array(),
 			));
 		}
 	}
@@ -719,6 +724,7 @@ class VmPoolController extends Controller
 			$pool->setOverwrite(true);
 			$pool->sstDisplayName = $model->displayName;
 			$pool->description = $model->description;
+			$pool->sstNumberOfScreens = $model->sstNumberOfScreens;
 			if ('dynamic' == $storagepool->sstStoragePoolType) {
 				$pool->sstBrokerMinimalNumberOfVirtualMachines = $model->brokerMin;
 				$pool->sstBrokerMaximalNumberOfVirtualMachines = $model->brokerMax;
@@ -974,6 +980,7 @@ class VmPoolController extends Controller
 			$model->type = $pool->sstVirtualMachinePoolType;
 			$model->displayName = $pool->sstDisplayName;
 			$model->description = $pool->description;
+			$model->sstNumberOfScreens = $pool->sstNumberOfScreens;
 			//echo '<pre>' . print_r($pool->ranges, true) . '</pre>';
 			if (1 == count($pool->ranges)) {
 				$model->range = $pool->ranges[0]->ou;
@@ -1089,6 +1096,13 @@ class VmPoolController extends Controller
 					$nodes[$node->sstNode] = 0 < count($vms);
 				}
 			}
+			
+			$screens = array();
+			$config = CLdapRecord::model('LdapVmPoolDefinition')->findByAttributes(array('attr'=>array('ou'=>$pool->sstVirtualMachinePoolType)));
+			for($i=1; $i<=$config->sstNumberOfScreens; $i++) {
+				$screens[$i] = $i;
+			}
+
 			$this->render('update',array(
 				'model' => $model,
 				'storagepools' => $storagepools,
@@ -1098,6 +1112,7 @@ class VmPoolController extends Controller
 				'vmcount' => count($pool->vms),
 				'globalSound' => $pool->settings->defaultSettings->isSoundAllowed(),
 				'globalUsb' => $pool->settings->defaultSettings->isUsbAllowed(),
+				'screens' => $screens,
 			));
 		}
 	}

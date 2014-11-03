@@ -115,6 +115,12 @@ class LdapVm extends CLdapRecord {
 		$params['sstOSType'] = $this->sstOSType;
 		$params['sstType'] = $this->sstType;
 		$params['sstVCPU'] = $this->sstVCPU;
+		if (!isset($this->sstNumberOfScreens)) {
+			$params['sstNumberOfScreens'] = 1;
+		}
+		else {
+			$params['sstNumberOfScreens'] = $this->sstNumberOfScreens;
+		}
 		$params['sstFeature'] = $this->sstFeature;
 		$params['devices'] = array();
 		$params['devices']['usb'] = ($this->settings->isUsbAllowed() ? 'yes' : 'no');

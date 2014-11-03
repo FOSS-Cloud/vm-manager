@@ -251,6 +251,7 @@ class VmTemplateController extends Controller
 				$result->sstMemory = $model->sstMemory;
 				$result->sstOSArchitecture = $parts[2];
 				$result->sstVCPU = $model->sstVCPU;
+				$result->sstNumberOfScreens = $model->sstNumberOfScreens;
 				$result->sstVirtualMachine = CPhpLibvirt::getInstance()->generateUUID();
 				$result->description = $model->description;
 				if ('TBD_GUI' == $result->sstOnCrash) {
@@ -410,6 +411,7 @@ class VmTemplateController extends Controller
 			$result->sstClockOffset = $model->sstClockOffset;
 			$result->sstMemory = $model->sstMemory;
 			$result->sstVCPU = $model->sstVCPU;
+			$result->sstNumberOfScreens = $model->sstNumberOfScreens;
 			$result->description = $model->description;
 			$result->sstDisplayName = $model->name;
 			//$result->sstNode = $model->node;
@@ -492,6 +494,12 @@ class VmTemplateController extends Controller
 				$model->sstVolumeCapacity = $defaults->VolumeCapacityMin;
 			}
 
+			$screens = array();
+			$config = CLdapRecord::model('LdapVmPoolDefinition')->findByAttributes(array('attr'=>array('ou'=>$vm->vmpool->sstVirtualMachinePoolType)));
+			for($i=1; $i<=$config->sstNumberOfScreens; $i++) {
+				$screens[$i] = $i;
+			}
+
 			$this->render('update',array(
 				'model' => $model,
 				'vmpools' => $this->createDropdownFromLdapRecords($vmpools, 'sstVirtualMachinePool', 'sstDisplayName'),
@@ -499,6 +507,7 @@ class VmTemplateController extends Controller
 				'profiles' => null,
 				'ranges' => $allRanges,
 				'defaults' => $defaults,
+				'screens' => $screens,
 			));
 		}
 	}
@@ -1355,6 +1364,8 @@ EOS;
 		$pool = $_GET['pool'];
 		$vmpool = CLdapRecord::model('LdapVmPool')->findByAttributes(array('attr'=>array('sstVirtualMachinePool'=>$pool)));
 		$retval = array();
+		$config = CLdapRecord::model('LdapVmPoolDefinition')->findByAttributes(array('attr'=>array('ou'=>$vmpool->sstVirtualMachinePoolType)));
+		$retval['screens'] = $config->sstNumberOfScreens;
 		$retval['nodes'] = array();
 		foreach($vmpool->nodes as $node) {
 			$retval['nodes'][$node->ou] = $node->ou;

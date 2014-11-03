@@ -36,4 +36,12 @@ $this->breadcrumbs=array(
 $this->title = Yii::t('vmtemplate', 'Edit VMTemplate "{name}"', array('{name}' => $model->name));
 //$this->helpurl = Yii::t('help', 'editVmTemplate');
 
-echo $this->renderPartial('_form', array('model'=>$model,'vmpools'=>$vmpools,'nodes'=>$nodes,'profiles' =>$profiles,'ranges'=>$ranges,'defaults'=>$defaults,'submittext'=>Yii::t('vmtemplate','Save')));
+echo $this->renderPartial('_form', array(
+		'model' => $model,
+		'vmpools' => $vmpools,
+		'nodes' => $nodes,
+		'profiles' =>$profiles,
+		'ranges' => $ranges,
+		'defaults' => $defaults,
+		'screens' => $screens,
+		'submittext'=>Yii::t('vmtemplate','Save')));
