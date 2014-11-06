@@ -45,12 +45,12 @@ class VmPoolForm extends CFormModel {
 	public $poolUsb;
 	public $allowUsb;
 	
-	public $poolBackupActive;
-	public $sstBackupNumberOfIterations;
-	public $sstVirtualizationVirtualMachineForceStart;
+	public $poolBackupActive = '';
+	public $sstBackupNumberOfIterations = '';
+	public $sstVirtualizationVirtualMachineForceStart = '';
 	public $sstNumberOfScreens = 1;
 	
-	public $poolCronActive;
+	public $poolCronActive = '';
 	public $sstCronMinute;
 	public $sstCronHour;
 	public $sstCronDayOfWeek;
