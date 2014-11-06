@@ -194,7 +194,7 @@ function refreshNextVm()
 						state = 'red';
 						break;
 					case 'golden':
-						buttons.vm_start = buttons.vm_edit = buttons.vm_del = buttons.vm_user = buttons.vm_group = true;
+						buttons.vm_start = buttons.vm_edit = buttons.vm_del = buttons.vm_user = buttons.vm_group = buttons.vm_actgolden = true;
 						state = 'golden';
 						break;
 					case 'golden_active':
