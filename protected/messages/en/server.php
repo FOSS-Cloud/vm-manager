@@ -17,10 +17,10 @@
  * NOTE, this file must be saved in UTF-8 encoding.
  */
 return array (
-  'ldap_bind to {server} failt ({errno}): {message}' => '',
-  'ldap_connect to {server} failt' => '',
-  'ldap_connect to {server} failt ({errno}): {message}' => '',
-  'ldap_get_entries failt ({errno}): {message}' => '',
-  'ldap_search failt ({errno}): {message}' => '',
+  'ldap_bind to {server} failed ({errno}): {message}' => '',
+  'ldap_connect to {server} failed' => '',
+  'ldap_connect to {server} failed ({errno}): {message}' => '',
+  'ldap_get_entries failed ({errno}): {message}' => '',
+  'ldap_search failed ({errno}): {message}' => '',
   'usersearch: sstLDAPForeignStaticAttribute ({attr}) not found!' => '',
 );

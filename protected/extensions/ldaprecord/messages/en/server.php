@@ -11,16 +11,22 @@
  * Messages that no longer need translation will have their translations
  * enclosed between a pair of '@@' marks.
  *
- * NOTE, this file must be saved in UTF-8 encoding.
+ * Message string can be used with plural forms format. Check i18n section
+ * of the guide for details.
  *
+ * NOTE, this file must be saved in UTF-8 encoding.
  */
 return array (
-  'ldap_add failt ({errno}): {message}' => '',
-  'ldap_bind failt ({errno}): {message}' => '',
-  'ldap_connect to {server} failt' => '',
-  'ldap_get_entries failt ({errno}): {message}' => '',
-  'ldap_list failt ({errno}): {message}' => '',
-  'ldap_modify failt ({errno}): {message}' => '',
-  'ldap_read failt ({errno}): {message}' => '',
-  'ldap_rename failt ({errno}): {message}' => '',
+  'findAll: neither attr nor filter set in criteria!' => '',
+  'ldap_add failed ({errno}): {message}' => '',
+  'ldap_bind failed ({errno}): {message}' => '',
+  'ldap_connect to {server} failed' => '',
+  'ldap_delete failed ({errno}): {message}' => '',
+  'ldap_get_entries failed ({errno}): {message}' => '',
+  'ldap_list failed ({errno}): {message}' => '',
+  'ldap_mod_del failed ({errno}): {message}' => '',
+  'ldap_modify failed ({errno}): {message}' => '',
+  'ldap_read failed ({errno}): {message}' => '',
+  'ldap_rename failed ({errno}): {message}' => '',
+  'ldap_search failed ({errno}): {message}' => '',
 );

@@ -579,7 +579,7 @@ abstract class CLdapRecord extends CModel {
 		}
 		$class = get_class($this);
 		if ('LdapSubTree' != $class && !is_subclass_of($class, 'LdapSubTree')) {
-			throw new CLdapException(Yii::t('LdapComponent.record', 'findSubTree failt: used class is not type or subtype of \'LdapSubTree\'!'),
+			throw new CLdapException(Yii::t('LdapComponent.record', 'findSubTree failed: used class is not type or subtype of \'LdapSubTree\'!'),
 				 0x100002);
 		}
 		$server = CLdapServer::getInstance();
@@ -621,7 +621,7 @@ abstract class CLdapRecord extends CModel {
 					$nodes[$parentDn]->addChild($item);
 				}
 				else {
-					throw new CLdapException(Yii::t('LdapComponent.record', 'findSubTree failt: parent \'{dn}\' not read!',
+					throw new CLdapException(Yii::t('LdapComponent.record', 'findSubTree failed: parent \'{dn}\' not read!',
 						array('{dn}'=>$parentDn)), 0x100001);
 				}
 			}
@@ -974,7 +974,7 @@ abstract class CLdapRecord extends CModel {
 				}
 			}
 			else {
-				throw new CLdapException(Yii::t('LdapComponent.record', 'Failt to createEntry for ldap_add. No objectClass(es) defined!'));
+				throw new CLdapException(Yii::t('LdapComponent.record', 'Failed to createEntry for ldap_add. No objectClass(es) defined!'));
 			}
 		}
 		return $entry;

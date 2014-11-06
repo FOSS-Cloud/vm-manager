@@ -68,7 +68,7 @@ final class COsbdLdapServer extends CLdapServer {
 	public function authorizeUser($userauth, $uid, $passwd) {
 		$connection = @ldap_connect($this->_config['server'], $this->_config['port']);
 		if ($connection === false) {
-			throw new CLdapException(Yii::t('LdapComponent.server', 'ldap_connect to {server} failt', array('{server}'=>$this->_config['server'])));
+			throw new CLdapException(Yii::t('LdapComponent.server', 'ldap_connect to {server} failed', array('{server}'=>$this->_config['server'])));
 		}
 		ldap_set_option($connection, LDAP_OPT_PROTOCOL_VERSION, 3);
 		$ldapbind = @ldap_bind($connection, sprintf($userauth->sstLDAPAuthUserBindDn, $uid), $passwd);
@@ -97,7 +97,7 @@ final class COsbdLdapServer extends CLdapServer {
 		Yii::log('COsbdLdapServer::authorizeUserExtern: connect ' . $uri, 'profile', 'authentication');
 		$connection = @ldap_connect($server, $port) or die('LDAP connect failed!');
 		if ($connection === false) {
-			throw new CLdapException(Yii::t('LdapComponent.server', 'ldap_connect to {server} failt', array('{server}'=>$uri)));
+			throw new CLdapException(Yii::t('LdapComponent.server', 'ldap_connect to {server} failed', array('{server}'=>$uri)));
 		}
 		ldap_set_option($connection, LDAP_OPT_PROTOCOL_VERSION, 3);
 		Yii::log('COsbdLdapServer::authorizeUserExtern: bind ' . sprintf($userauth->sstLDAPAuthUserBindDn, $uid), 'profile', 'authentication');

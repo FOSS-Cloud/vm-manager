@@ -231,13 +231,13 @@ class GroupController extends Controller
 				$port = $parts[2];
 				$connection = @ldap_connect($hostname, $port);
 				if ($connection === false) {
-					throw new CLdapException(Yii::t('LdapComponent.server', 'ldap_connect to {server} failt ({errno}): {message}',
+					throw new CLdapException(Yii::t('LdapComponent.server', 'ldap_connect to {server} failed ({errno}): {message}',
 							array('{errno}'=>ldap_errno($connection), '{message}'=>ldap_error($connection),'{server}'=>$realm->labeledURI)), ldap_errno($connection));
 				}
 				ldap_set_option($connection, LDAP_OPT_PROTOCOL_VERSION, 3);
 				$ldapbind = @ldap_bind($connection, $realm->sstLDAPBindDn, $realm->sstLDAPBindPassword);
 				if ($ldapbind === false) {
-					throw new CLdapException(Yii::t('LdapComponent.server', 'ldap_bind to {server} failt ({errno}): {message}',
+					throw new CLdapException(Yii::t('LdapComponent.server', 'ldap_bind to {server} failed ({errno}): {message}',
 							array('{errno}'=>ldap_errno($connection), '{message}'=>ldap_error($connection),'{server}'=>$realm->labeledURI)), ldap_errno($connection));
 				}
 			
@@ -247,7 +247,7 @@ class GroupController extends Controller
 				//echo "branchDn: $branchDn; filter: $filter<br/>";
 				$result = @ldap_search($connection, $branchDn, $filter);
 				if ($result === false) {
-					$message = Yii::t('LdapComponent.server', 'ldap_search failt ({errno}): {message}',
+					$message = Yii::t('LdapComponent.server', 'ldap_search failed ({errno}): {message}',
 							array('{errno}'=>ldap_errno($connection), '{message}'=>ldap_error($connection)));
 					$message .= "\n" . 'Unable to search "' . $filter . '" at "' . $branchDn . '" on server ' .  $realm->labeledURI;
 					throw new CLdapException($message, ldap_errno($connection));
