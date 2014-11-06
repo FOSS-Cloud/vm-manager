@@ -11,16 +11,21 @@
  * Messages that no longer need translation will have their translations
  * enclosed between a pair of '@@' marks.
  *
- * NOTE, this file must be saved in UTF-8 encoding.
+ * Message string can be used with plural forms format. Check i18n section
+ * of the guide for details.
  *
+ * NOTE, this file must be saved in UTF-8 encoding.
  */
 return array (
   'Action' => '',
+  'Alternative upload method' => '',
+  'Alternative upload method link' => 'http://www.foss-cloud.org/en/wiki/Upload_ISO-Files',
   'Architecture' => '',
   'BaseProfile' => '',
   'Check ISO Copy' => '',
   'Copy of ISO file still running!' => '',
   'Create' => '',
+  'Create VMProfile' => 'Create VM Profile',
   'Description' => '',
   'Edit VMProfile "{name}"' => '',
   'Extension uploadprogress not installed!' => '',
@@ -30,15 +35,19 @@ return array (
   'Language' => '',
   'Manage VMProfiles' => '',
   'Name' => '',
-  'No.' => '',
-  'Save' => '',
-  'Still copying!' => '',
-  'Upload Iso File' => 'Upload ISO File',
-  'Upload finished ({total})' => '',
-  'Create VMProfile' => 'Create VM Profile',
   'Name already in use!' => 'Name already in use!',
   'No file for upload!' => 'No file for upload!',
+  'No.' => '',
+  'Please use only a-z, A-Z, 0-9, the space and the _ character.' => '',
+  'Save' => '',
+  'Still copying!' => '',
+  'Unload message' => 'Note: If you leave this page the upload is stopped!\\nDo you want to stop the upload?',
+  'Upload' => '',
+  'Upload Iso File' => 'Upload ISO File',
   'Upload error ({errno}).' => 'Upload error ({errno}).',
+  'Upload finished' => 'Upload finished!',
+  'Upload finished ({total})' => '',
+  'Upload finished title' => 'Finished',
   'Uploading... ({uploaded} of {total})' => 'Uploading... ({uploaded} of {total})',
   'sstClockOffset' => 'Clock Offset',
   'sstMemory' => 'Memory',
@@ -49,10 +58,4 @@ return array (
   'step2' => 'Step II',
   'step2text' => 'Overwrite the default values if necessary!',
   'title' => 'Title',
-  'Please use only a-z, A-Z, 0-9, the space and the _ character.' => '',
-  'Upload finished' => 'Upload finished!',
-  'Upload finished title' => 'Finished',
-  'Unload message' => 'Note: If you leave this page the upload is stopped!\\nDo you want to stop the upload?',
-  'Alternative upload method' => '',
-  'Alternative upload method link' => 'http://www.foss-cloud.org/en/wiki/Upload_ISO-Files',
 );

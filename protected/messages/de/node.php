@@ -11,30 +11,24 @@
  * Messages that no longer need translation will have their translations
  * enclosed between a pair of '@@' marks.
  *
- * NOTE, this file must be saved in UTF-8 encoding.
+ * Message string can be used with plural forms format. Check i18n section
+ * of the guide for details.
  *
+ * NOTE, this file must be saved in UTF-8 encoding.
  */
 return array (
-  'Name already in use!' => '',
-  'Not a valid IP Address!' => 'Keine gültige IP Adresse',
-  'wizard.outputvar \'{var}\' missing' => 'wizard.outputvar: Variable: \'{var}\' nicht gefunden',
- '"{nodename}" is already integrated!' => '"{nodename}" ist bereits im System vorhanden!',
+  '"{nodename}" is already integrated!' => '"{nodename}" ist bereits im System vorhanden!',
   'Manage Nodes' => 'Rechner verwalten',
-  'View Node {name}' => 'Rechner \'{name}\' anzeigen',
+  'Name already in use!' => 'Dieser Name wird bereits verwendet!',
   'Node' => 'Rechner',
+  'Not a valid IP Address!' => 'Keine gültige IP Adresse',
   'Type' => 'Typ',
-  'wizard.type' => 'Node Typ',
+  'View Node {name}' => 'Rechner \'{name}\' anzeigen',
+  'host' => 'Rechner',
   'wizard.ip' => 'IP Addresse',
-  'wizard.user' => 'Benutzer',
+  'wizard.outputvar \'{var}\' missing' => 'wizard.outputvar: Variable: \'{var}\' nicht gefunden',
   'wizard.password' => 'Passwort',
   'wizard.passwordcheck' => 'Passwort Prüfung',
-
-  'wizard.test1.title' => 'Node Integration Check Network',
-  'wizard.test1.0' => 'The script was executed successfully.',
-  'wizard.test1.1' => 'The script ended in an undefined state.',
-  'wizard.test1.2' => 'No module name was passed.',
-
-  'wizard.prov1.title' => 'Node Integration Provisioning Filesystem',
-  'wizard.prov1.0' => 'The script was executed successfully.',
-  'wizard.prov1.1' => 'The script ended in an undefined state.',
+  'wizard.type' => 'Node Typ',
+  'wizard.user' => 'Benutzer',
 );

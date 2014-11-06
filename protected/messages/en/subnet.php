@@ -11,8 +11,10 @@
  * Messages that no longer need translation will have their translations
  * enclosed between a pair of '@@' marks.
  *
- * NOTE, this file must be saved in UTF-8 encoding.
+ * Message string can be used with plural forms format. Check i18n section
+ * of the guide for details.
  *
+ * NOTE, this file must be saved in UTF-8 encoding.
  */
 return array (
   'Broadcast Address' => '',
@@ -24,12 +26,12 @@ return array (
   'IP Start Address' => '',
   'Manage Subnets' => '',
   'NTP Server(s)' => '',
+  'Net Mask' => '',
   'Not a valid IP Address!' => '',
-  'Save' => '',
-  'Subnet Mask' => '',
-  'Type' => '',
-  'Overlaps with subnet {subnet}' => '',
-  'Overlaps with range {range}' => '',
   'Not within subnet {subnet}' => '',
+  'Overlaps with range {range}' => '',
+  'Overlaps with subnet {subnet}' => '',
+  'Save' => '',
+  'Type' => '',
   'title' => '',
 );

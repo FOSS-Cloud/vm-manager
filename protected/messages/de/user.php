@@ -11,11 +11,12 @@
  * Messages that no longer need translation will have their translations
  * enclosed between a pair of '@@' marks.
  *
- * NOTE, this file must be saved in UTF-8 encoding.
+ * Message string can be used with plural forms format. Check i18n section
+ * of the guide for details.
  *
+ * NOTE, this file must be saved in UTF-8 encoding.
  */
 return array (
-  'Admin' => 'Administration',
   'Assign VMs to user' => 'Zuweisen von VMs zu einem Benutzer',
   'Assigned VMs' => 'Zugewiesene VMs',
   'Assignment saved!' => 'Zuweisung gespeichert!',
@@ -23,20 +24,21 @@ return array (
   'Create User' => 'Benutzer erzeugen',
   'Edit User "{name}"' => 'Benutzer "{name}" bearbeiten',
   'Female' => 'Weiblich',
+  'Groupname already in use!' => 'Gruppenname ist schon vergeben!',
   'Mail already in use!' => 'Email Adresse ist schon vergeben!',
   'Male' => 'Männlich',
   'Manage User' => 'Benutzer Verwaltung',
-  //'PHP function mhash and mhash_keygen_s2k for encryption type "SSHA"' => '',
-  //'PHP function mhash needed to encode password for encryption type "SSHA"' => '',
-  'Save' => 'Speichern',
-  //'Unknown encryption type "{type}" for LDAP user authentication!' => '',
-  //'Username already in use!' => 'Benutzername ist schon vergeben!',
-  'VM User' => 'VM Benutzer',
-  'VMs' => 'VMs',
-  'Please use only<br/>a-z, 0-9 and the _ character.' => 'Bitte nur folgende Zeichen benutzen:<br/>a-z, 0-9 und den Unterstrich _',
+  'PHP function mhash and mhash_keygen_s2k for encryption type "SSHA"' => '',
+  'PHP function mhash needed to encode password for encryption type "SSHA"' => '',
   'Please use only<br/>"0-9+()" characters and blank.' => 'Bitte nur folgende Zeichen benutzen:<br/>0-9+() und das Leerzeichen',
+  'Please use only<br/>a-z, 0-9 and the _ character.' => 'Bitte nur folgende Zeichen benutzen:<br/>a-z, 0-9 und den Unterstrich _',
+  'Save' => 'Speichern',
+  'Unknown encryption type "{type}" for LDAP user authentication!' => '',
+  'Username already in use!' => 'Benutzername ist schon vergeben!',
+  'VMs' => 'VMs',
   'gender' => 'Geschlecht',
   'givenname' => 'Vorname',
+  'language' => 'Sprache',
   'mail' => 'Email',
   'mobile' => 'Mobil',
   'password' => 'Passwort',
@@ -45,5 +47,4 @@ return array (
   'telephone' => 'Telefon',
   'username' => 'Benutzername',
   'userrole' => 'Benutzerrolle',
-  'language' => 'Sprache'
 );

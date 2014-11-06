@@ -11,11 +11,12 @@
  * Messages that no longer need translation will have their translations
  * enclosed between a pair of '@@' marks.
  *
- * NOTE, this file must be saved in UTF-8 encoding.
+ * Message string can be used with plural forms format. Check i18n section
+ * of the guide for details.
  *
+ * NOTE, this file must be saved in UTF-8 encoding.
  */
 return array (
-  'Admin' => '',
   'Assign VMs to user' => '',
   'Assigned VMs' => '',
   'Assignment saved!' => '',
@@ -23,20 +24,21 @@ return array (
   'Create User' => '',
   'Edit User "{name}"' => '',
   'Female' => '',
+  'Groupname already in use!' => '',
   'Mail already in use!' => '',
   'Male' => '',
   'Manage User' => '',
   'PHP function mhash and mhash_keygen_s2k for encryption type "SSHA"' => '',
   'PHP function mhash needed to encode password for encryption type "SSHA"' => '',
+  'Please use only<br/>"0-9+()" characters and blank.' => '',
+  'Please use only<br/>a-z, 0-9 and the _ character.' => '',
   'Save' => '',
   'Unknown encryption type "{type}" for LDAP user authentication!' => '',
   'Username already in use!' => '',
-  'VM User' => '',
   'VMs' => '',
-  'Please use only<br/>a-z, 0-9 and the _ character.' => '',
-  'Please use only<br/>"0-9+()" characters and blank.' => '',
   'gender' => 'Gender',
   'givenname' => 'Given name',
+  'language' => 'Language',
   'mail' => 'Email',
   'mobile' => 'Mobile',
   'password' => 'Password',
@@ -45,5 +47,4 @@ return array (
   'telephone' => 'Telephone',
   'username' => 'Username',
   'userrole' => 'Userrole',
-  'language' => 'Language'
 );

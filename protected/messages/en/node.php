@@ -11,30 +11,24 @@
  * Messages that no longer need translation will have their translations
  * enclosed between a pair of '@@' marks.
  *
- * NOTE, this file must be saved in UTF-8 encoding.
+ * Message string can be used with plural forms format. Check i18n section
+ * of the guide for details.
  *
+ * NOTE, this file must be saved in UTF-8 encoding.
  */
 return array (
-  'Name already in use!' => '',
-  'Not a valid IP Address!' => '',
-  'wizard.outputvar \'{var}\' missing' => '',
- '"{nodename}" is already integrated!' => '"',
+  '"{nodename}" is already integrated!' => '"',
   'Manage Nodes' => '',
+  'Name already in use!' => '',
+  'Node' => '',
+  'Not a valid IP Address!' => '',
+  'Type' => '',
   'View Node {name}' => 'View Node \'{name}\'',
-  'node' => 'Node',
-  'type' => 'Type',
-  'wizard.type' => 'Node type',
+  'host' => '',
   'wizard.ip' => 'IP',
-  'wizard.user' => 'User',
+  'wizard.outputvar \'{var}\' missing' => '',
   'wizard.password' => 'Password',
   'wizard.passwordcheck' => 're-enter Password',
-
-  'wizard.test1.title' => 'Node Integration Check Network',
-  'wizard.test1.0' => 'The script was executed successfully.',
-  'wizard.test1.1' => 'The script ended in an undefined state.',
-  'wizard.test1.2' => 'No module name was passed.',
-
-  'wizard.prov1.title' => 'Node Integration Provisioning Filesystem',
-  'wizard.prov1.0' => 'The script was executed successfully.',
-  'wizard.prov1.1' => 'The script ended in an undefined state.',
+  'wizard.type' => 'Node type',
+  'wizard.user' => 'User',
 );

@@ -11,14 +11,16 @@
  * Messages that no longer need translation will have their translations
  * enclosed between a pair of '@@' marks.
  *
- * NOTE, this file must be saved in UTF-8 encoding.
+ * Message string can be used with plural forms format. Check i18n section
+ * of the guide for details.
  *
+ * NOTE, this file must be saved in UTF-8 encoding.
  */
 return array (
-  'Assigned VMs' => 'Zugewiesene VMs',
-  'Start VM' => 'VM starten',
-  'starting VM' => 'VM wird gestartet',
   'Assign VM' => 'VM zuweisen',
-  'assigning VM' => 'VM wird zugewiesen',
+  'Assigned VMs' => 'Zugewiesene VMs',
   'No VM\'s assigned to this user!' => 'Keine VM\'s für diesen Benutzer verfügbar!',
+  'Start VM' => 'VM starten',
+  'assigning VM' => 'VM wird zugewiesen',
+  'starting VM' => 'VM wird gestartet',
 );

@@ -11,24 +11,26 @@
  * Messages that no longer need translation will have their translations
  * enclosed between a pair of '@@' marks.
  *
- * NOTE, this file must be saved in UTF-8 encoding.
+ * Message string can be used with plural forms format. Check i18n section
+ * of the guide for details.
  *
- * @version $Id: $
+ * NOTE, this file must be saved in UTF-8 encoding.
  */
 return array (
   'Backup' => '',
   'Global' => '',
   'Save' => '',
   'Schedule' => '',
+  'Shutdown Schedule' => '',
   'allow Sound' => '',
   'allow USB' => '',
   'at' => '',
+  'every day' => '',
   'max. Spice port' => '',
   'min. Spice port' => '',
   'no schedule' => '',
   'no. of iterations' => '',
   'vm force start' => '',
-  'every day' => '',
   'vm force start hint' => <<<EOS
 Force start virtual machine in the case of not being able<br/>to restore the virtual machine state during the backup process.<br/>
 <b>Attention:</b> If set to Yes, this could lead to file system<br/>inconsistencies in the virtual machine.
