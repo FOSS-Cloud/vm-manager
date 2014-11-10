@@ -58,12 +58,14 @@ if ('dynamic' != $vmtype) {
 	$vmDelete = Yii::app()->user->hasRight('persistentVM', COsbdUser::$RIGHT_ACTION_DELETE, COsbdUser::$RIGHT_VALUE_ALL) ? 'true' : 'false';
 	$vmManage = Yii::app()->user->hasRight('persistentVM', COsbdUser::$RIGHT_ACTION_MANAGE, COsbdUser::$RIGHT_VALUE_ALL) ? 'true' : 'false';
 	$vmUse = Yii::app()->user->hasRight('persistentVM', COsbdUser::$RIGHT_ACTION_USE, COsbdUser::$RIGHT_VALUE_ALL) ? 'true' : 'false';
+	$vmCreate = Yii::app()->user->hasRight('persistentVM', COsbdUser::$RIGHT_ACTION_CREATE, COsbdUser::$RIGHT_VALUE_ALL) ? 'true' : 'false';
 }
 else {
 	$vmEdit = Yii::app()->user->hasRight('dynamicVM', COsbdUser::$RIGHT_ACTION_EDIT, COsbdUser::$RIGHT_VALUE_ALL) ? 'true' : 'false';
 	$vmDelete = Yii::app()->user->hasRight('dynamicVM', COsbdUser::$RIGHT_ACTION_DELETE, COsbdUser::$RIGHT_VALUE_ALL) ? 'true' : 'false';
 	$vmManage = Yii::app()->user->hasRight('dynamicVM', COsbdUser::$RIGHT_ACTION_MANAGE, COsbdUser::$RIGHT_VALUE_ALL) ? 'true' : 'false';
 	$vmUse = Yii::app()->user->hasRight('dynamicVM', COsbdUser::$RIGHT_ACTION_USE, COsbdUser::$RIGHT_VALUE_ALL) ? 'true' : 'false';
+	$vmCreate = Yii::app()->user->hasRight('dynamicVM', COsbdUser::$RIGHT_ACTION_CREATE, COsbdUser::$RIGHT_VALUE_ALL) ? 'true' : 'false';
 }
 $nodeView = Yii::app()->user->hasRight('node', COsbdUser::$RIGHT_ACTION_VIEW, COsbdUser::$RIGHT_VALUE_ALL) ? 'true' : 'false';
 $userManage = Yii::app()->user->hasRight('user', COsbdUser::$RIGHT_ACTION_MANAGE, COsbdUser::$RIGHT_VALUE_ALL) ? 'true' : 'false';
@@ -222,8 +224,8 @@ function refreshNextVm()
 					buttons.vm_login = buttons.vm_login && {$vmUse};
 					buttons.vm_user = buttons.vm_user && {$userManage};
 					buttons.vm_group = buttons.vm_group && {$groupManage};
-					buttons.vm_golden = buttons.vm_golden && {$vmManage};
-					buttons.vm_actgolden = buttons.vm_actgolden && {$vmManage};
+					buttons.vm_golden = buttons.vm_golden && {$vmCreate};
+					buttons.vm_actgolden = buttons.vm_actgolden && {$vmCreate};
 					
 					status += data[row['uuid']]['statustxt'];
 					if (data[row['uuid']]['progress'] != undefined) {
