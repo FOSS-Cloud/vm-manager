@@ -32,9 +32,32 @@
 <?php $form=$this->beginWidget('CActiveForm', array(
 	'id'=>'range-form',
 	'enableAjaxValidation'=>true,
+	'focus'=>array($model,'ip'),
 	'method' => 'post',
 	'clientOptions' => array(
 		'validateOnSubmit' => true,
+		'afterValidateAttribute' => 'js:' . <<<EOS
+function(form,attribute,data,hasError) {
+	if(true){
+		if (undefined != data.RangeForm_ip) {
+			$("#RangeForm_ip").parent().addClass("error").removeClass("success");
+			$("#RangeForm_ip_em_").show().html(data.RangeForm_ip[0]);
+		}
+		else {
+			$("#RangeForm_ip").parent().removeClass("error").addClass("success");
+			$("#RangeForm_ip_em_").hide().html('');
+		}
+		if (undefined != data.RangeForm_netmask) {
+			$("#RangeForm_netmask").parent().addClass("error").removeClass("success");
+			$("#RangeForm_netmask_em_").show().html(data.RangeForm_netmask[0]);
+		}
+		else {
+			$("#RangeForm_netmask").parent().removeClass("error").addClass("success");
+			$("#RangeForm_netmask_em_").hide().html('');
+		}
+	}
+}
+EOS
 	),
 	'htmlOptions' => array(
 		'enctype' => 'multipart/form-data',
