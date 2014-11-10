@@ -17,10 +17,13 @@
  * NOTE, this file must be saved in UTF-8 encoding.
  */
 return array (
+  'About' => '',
   'Assigned VMs' => '',
   'Backup' => '',
   'Configuration' => '',
+  'Contact' => '',
   'Create' => '',
+  'Diagnostics' => '',
   'Download Spice Client' => '',
   'Dynamic Virtual Machines' => 'Dynamic VMs',
   'Dynamic Virtual Machines Tooltip' => 'List of dynamic virtual machines',
@@ -30,6 +33,7 @@ return array (
   'Group Import Tooltip' => '',
   'Group Tooltip' => '',
   'Group Update Tooltip' => '',
+  'Home' => '',
   'Import' => '',
   'Links' => '',
   'Network' => '',

@@ -17,10 +17,13 @@
  * NOTE, this file must be saved in UTF-8 encoding.
  */
 return array (
+  'About' => 'Über uns',
   'Assigned VMs' => 'Zugewiesene VMs',
   'Backup' => '',
-  'Configuration' => '',
+  'Configuration' => 'Konfiguration',
+  'Contact' => 'Kontakt',
   'Create' => 'Erzeugen',
+  'Diagnostics' => 'Interna',
   'Download Spice Client' => '',
   'Dynamic Virtual Machines' => 'Dynamische VM\'s',
   'Dynamic Virtual Machines Tooltip' => 'Liste der definierten dynamischen VM\'s',
@@ -30,6 +33,7 @@ return array (
   'Group Import Tooltip' => 'Importiere Benutzergruppen',
   'Group Tooltip' => 'Liste der definierten Benutzergruppen',
   'Group Update Tooltip' => 'Aktualisiere eine Benutzergruppe',
+  'Home' => 'Startseite',
   'Import' => '',
   'Links' => '',
   'Network' => 'Netzwerk',

@@ -149,7 +149,7 @@ class Controller extends CController
 				),
 			),
 			'diag' => array(
-				'label' => 'Diagnostics',
+				'label' => Yii::t('menu', 'Diagnostics'),
 				'items' => array()
 			),
 		);
