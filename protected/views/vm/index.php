@@ -200,6 +200,7 @@ function refreshNextVm()
 						state = 'golden';
 						break;
 					case 'golden_active':
+						$("#poolerror").hide();
 						buttons.vm_start = buttons.vm_edit = buttons.vm_del = buttons.vm_user = buttons.vm_group = true;
 						status = 'golden';
 						state = 'golden_active';
