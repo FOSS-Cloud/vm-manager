@@ -560,38 +560,58 @@ class VmController extends Controller
 
 		 */
 		echo <<<EOS
-    <table style="margin-bottom: 0px; font-size: 90%; width: auto;"><tbody>
-    <tr>
-       <td style="text-align: right; vertical-align: top;"><b>Type:</b></td>
-      <td style="vertical-align: top;">{$vm->sstVirtualMachineType}, {$vm->sstVirtualMachineSubType}</td>
-      <td style="text-align: right; vertical-align: top;"><b>VM:</b></td>
-      <td>{$vm->sstDisplayName}<br/>{$vm->sstVirtualMachine}</td>
-    </tr>
-    <tr>
-      <td style="text-align: right; vertical-align: top;"><b>Memory:</b></td>
-      <td style="vertical-align: top;">$memory</td>
-      <td style="text-align: right;vertical-align: top;"><b>VM Pool:</b></td>
-      <td>{$vm->vmpool->sstDisplayName}<br/>{$vm->sstVirtualMachinePool}</td>
-    </tr>
-    <tr>
-      <td style="text-align: right"><b>CPUs:</b></td>
-      <td>{$vm->sstVCPU}</td>
+	<table style="margin-bottom: 0px; font-size: 90%; width: auto;"><tbody>
+	<tr>
+		<td style="text-align: right; vertical-align: top;"><b>Type:</b></td>
+		<td style="vertical-align: top;">{$vm->sstVirtualMachineType}, {$vm->sstVirtualMachineSubType}</td>
+		<td style="text-align: right; vertical-align: top;"><b>VM:</b></td>
+		<td>{$vm->sstDisplayName}</td>
+		<td>{$vm->sstVirtualMachine}</td>
+	</tr>
+	<tr>
+		<td colspan="2">&nbsp;
+		<td style="text-align: right; vertical-align: top;"><b>Disks:</b></td>
+		<td>
 EOS;
-		if ('dynamic' === $vm->sstVirtualMachineType && 'Golden-Image' !== $vm->sstVirtualMachineSubType) {
-			echo <<< EOS
-      <td style="text-align: right;vertical-align: top;"><b>Golden:</b></td>
-      <td>{$vm->vmpool->sstActiveGoldenImage}</td>
-EOS;
+		$disks = $vm->devices->getDisksByDevice('disk');
+		foreach($disks as $disk) {
+			echo $disk->sstDisk . '<br/>';
 		}
-		echo '    </tr>';
+		echo '</td><td>';
+		foreach($disks as $disk) {
+			echo $disk->sstVolumeName . '<br/>';
+		}
+		echo '</td>' . <<<EOS
+	</tr>
+	<tr>
+		<td style="text-align: right; vertical-align: top;"><b>Memory:</b></td>
+		<td style="vertical-align: top;">$memory</td>
+		<td style="text-align: right;vertical-align: top;"><b>VM Pool:</b></td>
+		<td>{$vm->vmpool->sstDisplayName}</td>
+		<td>{$vm->sstVirtualMachinePool}</td>
+	</tr>
+	<tr>
+		<td style="text-align: right"><b>CPUs:</b></td>
+		<td>{$vm->sstVCPU}</td>
+		<td style="text-align: right;vertical-align: top;"><b>Storage Pool:</b></td>
+		<td>{$vm->vmpool->getStoragepool()->sstDisplayName}</td>
+		<td>{$vm->vmpool->storagepools[0]->ou}</td>
+	</tr>
+	<tr>
+EOS;
 		if ('Golden-Image' !== $vm->sstVirtualMachineSubType) {
 			echo <<< EOS
-    <tr>
-      <td style="text-align: right"><b>IP Adress:</b></td>
-      <td>$ip</td>
-    </tr>
+		<td style="text-align: right"><b>IP Adress:</b></td>
+		<td>$ip</td>
 EOS;
 		}
+		if ('dynamic' === $vm->sstVirtualMachineType && 'Golden-Image' !== $vm->sstVirtualMachineSubType) {
+			echo <<< EOS
+		<td style="text-align: right;vertical-align: top;"><b>Golden:</b></td>
+		<td>{$vm->vmpool->sstActiveGoldenImage}</td>
+EOS;
+		}
+		echo '	</tr>';
 		echo '</tbody></table>';
 		if (!is_null($vm->backup)) {
 			echo <<< EOS

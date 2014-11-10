@@ -79,4 +79,17 @@ class LdapVmDevice extends CLdapRecord {
 		return null;
 	}
 
+	public function getDisksByDevice($device) {
+		$retval = array();
+		$disks = $this->disks;
+		if (!is_array($disks)) {
+			$disks = array($disks);
+		}
+		foreach($disks as $disk) {
+			if ($device == $disk->sstDevice) {
+				$retval[] = $disk;
+			}
+		}
+		return $retval;
+	}
 }
