@@ -77,7 +77,9 @@
 <div class="container" id="page">
 	<div id="header">
 		<div id="logo"></div>
-
+		<div class="message">
+		<?php if (file_exists(Yii::app()->basePath . '/messages/.fc-message')) readfile(Yii::app()->basePath . '/messages/.fc-message'); ?>
+		</div>
 		<div id="languages">
 			<form action="<?php echo $this->createUrl('/site/changeLanguage')?>" method="post">
 			<?php echo $this->getLanguageSelector($lang); ?>
@@ -89,9 +91,9 @@
 	<div id="mainmenu">
 		<?php $this->widget('zii.widgets.CMenu',array(
 			'items'=>array(
-				array('label'=>'Home', 'url'=>array('/site/login')),
-				array('label'=>'About', 'url'=>array('/site/page', 'view'=>'about')),
-				array('label'=>'Contact', 'url'=>array('/site/page', 'view'=>'contact')),
+				array('label'=>Yii::t('menu', 'Home'), 'url'=>array('/site/login')),
+				array('label'=>Yii::t('menu', 'About'), 'url'=>array('/site/page', 'view'=>'about')),
+				array('label'=>Yii::t('menu', 'Contact'), 'url'=>array('/site/page', 'view'=>'contact')),
 /*
 				array('label'=>'Admin', 'url'=>array('/site/admin'),
 					'visible'=>Yii::app()->user->isGuest,

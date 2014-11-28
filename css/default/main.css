@@ -26,7 +26,7 @@ body
 
 #content
 {
-    padding: 0 20px 20px 20px;
+	padding: 0 20px 20px 20px;
 }
 
 div.sidebar
@@ -46,11 +46,18 @@ div.sidebar
 #logo
 {
 	background:transparent url(logo.png) no-repeat 10px 10px;
-	padding: 20px 20px 0 119px;
-	height: 51px;
-	width: 150px;
+	height: 71px;
+	width: 170px;
 	font-size: 200%;
 	float: left;
+	margin-right: 100px;
+}
+#header .message
+{
+	float: left;
+	width: 600px;
+	height: 71px;
+	overflow: auto;
 }
 
 #languages
