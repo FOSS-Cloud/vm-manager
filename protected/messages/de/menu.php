@@ -17,7 +17,7 @@
  * NOTE, this file must be saved in UTF-8 encoding.
  */
 return array (
-  'About' => 'Über uns',
+  'About' => 'Ãœber uns',
   'Assigned VMs' => 'Zugewiesene VMs',
   'Backup' => '',
   'Configuration' => 'Konfiguration',
