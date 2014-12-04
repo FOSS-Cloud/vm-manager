@@ -229,7 +229,7 @@ class Utils {
 		$line = exec('arp -an ' . $ip); //, $output);
 		$parts = explode(' ', $line);
 		if (isset($parts[3]) && 1 == preg_match('/^([0-9A-F]{2}:){5}([0-9A-F]{2})$/i', $parts[3])) {
-			return $parts[3];
+			return strtolower($parts[3]);
 		}
 		return null;
 	}
