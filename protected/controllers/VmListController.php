@@ -126,7 +126,7 @@ class VmListController extends Controller
 				//echo '<br/>';
 			}
 			
-			$poolAssigned = $this->additionalCheck($vmpool, $poolAssigned);
+			$poolAssigned = $this->additionalVmPoolCheck($vmpool, $poolAssigned);
 			
 			if ($poolAssigned) {
 				$vmAssigned = false;
@@ -183,8 +183,12 @@ class VmListController extends Controller
 		));
 	}
 	
-	protected function additionalCheck($vmpool, $poolAssigned) {
+	protected function additionalVmPoolCheck($vmpool, $poolAssigned) {
 		return $poolAssigned;
+	}
+
+	protected function additionalVmCheck($vm, $vmAssigned) {
+		return $vmAssigned;
 	}
 
 	public function actionGetStartVmGui() {
