@@ -207,7 +207,7 @@ class Utils {
 		//echo "$outer: ${base1['network']}-${base1['broadcast']}<br/>";
 		$base2 = Utils::getBaseData($inner);
 		//echo "$inner: ${base2['network']}-${base2['broadcast']}<br/>";
-		return ($base1['network'] <= $base1['network']) && ($base1['broadcast'] >= $base2['broadcast']);
+		return ($base1['network'] <= $base2['network']) && ($base1['broadcast'] >= $base2['broadcast']);
 	}
 
 	public static function isIpInRange($ip, $range) {
