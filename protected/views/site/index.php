@@ -38,8 +38,7 @@ $this->title='Welcome to the FOSS-Cloud';
 <p>The FOSS-Cloud solution is the most advanced Open Source Cloud in the marketplace today. </p>
 <p>Before using, the FOSS-Cloud team would like to remind you that the primary means of sustaining the development of FOSS-Cloud is via contributions by users such as yourself. FOSS-Cloud is now and will continue to be totally free of charge; however, it takes money and resources to make FOSS-Cloud available. If you are able, please consider donating to the FOSS-Cloud Project.</p>
 <div  style="float: left;">
-<p><form action="https://www.paypal.com/cgi-bin/webscr" method="post" 
-target="_top">
+<p><form action="https://www.paypal.com/cgi-bin/webscr" method="post" target="_blank">
 <input type="hidden" name="cmd" value="_s-xclick">
 <input type="hidden" name="hosted_button_id" value="797946K7GB8MN">
 <input type="image" 
