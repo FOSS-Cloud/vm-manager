@@ -277,7 +277,7 @@ class CPhpLibvirt {
 			<target type=\"virtio\" name=\"com.redhat.spice.0\"/>
 		</channel>
 		<video>
-			<model type=\"qxl\" vram=\"65536\" heads=\"1\"/>
+			<model type=\"qxl\" vram=\"65536\" heads=\"{$data[\'sstNumberOfScreens\']}\"/>
 		</video>
 		<input type=\"tablet\" bus=\"usb\"/>
 		<controller type=\"usb\" index=\"0\" model=\"ich9-ehci1\">
