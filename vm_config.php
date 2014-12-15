@@ -72,7 +72,7 @@ return array(
 	// using Yii::app()->params['paramName']
 	'params'=>array(
 		'virtualization' => array(
-			'version' => '1.3.0.26',
+			'version' => '1.3.0.27',
 			// Don't change the following params if you don't know what you are doing
 			'spiceByName' => false,
 			'disableSpiceAcceleration' => false,
