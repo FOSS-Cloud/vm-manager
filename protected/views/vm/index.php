@@ -181,7 +181,7 @@ function refreshNextVm()
 						state = 'red';
 						break;
 					case 'running':
-						buttons.vm_restart = buttons.vm_shutdown = buttons.vm_destroy = buttons.vm_migrate = buttons.vm_login = true;
+						buttons.vm_restart = buttons.vm_shutdown = buttons.vm_destroy = buttons.vm_migrate = buttons.vm_login = buttons.vm_user = buttons.vm_group = true;
 						state = 'green';
 						break;
 					case 'migrating':
