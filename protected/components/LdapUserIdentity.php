@@ -201,13 +201,13 @@ class LdapUserIdentity extends CUserIdentity
 							foreach($mapping as $attr => $value) {
 								$user->$attr = $value;
 							}
-							$user->save();
 
-							$userrole = new LdapUserRole();
-							$userrole->setBranchDn($user->dn);
-							$userrole->sstProduct = '0';
-							$userrole->sstRole = 'User';
-							$userrole->save();
+							$userrole = LdapUserRole::model()->findByAttributes(array('attr'=>array('sstDisplayName'=>'VM-User')));
+							if (!is_null($userrole)) {
+								$user->sstRoleUID = $userrole->uid;
+							}
+
+							$user->save();
 						}
 
 						$this->errorCode = self::ERROR_NONE;
@@ -220,12 +220,25 @@ class LdapUserIdentity extends CUserIdentity
 
 						$this->setState('uid', $user->uid);
 						$this->setState('groupuids', $groups);
+						$this->setState('roleuid', $user->sstRoleUID);
 						$this->setState('realm', $this->realm);
 						$this->setState('admin', false);
 						$this->setState('customeruid', $realm->sstBelongsToCustomerUID);
 						$this->setState('reselleruid', $realm->sstBelongsToResellerUID);
 						$this->setState('lang', $user->preferredLanguage);
-						
+
+						$rights = array();
+						if (!is_null($user->role)) {
+							foreach($user->role->rights as $right) {
+								list($group, $action) = explode('.', $right->sstUserRightSectionAction);
+								if (!isset($rights[$group])) {
+									$rights[$group] = array();
+								}
+								$rights[$group][$action] = $right->sstUserRightValue;
+							}
+						}
+						$this->setState('rights', $rights);
+
 						ldap_unbind($connection);
 					}
 				}
