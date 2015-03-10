@@ -171,9 +171,9 @@ class VmController extends Controller
 		else {
 			$hasGoldenImage = null;
 		}
+		$sessionvars['filter']['pool'] = $vmpool;
 		if (!is_null($vmpool)) {
 			//Yii::app()->getSession()->add('vm.index.' . $vmtype . '.vmpool', $vmpool);
-			$sessionvars['filter']['pool'] = $vmpool;
 			if ('dynamic' == $vmtype) {
 				$criteria = array('attr'=>array('sstVirtualMachinePool' => $vmpool));
 				$pool = LdapVmPool::model()->findByAttributes($criteria);
@@ -231,7 +231,12 @@ class VmController extends Controller
 			$result->sstClockOffset = $model->sstClockOffset;
 			$result->sstMemory = $model->sstMemory;
 			$result->sstVCPU = $model->sstVCPU;
-			$result->sstNumberOfScreens = $model->sstNumberOfScreens;
+			if (0 < $model->sstNumberOfScreens) {
+				$result->sstNumberOfScreens = $model->sstNumberOfScreens;
+			}
+			else {
+				$result->sstNumberOfScreens = array();
+			}
 			$result->description = $model->description;
 			$result->sstDisplayName = $model->name;
 			//$result->sstNode = $model->node;
@@ -319,7 +324,7 @@ class VmController extends Controller
 				$model->sstVolumeCapacity = $defaults->VolumeCapacityMin;
 			}
 
-			$screens = array();
+			$screens = array(0=>'');
 			$config = CLdapRecord::model('LdapVmPoolDefinition')->findByAttributes(array('attr'=>array('ou'=>$vm->vmpool->sstVirtualMachinePoolType)));
 			for($i=1; $i<=$config->sstNumberOfScreens; $i++) {
 				$screens[$i] = $i;
@@ -498,7 +503,12 @@ class VmController extends Controller
 			$s .= '<cell>'. $vm->sstVirtualMachineType ."</cell>\n";
 			$s .= '<cell>'. $vm->sstVirtualMachineSubType ."</cell>\n";
 			if ('Golden-Image' == $vm->sstVirtualMachineSubType) {
-				$s .= '<cell>' . ($vm->sstVirtualMachine == $vm->vmpool->sstActiveGoldenImage ? 'true' : 'false') . "</cell>\n";
+				if (isset($vm->vmpool->sstActiveGoldenImage)) {
+					$s .= '<cell>' . ($vm->sstVirtualMachine == $vm->vmpool->sstActiveGoldenImage ? 'true' : 'false') . "</cell>\n";
+				}
+				else {
+					$s .= "<cell>false</cell>\n";
+				}
 			}
 			else {
 				$s .= "<cell></cell>\n";
@@ -939,7 +949,7 @@ EOS;
 							case 'Golden-Image':
 								$answer['status'] = 'golden';
 								$answer['node'] = '';
-								if ($vm->sstVirtualMachine == $vm->vmpool->sstActiveGoldenImage) {
+								if (isset($vm->vmpool->sstActiveGoldenImage) && $vm->sstVirtualMachine == $vm->vmpool->sstActiveGoldenImage) {
 									$answer['statustxt'] = ', active';
 									$answer['status'] = 'golden_active';
 								}
@@ -969,6 +979,10 @@ EOS;
 								$maxmemory = $this->getHumanSize($status['maxMem'] * 1024);
 								//$data[$vm->sstVirtualMachine] = array('status' => ($status['active'] ? 'running' : 'stopped'), 'mem' => $memory . ' / ' . $maxmemory, 'cpu' => $status['cpuTime'], 'cpuOrig' => $status['cpuTimeOrig']);
 								$data[$vm->sstVirtualMachine] = array_merge($answer, array('status' => 'running', 'mem' => $memory . ' / ' . $maxmemory, 'spice' => $vm->getSpiceUri()));
+							}
+							else if (isset($status['status']) && 'nocon' == $status['status']) {
+								$data[$vm->sstVirtualMachine]['statustxt'] = ', nocon' . $answer['statustxt'];
+								$data[$vm->sstVirtualMachine]['status'] = 'unknown';
 							}
 							else if ('dynamic' == $vm->sstVirtualMachineType && ('Desktop' == $vm->sstVirtualMachineSubType || 'Server' == $vm->sstVirtualMachineSubType)) {
 //								$data[$vm->sstVirtualMachine] = array_merge($answer, array('status' => 'removed'));

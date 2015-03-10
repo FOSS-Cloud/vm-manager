@@ -48,8 +48,8 @@ class VmForm extends CFormModel {
 	public function rules()
 	{
 		return array(
-			array('name, description, sstVolumeCapacity, sstClockOffset, sstMemory, sstVCPU, sstNumberOfScreens', 'required', 'on' => 'update'),
-			//array('useStaticIP, range, staticIP', 'safe'),
+			array('name, description, sstVolumeCapacity, sstClockOffset, sstMemory, sstVCPU', 'required', 'on' => 'update'),
+			array('sstNumberOfScreens', 'safe'),
 			array('name', 'uniqueName',
 				'branches'=>array('ou=virtual machines,ou=virtualization,ou=services'),
 				'filter'=>'(sstDisplayName={name})',

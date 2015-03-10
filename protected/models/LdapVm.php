@@ -116,7 +116,7 @@ class LdapVm extends CLdapRecord {
 		$params['sstType'] = $this->sstType;
 		$params['sstVCPU'] = $this->sstVCPU;
 		if (!isset($this->sstNumberOfScreens)) {
-			$params['sstNumberOfScreens'] = 1;
+			$params['sstNumberOfScreens'] = $this->vmpool->sstNumberOfScreens;
 		}
 		else {
 			$params['sstNumberOfScreens'] = $this->sstNumberOfScreens;

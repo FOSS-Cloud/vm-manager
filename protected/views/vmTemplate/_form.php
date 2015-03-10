@@ -398,7 +398,7 @@ EOS
 		<div class="column">
 			<div class="row">
 				<?php echo $form->labelEx($model,'sstNumberOfScreens'); ?>
-				<?php echo $form->dropDownList($model,'sstNumberOfScreens', (null != $defaults ? $screens : array())); ?>
+				<?php echo $form->dropDownList($model,'sstNumberOfScreens', (null != $defaults ? array_merge(array(0=>''), $screens) : array())); ?>
 				<?php echo $form->error($model,'sstNumberOfScreens'); ?>
 			</div>
 			<br/>

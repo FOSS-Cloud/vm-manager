@@ -49,8 +49,9 @@ class VmTemplateForm extends CFormModel {
 	public function rules()
 	{
 		return array(
-			array('path, basis, node, name, description, vmpool, sstVolumeCapacity, sstClockOffset, sstMemory, sstVCPU, sstNumberOfScreens', 'required', 'on' => 'create'),
-			array('name, description, vmpool, sstVolumeCapacity, sstClockOffset, sstMemory, sstVCPU, sstNumberOfScreens', 'required', 'on' => 'update'),
+			array('path, basis, node, name, description, vmpool, sstVolumeCapacity, sstClockOffset, sstMemory, sstVCPU', 'required', 'on' => 'create'),
+			array('name, description, vmpool, sstVolumeCapacity, sstClockOffset, sstMemory, sstVCPU', 'required', 'on' => 'update'),
+			array('sstNumberOfScreens', 'safe'),
 			array('name', 'uniqueName',
 				'branches'=>array('ou=virtual machines,ou=virtualization,ou=services'),
 				'filter'=>'(&(sstDisplayName={name})(sstVirtualMachineType=template))',

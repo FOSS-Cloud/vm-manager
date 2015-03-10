@@ -258,7 +258,12 @@ class VmTemplateController extends Controller
 				$result->sstMemory = $model->sstMemory;
 				$result->sstOSArchitecture = $parts[2];
 				$result->sstVCPU = $model->sstVCPU;
-				$result->sstNumberOfScreens = $model->sstNumberOfScreens;
+				if (0 < $model->sstNumberOfScreens) {
+					$result->sstNumberOfScreens = $model->sstNumberOfScreens;
+				}
+				else {
+					$result->sstNumberOfScreens = array();
+				}
 				$result->sstVirtualMachine = CPhpLibvirt::getInstance()->generateUUID();
 				$result->description = $model->description;
 				if ('TBD_GUI' == $result->sstOnCrash) {
@@ -418,7 +423,12 @@ class VmTemplateController extends Controller
 			$result->sstClockOffset = $model->sstClockOffset;
 			$result->sstMemory = $model->sstMemory;
 			$result->sstVCPU = $model->sstVCPU;
-			$result->sstNumberOfScreens = $model->sstNumberOfScreens;
+			if (0 < $model->sstNumberOfScreens) {
+				$result->sstNumberOfScreens = $model->sstNumberOfScreens;
+			}
+			else {
+				$result->sstNumberOfScreens = array();
+			}
 			$result->description = $model->description;
 			$result->sstDisplayName = $model->name;
 			//$result->sstNode = $model->node;
