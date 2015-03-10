@@ -125,7 +125,7 @@ class VmListController extends Controller
 				}
 				//echo '<br/>';
 			}
-			
+			//echo 'looking for pool: ' . $vmpool->sstDisplayName . '<br/>';
 			$poolAssigned = $this->additionalVmPoolCheck($vmpool, $poolAssigned);
 			
 			if ($poolAssigned) {
@@ -133,25 +133,22 @@ class VmListController extends Controller
 				$vmFree = false;
 				//echo '   group found<br/>';
 				// The user is in a group. Now let's check if there is already a VM running
-				$vms = LdapVm::model()->findAll(array('attr'=>array('sstVirtualMachinePool'=>$vmpool->sstVirtualMachinePool)));
+				//$vms = LdapVm::model()->findAll(array('attr'=>array('sstVirtualMachinePool'=>$vmpool->sstVirtualMachinePool)));
+				$vms = $vmpool->runningDynVms;
 				foreach($vms as $vm) {
 					$vmpeople = $vm->people;
-					//echo 'looking for vm: $vm->sstVirtualMachine';
+					//echo '<span style="margin-left: 20px;"> </span>looking for vm: ' .  $vm->sstVirtualMachine . '<br/>';
 					if (0 == count($vmpeople) && !$vmFree) {
 						$vmFree = true;
-
 					}
-					foreach($vmpeople as $vmonepeople) {
-						//echo $vmonepeople->ou . '==' . Yii::app()->user->uid;
-						if ($vmonepeople->ou == Yii::app()->user->uid) {
-							$data['vmpools'][$vmpool->sstDisplayName] = array(
-								'description' => $vmpool->description,
-								'spiceuri' => $vm->getSpiceUri()
-							);
-							$vmAssigned = true;
-							//echo '; vm found<br/>';
-							// break; Let's if we will get more than one
-						}
+					$vmAssigned = $this->additionalVmCheck($vm, $vmAssigned);
+					if ($vmAssigned) {
+						$data['vmpools'][$vmpool->sstDisplayName] = array(
+							'description' => $vmpool->description,
+							'spiceuri' => $vm->getSpiceUri()
+						);
+						//echo ' <pre>DATA '  . var_export($data, true) . '</pre>';
+						break;
 					}
 				}
 				if (!$vmAssigned && $vmFree) {
@@ -176,7 +173,6 @@ class VmListController extends Controller
 			);
 		}
 		
-		// Let's check the static VMs
 		$this->header[] = '<meta http-equiv="refresh" content="30; URL=' . Yii::app()->request->url . '">';
 		$this->render('index',array(
 			'data'=>$data,
@@ -188,6 +184,15 @@ class VmListController extends Controller
 	}
 
 	protected function additionalVmCheck($vm, $vmAssigned) {
+		if ('dynamic' === $vm->sstVirtualMachineType) {
+			$vmpeople = $vm->people;
+			foreach($vmpeople as $vmonepeople) {
+				if ($vmonepeople->ou == Yii::app()->user->uid) {
+					$vmAssigned = true;
+					break;
+				}
+			}
+		}
 		return $vmAssigned;
 	}
 
@@ -284,5 +289,4 @@ EOS
 		}
 		$this->sendJsonAnswer($json);
 	}
-
 }
