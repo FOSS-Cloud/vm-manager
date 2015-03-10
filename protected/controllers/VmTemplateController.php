@@ -125,7 +125,7 @@ class VmTemplateController extends Controller
 		);
 	}
 	public function actionIndex() {
-		$sessionvars = Yii::app()->getSession()->get('vmTemplate.index', array('page' => 1, 
+		$sessionvars = Yii::app()->getSession()->get('vm.template.index', array('page' => 1, 
 			'refreshTime' => 10000, 
 			'filter' => array('pool' => null, 'name' => null, 'createTimestamp' => null, 'node' => null)
 		));
@@ -153,21 +153,28 @@ class VmTemplateController extends Controller
 			$dynamicpools[$pool->dn]['name'] = $pool->sstDisplayName;
 		}
 		
+		$vmpool = null;
+		if (isset($_GET['vmpool'])) {
+			if ('' !== $_GET['vmpool']) {
+				$sessionvars['filter']['pool'] = $_GET['vmpool'];
+				$vmpool = $_GET['vmpool'];
+			}
+			else {
+				$vmpool = null;
+			}
+		}
+		else {
+			$vmpool = $sessionvars['filter']['pool'];
+		}
+		
 		$criteria = array('attr'=>array('sstVirtualMachinePoolType' => 'template'));
 		$vmpools = CLdapRecord::model('LdapVmPool')->findAll($criteria);
-		//$vmpool = Yii::app()->getSession()->get('vm.index.template.vmpool', null);
-		$vmpool = $sessionvars['filter']['pool'];
 		if (is_null($vmpool) && 1 === count($vmpools)) {
 			$vmpool = $vmpools[0]->sstVirtualMachinePool;
 		}
-		if (!is_null($vmpool)) {
-			//Yii::app()->getSession()->add('vm.index.template.vmpool', $vmpool);
-			$sessionvars['filter']['pool'] = $vmpool;
-			$criteria = array('attr'=>array('sstVirtualMachinePool' => $vmpool));
-			$pools = CLdapRecord::model('LdapVmPool')->findAll($criteria);
-		}
+		$sessionvars['filter']['pool'] = $vmpool;
 		
-		Yii::app()->getSession()->add('vmTemplate.index', $sessionvars);
+		Yii::app()->getSession()->add('vm.template.index', $sessionvars);
 		
 		$this->render('index', array(
 			'persistentpools' => $persistentpools, 
@@ -925,7 +932,7 @@ class VmTemplateController extends Controller
 
 	public function actionGetVMTemplates() {
 		$this->disableWebLogRoutes();
-		$sessionvars = Yii::app()->getSession()->get('vmTemplate.index', array());
+		$sessionvars = Yii::app()->getSession()->get('vm.template.index', array());
 		$page = $_GET['page'];
 
 		// get how many rows we want to have into the grid - rowNum parameter in the grid
@@ -944,6 +951,9 @@ class VmTemplateController extends Controller
 			$criteria['attr']['sstVirtualMachinePool'] = $_GET['vmpool'];
 			$sessionvars['filter']['pool'] = $_GET['vmpool'];
 		}
+		else {
+			$criteria['attr']['sstVirtualMachinePool'] = $sessionvars['filter']['pool'];
+		}
 		if (isset($_GET['sstDisplayName'])) {
 			$criteria['attr']['sstDisplayName'] = '*' . $_GET['sstDisplayName'] . '*';
 			$sessionvars['filter']['name'] = $_GET['sstDisplayName'];
@@ -958,7 +968,7 @@ class VmTemplateController extends Controller
 			$sessionvars['sort'] = $criteria['sort'];
 		}
 		
-		Yii::app()->getSession()->add('vmTemplate.index', $sessionvars);
+		Yii::app()->getSession()->add('vm.template.index', $sessionvars);
 		
 		if (Yii::app()->user->hasRight('templateVM', COsbdUser::$RIGHT_ACTION_VIEW, COsbdUser::$RIGHT_VALUE_ALL)) {
 			$vms = LdapVmFromTemplate::model()->findAll($criteria);
