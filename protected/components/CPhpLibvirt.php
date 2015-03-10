@@ -190,33 +190,38 @@ class CPhpLibvirt {
 		$retval = array('active' => false);
 		try {
 			$con = $this->getConnection($data['libvirt']);
-			Yii::log('getVmStatus: libvirt_domain_lookup_by_name(' . $data['libvirt'] . ', ' . $data['name'] . ')', 'profile', 'phplibvirt');
-			$domain = @libvirt_domain_lookup_by_name($con, $data['name']);
-			if (false !== $domain) {
-				//Yii::log('getVmStatus: libvirt_node_get_info (' . $data['libvirt']  . ')', 'profile', 'phplibvirt');
-				//$nodeinfo = libvirt_node_get_info($con);
-				Yii::log('getVmStatus: libvirt_domain_is_active (' . $data['name']  . ')', 'profile', 'phplibvirt');
-				$retval['active'] = 1 === libvirt_domain_is_active($domain);
-				Yii::log('getVmStatus: libvirt_domain_get_info (' . $data['name'] . ')', 'profile', 'phplibvirt');
-				$domaininfo = libvirt_domain_get_info($domain);
-				$retval = array_merge($retval, $domaininfo);
-				$cpuPercentage = 0;
-				$actTime = $this->getUTime();
-				if (isset($_SESSION['libvirt'][$data['name']]['lasttime'])) {
-					$cpudiff = $retval['cpuUsed'] - $_SESSION['libvirt'][$data['name']]['lastcpu'];
-					$timediff = $actTime - $_SESSION['libvirt'][$data['name']]['lasttime'];
-					$cpuPercentage = number_format(abs(100 * $cpudiff / ($timediff * $retval['nrVirtCpu'] * 1000000000.0)), 2);
+			if (false !== $con) {
+				Yii::log('getVmStatus: libvirt_domain_lookup_by_name(' . $data['libvirt'] . ', ' . $data['name'] . ')', 'profile', 'phplibvirt');
+				$domain = @libvirt_domain_lookup_by_name($con, $data['name']);
+				if (false !== $domain) {
+					//Yii::log('getVmStatus: libvirt_node_get_info (' . $data['libvirt']  . ')', 'profile', 'phplibvirt');
+					//$nodeinfo = libvirt_node_get_info($con);
+					Yii::log('getVmStatus: libvirt_domain_is_active (' . $data['name']  . ')', 'profile', 'phplibvirt');
+					$retval['active'] = 1 === libvirt_domain_is_active($domain);
+					Yii::log('getVmStatus: libvirt_domain_get_info (' . $data['name'] . ')', 'profile', 'phplibvirt');
+					$domaininfo = libvirt_domain_get_info($domain);
+					$retval = array_merge($retval, $domaininfo);
+					$cpuPercentage = 0;
+					$actTime = $this->getUTime();
+					if (isset($_SESSION['libvirt'][$data['name']]['lasttime'])) {
+						$cpudiff = $retval['cpuUsed'] - $_SESSION['libvirt'][$data['name']]['lastcpu'];
+						$timediff = $actTime - $_SESSION['libvirt'][$data['name']]['lasttime'];
+						$cpuPercentage = number_format(abs(100 * $cpudiff / ($timediff * $retval['nrVirtCpu'] * 1000000000.0)), 2);
 
-					//error_log($retval['cpuTime'] . ', ' . $cpudiff . '; ' . $timediff . ', ' . $cpuPercentage);
+						//error_log($retval['cpuTime'] . ', ' . $cpudiff . '; ' . $timediff . ', ' . $cpuPercentage);
+					}
+					$_SESSION['libvirt'][$data['name']]['lasttime'] = $actTime;
+					$_SESSION['libvirt'][$data['name']]['lastcpu'] = $retval['cpuUsed'];
+					$retval['actTime'] = $actTime;
+					$retval['cpuTimeOrig'] = $retval['cpuUsed'];
+					$retval['cpuTime'] = round($cpuPercentage);
 				}
-				$_SESSION['libvirt'][$data['name']]['lasttime'] = $actTime;
-				$_SESSION['libvirt'][$data['name']]['lastcpu'] = $retval['cpuUsed'];
-				$retval['actTime'] = $actTime;
-				$retval['cpuTimeOrig'] = $retval['cpuUsed'];
-				$retval['cpuTime'] = round($cpuPercentage);
+				else {
+					// nothing to do, active is already false
+				}
 			}
 			else {
-				// nothing to do, active is already false
+				$retval['status'] = 'nocon';
 			}
 		}
 		catch(Exception $e) {
