@@ -1554,66 +1554,20 @@ EOS;
 			//$interfaces = $devices->interfaces;
 			//echo '<pre>' . print_r($devices->interfaces, true) . '</pre>';
 			if (!is_null($vm)) {
-				$params = array();
-				$params['sstName'] = $vm->sstVirtualMachine;
-				$params['sstUuid'] = $vm->sstVirtualMachine;
-				$params['sstClockOffset'] = $vm->sstClockOffset;
-				$params['sstMemory'] = $vm->sstMemory;
-				//$params['sstNode'] = $vm->sstNode;
-				$params['libvirt'] = $vm->node->getLibvirtUri();
-				$params['sstOnCrash'] = $vm->sstOnCrash;
-				$params['sstOnPowerOff'] = $vm->sstOnPowerOff;
-				$params['sstOnReboot'] = $vm->sstOnReboot;
-				$params['sstOSArchitecture'] = $vm->sstOSArchitecture;
-				$params['sstOSBootDevice'] = $vm->sstOSBootDevice;
-				$params['sstOSMachine'] = $vm->sstOSMachine;
-				$params['sstOSType'] = $vm->sstOSType;
-				$params['sstType'] = $vm->sstType;
-				$params['sstVCPU'] = $vm->sstVCPU;
-				$params['sstFeature'] = $vm->sstFeature;
-				$params['devices'] = array();
-				$params['devices']['usb'] = ($vm->settings->isUsbAllowed() ? 'yes' : 'no');
-				$params['devices']['sound'] = $vm->settings->isSoundAllowed();
-				$params['devices']['sstEmulator'] = $vm->devices->sstEmulator;
-				$params['devices']['sstMemBalloon'] = $vm->devices->sstMemBalloon;
-				$params['devices']['graphics'] = array();
-				$params['devices']['graphics']['spiceport'] = $vm->sstSpicePort;
-				$params['devices']['graphics']['spicepassword'] = $vm->sstSpicePassword;
-				$params['devices']['graphics']['spicelistenaddress'] = $vm->node->getVLanIP('pub');
-				$params['devices']['graphics']['spiceacceleration'] = isset(Yii::app()->params['virtualization']['disableSpiceAcceleration'])
-					&& Yii::app()->params['virtualization']['disableSpiceAcceleration'];
-				$params['devices']['disks'] = array();
-				foreach($vm->devices->disks as $disk) {
-					$params['devices']['disks'][$disk->sstDisk] = array();
-					$params['devices']['disks'][$disk->sstDisk]['sstDevice'] = $disk->sstDevice;
-					$params['devices']['disks'][$disk->sstDisk]['sstDisk'] = $disk->sstDisk;
-					$params['devices']['disks'][$disk->sstDisk]['sstSourceFile'] = $disk->sstSourceFile;
-					$params['devices']['disks'][$disk->sstDisk]['sstTargetBus'] = $disk->sstTargetBus;
-					$params['devices']['disks'][$disk->sstDisk]['sstType'] = $disk->sstType;
-					$params['devices']['disks'][$disk->sstDisk]['sstDriverName'] = $disk->sstDriverName;
-					$params['devices']['disks'][$disk->sstDisk]['sstDriverType'] = $disk->sstDriverType;
-					$params['devices']['disks'][$disk->sstDisk]['sstReadonly'] = $disk->sstReadonly;
-					$params['devices']['disks'][$disk->sstDisk]['sstDriverCache'] = $disk->sstDriverCache;
-				}
-				$params['devices']['interfaces'] = array();
-				foreach($vm->devices->interfaces as $interface) {
-					$params['devices']['interfaces'][$interface->sstInterface] = array();
-					$params['devices']['interfaces'][$interface->sstInterface]['sstInterface'] = $interface->sstInterface;
-					$params['devices']['interfaces'][$interface->sstInterface]['sstMacAddress'] = $interface->sstMacAddress;
-					$params['devices']['interfaces'][$interface->sstInterface]['sstModelType'] = $interface->sstModelType;
-					$params['devices']['interfaces'][$interface->sstInterface]['sstSourceBridge'] = $interface->sstSourceBridge;
-					$params['devices']['interfaces'][$interface->sstInterface]['sstType'] = $interface->sstType;
-				}
-				//echo '<pre>' . print_r($params, true) . '</pre>';
 				$libvirt = CPhpLibvirt::getInstance();
-				if ($libvirt->startVm($params)) {
+				
+				$data = $vm->getStartParams();
+				$data['name'] = $data['sstName'];
+				$libvirt->redefineVm($data);
+				$retval = $libvirt->startVm($data);
+				if ($retval) {
 					$vm->setOverwrite(true);
 					$vm->sstStatus = 'running';
 					$vm->save();
 					$this->sendAjaxAnswer(array('error' => 0));
 				}
 				else {
-					$this->sendAjaxAnswer(array('error' => 1, 'message' => __FILE__ . '(' . __LINE__ . '): CPhpLibvirt startVm failed!'));
+					$this->sendAjaxAnswer(array('error' => 1, 'message' => __FILE__ . '(' . __LINE__ . '): CPhpLibvirt startVm failed (' . $libvirt->getLastError() . ')!'));
 				}
 			}
 			else {
