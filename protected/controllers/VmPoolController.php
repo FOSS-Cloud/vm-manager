@@ -736,7 +736,7 @@ class VmPoolController extends Controller
 					$pool->sstBrokerPreStartInterval = $model->brokerPreStartInterval;
 				}
 			}
-			else {
+			elseif ($pool->hasObjectClass('sstVirtualMachinePoolDynamicObjectClass')) {
 				$pool->removeAttributesByObjectClass('sstVirtualMachinePoolDynamicObjectClass');
 			}
 			$pool->save();
