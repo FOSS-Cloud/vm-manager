@@ -313,17 +313,20 @@ class LdapVmPool extends CLdapRecord {
 			if (!is_null($type)) {
 				$attr = array_merge_recursive(array('sstVirtualMachinePoolType' => $type), $attr);
 			}
-			$criteria = array('attr' => $attr);
-			$criteria['relattr'] = array();
-			$criteria['relattr']['groups'] = array('ou' => $groups);
-			//echo '<pre>criteria ' . print_r($criteria, true) . '</pre>';
+			if (0 < count($groups)) {
+				$criteria = array('attr' => $attr);
+				//echo '<pre>criteria pool init ' . print_r($criteria, true) . '</pre>';
+				$criteria['relattr'] = array();
+				$criteria['relattr']['groups'] = array('ou' => $groups);
+				//echo '<pre>criteria ' . print_r($criteria, true) . '</pre>';
 		
-			$pools = LdapVmPool::model()->findAll($criteria);
-			//echo '<h1>Pools</h1>';
-			//echo 'group poolcount ' . count($pools) . '<br/>';
-			foreach($pools as $pool) {
-				$unique_pools[$pool->sstVirtualMachinePool] = $pool;
-				//echo '<pre>	' . $pool->sstVirtualMachinePool . ', ' . $pool->sstDisplayName . '</pre>';
+				$pools = LdapVmPool::model()->findAll($criteria);
+				//echo '<h1>Pools</h1>';
+				//echo 'group poolcount ' . count($pools) . '<br/>';
+				foreach($pools as $pool) {
+					$unique_pools[$pool->sstVirtualMachinePool] = $pool;
+					//echo '<pre>	' . $pool->sstVirtualMachinePool . ', ' . $pool->sstDisplayName . '</pre>';
+				}
 			}
 			
 			$criteria = array('attr' => $attr);
