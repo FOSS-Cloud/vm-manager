@@ -289,4 +289,47 @@ EOS
 		}
 		$this->sendJsonAnswer($json);
 	}
+
+	public function actionStartPersistentVm() {
+		$this->disableWebLogRoutes();
+		if (isset($_GET['dn'])) {
+			$vm = CLdapRecord::model('LdapVm')->findByDn($_GET['dn']);
+			//$devices = $vm->devices[0];
+			//echo '$devices <pre>' . print_r($devices, true) . '</pre>';
+			//$disks = $devices->disks;
+			//echo '<pre>' . print_r($devices->disks, true) . '</pre>';
+			//$interfaces = $devices->interfaces;
+			//echo '<pre>' . print_r($devices->interfaces, true) . '</pre>';
+			if (!is_null($vm)) {
+				//echo '<pre>' . print_r($params, true) . '</pre>';
+				$retval = false;
+				$answer = array();
+				$libvirt = CPhpLibvirt::getInstance();
+				if ('persistent' == $vm->sstVirtualMachineType) {
+					$data = $vm->getStartParams();
+					$data['name'] = $data['sstName'];
+					$libvirt->redefineVm($data);
+					$retval = $libvirt->startVm($data);
+					if ($retval) {
+						$vm->setOverwrite(true);
+						$vm->sstStatus = 'running';
+						$vm->save();
+					}
+				}
+				if (false !== $retval) {
+					$answer['error'] = 0;
+					$this->sendAjaxAnswer($answer);
+				}
+				else {
+					$this->sendAjaxAnswer(array('error' => 1, 'message' => 'CPhpLibvirt startVm failed (' . $libvirt->getLastError() . ')!'));
+				}
+			}
+			else {
+				$this->sendAjaxAnswer(array('error' => 1, 'message' => __FILE__ . '(' . __LINE__ . '): CPhpLibvirt Vm \'' . $_GET['dn'] . '\' not found!'));
+			}
+		}
+		else {
+			$this->sendAjaxAnswer(array('error' => 1, 'message' => __FILE__ . '(' . __LINE__ . '): Parameter dn not found!'));
+		}
+	}
 }
