@@ -814,10 +814,11 @@ $vmpooljs = '';
 $vmpooljs .= <<<EOS
 $('#vmpool').change(function() {
 	var vmpool = this.value;
-	if ('' != vmpool) {
-		$('#{$gridid}_grid').setGridParam({url: '{$getvmtemplatesurl}?vmpool=' + vmpool});
-		reloadVms();
- 	}
+//	if ('' != vmpool) {
+//		$('#{$gridid}_grid').setGridParam({url: '{$getvmtemplatesurl}?vmpool=' + vmpool});
+//		reloadVms();
+//	}
+	window.location.assign('?vmpool=' + vmpool);
 });
 EOS;
 
