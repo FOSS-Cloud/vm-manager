@@ -281,10 +281,7 @@ class CPhpLibvirt {
 		<channel type=\"spicevmc\">
 			<target type=\"virtio\" name=\"com.redhat.spice.0\"/>
 		</channel>
-		<video>
-			<model type=\"qxl\" vram=\"65536\" heads=\"{$data[\'sstNumberOfScreens\']}\"/>
-		</video>
-		<input type=\"tablet\" bus=\"usb\"/>
+{$video}		<input type=\"tablet\" bus=\"usb\"/>
 		<controller type=\"usb\" index=\"0\" model=\"ich9-ehci1\">
 			<address type=\"pci\" slot=\"0x08\" function=\"0x7\"/>
 		</controller>
@@ -300,11 +297,10 @@ class CPhpLibvirt {
 		<redirdev bus=\"usb\" type=\"spicevmc\"></redirdev>
 		<redirdev bus=\"usb\" type=\"spicevmc\"></redirdev>
 		<redirdev bus=\"usb\" type=\"spicevmc\"></redirdev>
-   		<redirfilter>
+		<redirfilter>
 			<usbdev allow=\"{$data[\'devices\'][\'usb\']}\"/>
 		</redirfilter>
-		{$devices}
-	</devices>
+{$devices}	</devices>
 </domain>
 ';
 
@@ -319,6 +315,19 @@ class CPhpLibvirt {
 			$devices .= '		<sound model="ac97"/>' . "\n";
 		}
 
+		if ('windows' === $data['profileGroup']) {
+			$video = '';
+			for($i=0; $i<$data['sstNumberOfScreens']; $i++) {
+				$video .= '		<video>' . "\n";
+				$video .= '			<model type="qxl" vram="65536"/>' . "\n";
+				$video .= '		</video>' . "\n";
+			}
+		}
+		else {
+			$video = '		<video>' . "\n";
+			$video .= '			<model type="qxl" vram="65536" heads="' . $data['sstNumberOfScreens'] . '"/>' . "\n";
+			$video .= '		</video>' . "\n";
+		}
 		foreach($data['devices']['disks'] as $disk) {
 			$devices .= '		<disk type="' . $disk['sstType'] . '" device="' . $disk['sstDevice'] . '">' . "\n";
 			if (isset($disk['sstDriverName']) && isset($disk['sstDriverType'])) {

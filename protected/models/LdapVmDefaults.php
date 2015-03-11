@@ -61,4 +61,16 @@ class LdapVmDefaults extends CLdapRecord {
 	public function getVolumeCapacityStep() {
 		return $this->devices->getDiskByName('vda')->sstVolumeCapacityStep;
 	}
+	
+	public function getProfileGroup() {
+		$retval = null;
+		
+		if (false !== strpos($this->getDn(), ',ou=windows,ou=virtual machine profiles,')) {
+			$retval = 'windows';
+		}
+		elseif (false !== strpos($this->getDn(), ',ou=linux,ou=virtual machine profiles,')) {
+			$retval = 'linux';
+		}
+		return $retval;
+	}
 }
