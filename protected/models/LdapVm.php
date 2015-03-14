@@ -231,12 +231,13 @@ class LdapVm extends CLdapRecord {
 			$groups = $user->sstGroupUID;
 			//echo '<pre>groups ' . print_r($groups, true) . '</pre>';
 
+			$pools = array();
 			$criteriaVms = $criteria;
+			//echo '<pre>criteria init ' . print_r($criteriaVms, true) . '</pre>';
 			if (!isset($criteria['attr']['sstVirtualMachinePool'])) {
 				$assignedPools = LdapVmPool::getAssignedPools($type);
 	
 				//echo '<h1>VMs</h1>';
-				$pools = array();
 				foreach($assignedPools as $pool) {
 					$pools[] = $pool->sstVirtualMachinePool;
 				}
@@ -244,24 +245,28 @@ class LdapVm extends CLdapRecord {
 			}
 			
 			//echo '<pre>criteria ' . print_r($criteriaVms, true) . '</pre>';
-			$vms = LdapVm::model()->findAll($criteriaVms);
-			//echo "$type pool vmcount " . count($vms) . '<br />';
-			foreach($vms as $vm) {
-				$unique_vms[$vm->sstVirtualMachine] = $vm;
-				//echo '<pre>	' . $vm->sstVirtualMachine . ', ' . $vm->sstDisplayName . ' (pool: ' . $vm->sstVirtualMachinePool . ')</pre>';
+			if (0 < count($pools)) {
+				$vms = LdapVm::model()->findAll($criteriaVms);
+				//echo "$type pool vmcount " . count($vms) . '<br />';
+				foreach($vms as $vm) {
+					$unique_vms[$vm->sstVirtualMachine] = $vm;
+					//echo '<pre>	' . $vm->sstVirtualMachine . ', ' . $vm->sstDisplayName . ' (pool: ' . $vm->sstVirtualMachinePool . ')</pre>';
+				}
 			}
 
-			$criteriaVms = $criteria;
-			$criteriaVms['relattr'] = array();
-			$criteriaVms['relattr']['groups'] = array('ou' => $groups);
-			//echo '<pre>criteria ' . print_r($criteria, true) . '</pre>';
+			if (0 < count($groups)) {
+				$criteriaVms = $criteria;
+				$criteriaVms['relattr'] = array();
+				$criteriaVms['relattr']['groups'] = array('ou' => $groups);
+				//echo '<pre>criteria ' . print_r($criteria, true) . '</pre>';
 					
-			$vms = LdapVm::model()->findAll($criteriaVms);
-			//echo 'group vmcount ' . count($vms) . '<br/>';
-			foreach($vms as $vm) {
-				//echo '<pre>	' . $vm->sstVirtualMachine . ', ' . $vm->sstDisplayName . ' (pool: ' . $vm->sstVirtualMachinePool . ')</pre>';
-				if (!isset($unique_vms[$vm->sstVirtualMachine])) {
-					$unique_vms[$vm->sstVirtualMachine] = $vm;
+				$vms = LdapVm::model()->findAll($criteriaVms);
+				//echo 'group vmcount ' . count($vms) . '<br/>';
+				foreach($vms as $vm) {
+					//echo '<pre>	' . $vm->sstVirtualMachine . ', ' . $vm->sstDisplayName . ' (pool: ' . $vm->sstVirtualMachinePool . ')</pre>';
+					if (!isset($unique_vms[$vm->sstVirtualMachine])) {
+						$unique_vms[$vm->sstVirtualMachine] = $vm;
+					}
 				}
 			}
 	
