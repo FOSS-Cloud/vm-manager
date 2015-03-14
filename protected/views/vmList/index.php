@@ -99,8 +99,15 @@ else {
 EOS
 			, CClientScript::POS_END);
 		}
-		else if (1 == $vmpoolcount) {
-
+		elseif (1 == $vmpoolcount) {
+			$vmpool = reset($data['vmpools']);
+			if (array_key_exists('spiceuri', $vmpool)) {
+				$url = $vmpool['spiceuri'];
+				Yii::app()->clientScript->registerScript('refreshVms', <<<EOS
+	window.location = "{$url}";
+EOS
+				, CClientScript::POS_END);
+			}
 		}
 	}
 }
