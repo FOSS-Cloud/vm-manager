@@ -110,7 +110,8 @@
 		</div>
 		<div class="row">
 			<?php echo $form->labelEx($model,'userrole'); ?>
-			<?php echo $form->radioButtonList($model,'userrole', $userroles, array('separator' => '', 'style' => 'clear: none; float: left; margin-right: 6px; margin-top: 8px; margin-bottom: 6px;' , 'labelOptions' => array('style' => 'float: left; margin: 8px 20px 6px 0;'))); ?>
+			<?php //echo $form->radioButtonList($model,'userrole', $userroles, array('separator' => '', 'style' => 'clear: none; float: left; margin-right: 6px; margin-top: 8px; margin-bottom: 6px;' , 'labelOptions' => array('style' => 'float: left; margin: 8px 20px 6px 0;'))); ?>
+			<?php echo $form->dropDownList($model,'userrole', $userroles, array('prompt' => '', 'encode' => false)); ?>
 			<?php echo $form->error($model,'userrole'); ?>
 		</div>
 		<div class="row">
