@@ -42,13 +42,12 @@ class UserForm extends CFormModel {
 	public $language = 'en';
 	public $usergroups = array();
 
-	public function rules()
-	{
+	public function rules() {
 		return array(
-			array('dn, surname, givenname, username, mail, gender, telephone, userrole', 'required', 'on' => 'update'),
-			array('password, passwordcheck, language, usergroups', 'safe', 'on' => 'update'),
-			array('surname, givenname, username, mail, password, passwordcheck, gender, telephone, userrole', 'required', 'on' => 'create'),
-			array('dn, language, usergroups', 'safe', 'on' => 'create'),
+			array('dn, surname, givenname, username, mail, userrole', 'required', 'on' => 'update'),
+			array('password, passwordcheck, gender, telephone, language, usergroups', 'safe', 'on' => 'update'),
+			array('surname, givenname, username, mail, password, passwordcheck, userrole', 'required', 'on' => 'create'),
+			array('dn, gender, telephone, language, usergroups', 'safe', 'on' => 'create'),
 			array('username', 'match', 'pattern' => '/^[a-z0-9_]*$/', 'message' => Yii::t('user', 'Please use only<br/>a-z, 0-9 and the _ character.')),
 			array('mail', 'email'),
 			array('telephone, mobile', 'match', 'pattern' => '/^[0-9\s\+\/\(\)]*$/', 'message' => Yii::t('user', 'Please use only<br/>"0-9+()" characters and blank.')),
@@ -106,8 +105,7 @@ class UserForm extends CFormModel {
 	/**
 	 * @return array customized attribute labels (name=>label)
 	 */
-	public function attributeLabels()
-	{
+	public function attributeLabels() {
 		return array(
 			'surname' => Yii::t('user', 'surname'),
 			'givenname' => Yii::t('user', 'givenname'),
