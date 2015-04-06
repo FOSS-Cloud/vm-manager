@@ -393,12 +393,19 @@ class VmTemplateController extends Controller
 			$profiles = $subtree->findSubTree(array());
 			//echo '<pre>' . print_r($profiles, true) . '</pre>';
 
+			$screens = array(0=>'');
+			$config = CLdapRecord::model('LdapVmPoolDefinition')->findByAttributes(array('attr'=>array('ou'=>$vm->vmpool->sstVirtualMachinePoolType)));
+			for($i=1; $i<=$config->sstNumberOfScreens; $i++) {
+				$screens[$i] = $i;
+			}
+			
 			$this->render('create',array(
 				'model' => $model,
 				'vmpools' => $this->createDropdownFromLdapRecords($vmpools, 'sstVirtualMachinePool', 'sstDisplayName'),
 				'nodes' => array(), //$this->createDropdownFromLdapRecords($nodes, 'sstNode', 'sstNode'),
 				'profiles' => $this->getProfilesFromSubTree($profiles),
 				'defaults' => null,
+				'screens' => $screens,
 			));
 		}
 	}
@@ -511,7 +518,7 @@ class VmTemplateController extends Controller
 				$model->sstVolumeCapacity = $defaults->VolumeCapacityMin;
 			}
 
-			$screens = array();
+			$screens = array(0=>'');
 			$config = CLdapRecord::model('LdapVmPoolDefinition')->findByAttributes(array('attr'=>array('ou'=>$vm->vmpool->sstVirtualMachinePoolType)));
 			for($i=1; $i<=$config->sstNumberOfScreens; $i++) {
 				$screens[$i] = $i;
@@ -598,6 +605,11 @@ class VmTemplateController extends Controller
 				$this->sendJsonAnswer(array('error' => 2, 'message' => Yii::t('vmtemplate', 'Pool not found!')));
 				Yii::app()->end();
 			}
+			$range = $vmpool->getRange();
+			if (is_null($range)) {
+				$this->sendAjaxAnswer(array('error' => 1, 'message' => Yii::t('vmtemplate', 'No range found for VMPool!')));
+				Yii::app()->end();
+			}
 			$storagepool = $vmpool->getStoragePool();
 			if (is_null($storagepool)) {
 				$this->sendJsonAnswer(array('error' => 1, 'message' => Yii::t('vmtemplate', 'No storagepool found for selected vmpool!')));
@@ -679,12 +691,6 @@ class VmTemplateController extends Controller
 				$interface->save();
 			}
 
-			$range = $vmpool->getRange();
-			if (is_null($range)) {
-				$vm->delete(true);
-				$this->sendAjaxAnswer(array('error' => 1, 'message' => Yii::t('vmtemplate', 'No range found for VMPool!')));
-				return;
-			}
 			$dhcpvm = new LdapDhcpVm();
 			$dhcpvm->setBranchDn('ou=virtual machines,' . $range->subnet->dn);
 			$dhcpvm->cn = $vm->sstVirtualMachine;
