@@ -212,7 +212,7 @@ class GroupController extends Controller
 							$group->sstBelongsToCustomerUID = Yii::app()->user->customerUID;
 							$group->sstBelongsToResellerUID = Yii::app()->user->resellerUID;
 							$group->labeledURI = 'ldap:///ou=people,' . CLdapServer::getInstance()->getBaseDn() . '??one?(sstGroupUID=' . $uid . ')';
-							//$group->save();
+							$group->save();
 						}
 					}
 					else {
