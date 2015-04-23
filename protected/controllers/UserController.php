@@ -346,7 +346,7 @@ class UserController extends Controller
 			$s .= '<cell>'. $user->getName() ."</cell>\n";
 			$s .= '<cell>'. $user->mail ."</cell>\n";
 			$s .= '<cell>'. $user->role->sstDisplayName ."</cell>\n";
-			$s .= '<cell>'. ($user->isActiveUser() ? 'true' : 'false') ."</cell>\n";
+			$s .= '<cell>'. ($user->isActiveUser() ? 'false' : 'true') ."</cell>\n";
 			$s .= "<cell></cell>\n";
 			$s .= "</row>\n";
 		}
