@@ -186,7 +186,7 @@ $this->widget('ext.zii.CJqGrid', array(
 					act += '<img src="{$imagesUrl}/group_edit.png" alt="" title="" class="action notallowed" /></a>';
 				}
 				//act += '<img src="{$imagesUrl}/user_edit.png" style="cursor: pointer;" alt="" title="edit Group" class="action" onclick="update(\'' + row['dn'] + '\');" />';
-				if ('true' !== row['hasuser'] && !${groupDelete}) {
+				if ('true' !== row['hasuser'] && ${groupDelete}) {
 					act += '<img src="{$imagesUrl}/group_del.png" style="cursor: pointer;" alt="" title="delete Group" class="action" onclick="deleteRow(\'' + ids[i] + '\');" />';
 				}
 				else {
