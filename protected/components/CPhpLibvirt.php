@@ -413,7 +413,11 @@ class CPhpLibvirt {
 	}
 
 	public function generateMacAddress() {
-		return sprintf('%02x:%02x:%02x:%02x:%02x:%02x', 0x52, 0x54, 0x00, rand(0, 0xFF), rand(0, 0xFF), rand(0, 0xFF));
+		//return sprintf('%02x:%02x:%02x:%02x:%02x:%02x', 0x52, 0x54, 0x00, rand(0, 0xFF), rand(0, 0xFF), rand(0, 0xFF));
+		$str = microtime();
+		list($usec, $sec) = explode(' ', $str);
+		list($dummy, $usec) = explode('.', $usec);
+		return sprintf('%02x:%02x:%02x:%02x:%02x:%02x', 0x52, 0x54, 0x00, $sec & 0xFF, ($usec & 0xFF00) >> 8, $usec & 0xFF);
 	}
 
 	public function generateSpicePassword() {
