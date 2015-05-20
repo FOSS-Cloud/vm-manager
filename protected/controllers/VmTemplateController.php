@@ -613,7 +613,7 @@ class VmTemplateController extends Controller
 			}
 			$range = $vmpool->getRange();
 			if (is_null($range)) {
-				$this->sendAjaxAnswer(array('error' => 1, 'message' => Yii::t('vmtemplate', 'No range found for VMPool!')));
+				$this->sendJsonAnswer(array('error' => 1, 'message' => Yii::t('vmtemplate', 'No range found for VMPool!')));
 				Yii::app()->end();
 			}
 			$storagepool = $vmpool->getStoragePool();
