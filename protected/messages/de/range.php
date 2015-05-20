@@ -19,4 +19,5 @@ return array (
   'Create range' => '',
   'Edit range "{name}"' => '',
   'Save' => '',
+  'sourceBridge' => 'Interface Source Bridge',
 );

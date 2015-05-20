@@ -250,6 +250,12 @@ class SubnetController extends Controller
 			$result->cn = $model->ip . '/' . $model->netmask;
 			$result->sstDisplayName = $model->name;
 			$result->sstNetworkType = $model->type;
+			if ('' != $model->sourceBridge) {
+				$result->sstSourceBridge = $model->sourceBridge;
+			}
+			else {
+				$result->sstSourceBridge = 'vmbr0';
+			}
 			$result->save();
 
 			$this->redirect(array('index'));
@@ -268,6 +274,12 @@ class SubnetController extends Controller
 			$model->netmask = $netmask;
 			$model->name = $range->sstDisplayName;
 			$model->type = $range->sstNetworkType;
+			if ('' != $range->sstSourceBridge) {
+				$model->sourceBridge = $range->sstSourceBridge;
+			}
+			else {
+				$model->sourceBridge = 'vmbr0';
+			}
 
 			$this->render('updateRange',array(
 				'model' => $model,
@@ -300,6 +312,12 @@ class SubnetController extends Controller
 			$range->cn = $model->ip . '/' . $model->netmask;
 			$range->sstDisplayName = $model->name;
 			$range->sstNetworkType = $model->type;
+			if ('' != $model->sourceBridge) {
+				$range->sstSourceBridge = $model->sourceBridge;
+			}
+			else {
+				$range->sstSourceBridge = 'vmbr0';
+			}
 			//$subnet->sstBelongsToCustomerUID = Yii::app()->user->customerUID;
 			//$subnet->sstBelongsToResellerUID = Yii::app()->user->resellerUID;
 			$range->save();
@@ -309,6 +327,7 @@ class SubnetController extends Controller
 		else {
 			$subnet = CLdapRecord::model('LdapDhcpSubnet')->findByDn($model->subnetDn);
 			$model->subnet = $subnet->cn . '/' . $subnet->dhcpNetMask;
+			$model->sourceBridge = 'vmbr0';
 
 			$this->render('createRange',array(
 				'model' => $model,

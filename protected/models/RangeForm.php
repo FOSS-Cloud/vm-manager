@@ -36,16 +36,18 @@ class RangeForm extends CFormModel {
 	public $netmask;
 	public $name;
 	public $type;
+	public $sourceBridge;
 
-	public function rules()
-	{
+	public function rules() {
 		return array(
 			array('subnetDn, subnet, ip, netmask, name, type', 'required', 'on' => 'create'),
-			array('dn', 'safe', 'on' => 'create'),
+			array('dn, sourceBridge', 'safe', 'on' => 'create'),
 			array('subnetDn, subnet, dn, ip, netmask, name, type', 'required', 'on' => 'update'),
+			array('sourceBridge', 'safe', 'on' => 'update'),
 			array('ip', 'checkRange'),
 			array('netmask, type', 'length', 'allowEmpty' => false),
 			array('netmask', 'checkNetmask'),
+			array('sourceBridge', 'length', 'allowEmpty' => true),
 		);
 	}
 
@@ -111,6 +113,7 @@ class RangeForm extends CFormModel {
 			'netmask' => Yii::t('subnet', 'Net Mask'),
 			'title' => Yii::t('subnet', 'title'),
 			'type' => Yii::t('subnet', 'Type'),
+			'sourceBridge' => Yii::t('range', 'sourceBridge'),
 		);
 	}
 }

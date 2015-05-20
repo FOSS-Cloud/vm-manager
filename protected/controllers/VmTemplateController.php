@@ -353,6 +353,12 @@ class VmTemplateController extends Controller
 						if (is_null($firstMac)) {
 							$firstMac = $interface->sstMacAddress;
 						}
+						if (isset($range->sstSourceBridge) && '' !== $range->sstSourceBridge) {
+							$interface->sstSourceBridge = $range->sstSourceBridge;
+						}
+						else {
+							$interface->sstSourceBridge = 'vmbr0';
+						}
 						$interface->setBranchDn($devices->dn);
 						$interface->save();
 					}
@@ -687,6 +693,12 @@ class VmTemplateController extends Controller
 				if (is_null($firstMac)) {
 					$firstMac = $interface->sstMacAddress;
 				}
+				if (isset($range->sstSourceBridge) && '' !== $range->sstSourceBridge) {
+					$interface->sstSourceBridge = $range->sstSourceBridge;
+				}
+				else {
+					$interface->sstSourceBridge = 'vmbr0';
+				}
 				$interface->setBranchDn($devices->dn);
 				$interface->save();
 			}
@@ -835,6 +847,12 @@ class VmTemplateController extends Controller
 				$interface->sstMacAddress = CPhpLibvirt::getInstance()->generateMacAddress();
 				if (is_null($firstMac)) {
 					$firstMac = $interface->sstMacAddress;
+				}
+				if (isset($range->sstSourceBridge) && '' !== $range->sstSourceBridge) {
+					$interface->sstSourceBridge = $range->sstSourceBridge;
+				}
+				else {
+					$interface->sstSourceBridge = 'vmbr0';
 				}
 				$interface->setBranchDn($devices->dn);
 				$interface->save();

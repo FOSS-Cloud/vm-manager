@@ -101,6 +101,13 @@ EOS
 			<?php echo $form->dropDownList($model,'type', $types); ?>
 			<?php echo $form->error($model,'type'); ?>
 		</div>
+		<br/>
+		<div class="row">
+			<?php echo $form->labelEx($model,'sourceBridge'); ?>
+			<?php echo $form->textField($model,'sourceBridge',array('size'=>20)); ?>
+			<?php echo $form->error($model,'sourceBridge'); ?>
+		</div>
+		<br/>
 		<div class="row buttons">
 			<?php echo CHtml::submitButton($submittext, array('id' => 'submit')); ?>
 		</div>
