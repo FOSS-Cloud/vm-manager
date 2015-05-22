@@ -523,6 +523,9 @@ class VmTemplateController extends Controller
 			else {
 				$model->sstVolumeCapacity = $defaults->VolumeCapacityMin;
 			}
+			if (isset($vm->sstNumberOfScreens)) {
+				$model->sstNumberOfScreens = $vm->sstNumberOfScreens;
+			}
 
 			$screens = array(0=>'');
 			$config = CLdapRecord::model('LdapVmPoolDefinition')->findByAttributes(array('attr'=>array('ou'=>$vm->vmpool->sstVirtualMachinePoolType)));
