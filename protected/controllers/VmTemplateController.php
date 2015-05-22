@@ -261,9 +261,6 @@ class VmTemplateController extends Controller
 				if (0 < $model->sstNumberOfScreens) {
 					$result->sstNumberOfScreens = $model->sstNumberOfScreens;
 				}
-				else {
-					$result->sstNumberOfScreens = array();
-				}
 				$result->sstVirtualMachine = CPhpLibvirt::getInstance()->generateUUID();
 				$result->description = $model->description;
 				if ('TBD_GUI' == $result->sstOnCrash) {
