@@ -754,6 +754,11 @@ class VmTemplateController extends Controller
 				$this->sendJsonAnswer(array('error' => 2, 'message' => Yii::t('vmtemplate', 'Pool not found!')));
 				Yii::app()->end();
 			}
+			$range = $vmpool->getRange();
+			if (is_null($range)) {
+				$this->sendJsonAnswer(array('error' => 1, 'message' => Yii::t('vmtemplate', 'No range found for VMPool!')));
+				Yii::app()->end();
+			}
 			$storagepool = $vmpool->getStoragePool();
 			if (is_null($storagepool)) {
 				$this->sendJsonAnswer(array('error' => 1, 'message' => 'No storagepool found for selected vmpool!'));
@@ -860,11 +865,6 @@ class VmTemplateController extends Controller
 
 			if ('System-Preparation' === $vm->sstVirtualMachineSubType) {
 				/* Not necessary for a golden image */
-				$range = $vmpool->getRange();
-				if (is_null($range)) {
-					$this->sendAjaxAnswer(array('error' => 1, 'message' => Yii::t('vmtemplate', 'No range found for VMPool!')));
-					return;
-				}
 				$dhcpvm = new LdapDhcpVm();
 				$dhcpvm->setBranchDn('ou=virtual machines,' . $range->subnet->dn);
 				$dhcpvm->cn = $result->sstVirtualMachine;
