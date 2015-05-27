@@ -175,6 +175,7 @@ function(data) {
 		$('#VmTemplateForm_node_em_').html('No Node found! Please <a href="$subnetcreate">create</a> one.').show();
 	}
 	$('#VmTemplateForm_sstNumberOfScreens').children().remove();
+	$('#VmTemplateForm_sstNumberOfScreens').append($('<option value="0"></option>'));
 	for (i=1; i<=data['screens']; i++) {
 		$('#VmTemplateForm_sstNumberOfScreens').append($('<option value="' + i + '">' + i + '</option>'));
 	}

@@ -35,4 +35,4 @@ $this->breadcrumbs=array(
 $this->title = Yii::t('vmtemplate', 'Create VmTemplate');
 //$this->helpurl = Yii::t('help', 'createVmTemplate');
 
-echo $this->renderPartial('_form', array('model'=>$model,'vmpools'=>$vmpools,'nodes'=>$nodes,'profiles' =>$profiles,'defaults'=>$defaults,'submittext'=>Yii::t('vmtemplate','Create')));
+echo $this->renderPartial('_form', array('model'=>$model,'vmpools'=>$vmpools,'nodes'=>$nodes,'profiles' =>$profiles,'defaults'=>$defaults,'screens' => $screens,'submittext'=>Yii::t('vmtemplate','Create')));
