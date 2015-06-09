@@ -144,7 +144,7 @@ class Controller extends CController
 					'patch' => array(
 						'label' => Yii::t('menu', 'Patch'),
 						'url' => array('/patch/patch/index'),
-						'active' => ($this->id == 'configuration' && $action == 'patch'),
+						'active' => ($this->id == 'patch' && $action == 'index'),
 					),
 				),
 			),

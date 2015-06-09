@@ -36,7 +36,8 @@ class PatchController extends BaseController
 	public function beforeAction($action) {
 		$retval = parent::beforeAction($action);
 		if ($retval) {
-			
+			$this->activesubmenu = 'config';
+
 			if ('process' !== $action->id) {
 				$cs=Yii::app()->clientScript;
 				$cs->scriptMap['jquery.js'] = false;
