@@ -152,7 +152,9 @@ class SiteController extends Controller
 					$this->redirect('site');
 				}
 				else {
-					$this->redirect($this->submenu['vmlist']['items'][0]['url']);
+					$url = $this->submenu['vmlist']['items'][0]['url'];
+					$url['as'] = true;
+					$this->redirect($url);
 				}
 			}
 		}

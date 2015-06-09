@@ -37,6 +37,12 @@ $this->title = Yii::t('vmlist', 'Assigned VMs');
 
 $baseUrl = Yii::app()->baseUrl;
 
+$refreshVms = <<< EOS
+	var url = window.location.pathname;
+	console.log('loop: ' + url);
+	var looptimer = setTimeout(function() {window.location = url;}, 30000);
+EOS;
+
 $vmcount = count($data['vms']);
 $vmpoolcount = count($data['vmpools']);
 if (0 == $vmcount + $vmpoolcount) {
@@ -78,11 +84,11 @@ else {
 			echo '<li class="ui-widget-content" style="border-top: 0px;border-right: 0px;border-left: 0px;">';
 			if (isset($vmpool['spiceuri'])) {
 				echo '<a href="#" onclick="launch(\'' . $vmpool['spiceuri'] . '\');" style="float: left;">' . $name . '</a>';
-				echo '<a href="#" onclick="launch(\'' . $vmpool['spiceuri'] . '\');" style="float: right; padding-top: 3px;"><img src="' . $baseUrl . '/images/vm_login.png" title="use VM"/></a>';
+				echo '<a href="#" onclick="launch(\'' . $vmpool['spiceuri'] . '\');" style="float: right; padding-top: 3px;"><img src="' . $baseUrl . '/images/vm_login.png" title="launch VM"/></a>';
 			}
 			else {
 				echo '<a href="#" style="float: left;" onclick="assignVm(\'' . $vmpool['dn'] . '\');">' . $name . '</a>';
-				echo '<a href="#" style="float: right; padding-top: 3px;" onclick="assignVm(\'' . $vmpool['dn'] . '\');"><img src="' . $baseUrl . '/images/vm_login.png" title="use dyn. VM"/></a>';
+				echo '<a href="#" style="float: right; padding-top: 3px;" onclick="assignVm(\'' . $vmpool['dn'] . '\');"><img src="' . $baseUrl . '/images/vm_login.png" title="ask for VM"/></a>';
 			}
 			echo '<br class="clear" />';
 			echo $vmpool['description'];
@@ -90,27 +96,33 @@ else {
 		}
 		echo '</ul>';
 	}
-	if (1 == $vmcount + $vmpoolcount) {
+	if (1 == $vmcount + $vmpoolcount && $data['autostart']) {
 		if (1 == $vmcount) {
 			$vm = reset($data['vms']);
 			$url = $vm['spiceuri'];
-			Yii::app()->clientScript->registerScript('refreshVms', <<<EOS
-	window.location = "{$url}";
-EOS
-			, CClientScript::POS_END);
+			$refreshVms = <<<EOS
+	setTimeout(function(){ launch('{$url}'); }, 400); 
+EOS;
 		}
 		elseif (1 == $vmpoolcount) {
 			$vmpool = reset($data['vmpools']);
-			if (array_key_exists('spiceuri', $vmpool)) {
+			if (isset($vmpool['spiceuri'])) {
 				$url = $vmpool['spiceuri'];
-				Yii::app()->clientScript->registerScript('refreshVms', <<<EOS
-	window.location = "{$url}";
-EOS
-				, CClientScript::POS_END);
+				$refreshVms = <<<EOS
+	setTimeout(function(){ launch('{$url}'); }, 400); 
+EOS;
 			}
+			else {
+				$dn = $vmpool['dn'];
+				$refreshVms = <<<EOS
+	setTimeout(function(){ assignVm('{$dn}'); }, 400); 
+EOS;
+			}
+
 		}
 	}
 }
+Yii::app()->clientScript->registerScript('refreshVms', $refreshVms, CClientScript::POS_END);
 ?>
 <div style="display: none;">
 <a id="startVmLink" href="#startVm">checkcopy</a>
@@ -195,9 +207,9 @@ EOS
 
 	function launch(uri) {
 		$.fancybox.close();
-		var loc = window.location;
+		var loc = window.location.pathname;
 		window.location = uri;
-		setTimeout('window.location = "' + loc + '";window.location.reload();', 1000);
+		setTimeout(function(){window.location = loc;}, 1000);
 	}
 	function startPersistentVm(dn)
 	{

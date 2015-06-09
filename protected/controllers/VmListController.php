@@ -92,72 +92,87 @@ class VmListController extends Controller
 		);
 	}
 
-	public function actionIndex() {
-		$user = CLdapRecord::model('LdapUser')->findByDn('uid=' . Yii::app()->user->uid . ',ou=people');
-		$usergroups = Yii::app()->user->getState('groupuids', array());
-		//echo 'User: ' . $user->uid . '; <pre>Usergroups: ' . print_r($usergroups, true) . '</pre>';
-		$data = array('vms'=>array(), 'vmpools'=>array());
-
-		// Let's check the dynamic VM Pools
-		$vmpools = LdapVmPool::model()->findAll(array('attr'=>array('sstVirtualMachinePoolType'=>'dynamic')));
-		foreach($vmpools as $vmpool) {
-			$poolAssigned = false;
-			$poolgroups = $vmpool->groups;
-			//echo 'Pool: ' . $vmpool->sstDisplayName . '; Groups: ';
-			foreach($poolgroups as $poolgroup) {
-				//echo $poolgroup->ou . ', ';
-				if (false !== array_search($poolgroup->ou, $usergroups)) {
-					$poolAssigned = true;
-					break;
-				}
+	public function actionIndex($as=false) {
+		if (Yii::app()->user->hasRight('dynamicVM', COsbdUser::$RIGHT_ACTION_VIEW, COsbdUser::$RIGHT_VALUE_ALL)) {
+			$criteria = array('attr' => array('sstVirtualMachineType' => 'dynamic'));
+			$vms = LdapVm::model()->findAll($criteria);
+			foreach($vms as $vm) {
+				$unique_vms[$vm->sstVirtualMachine] = $vm;
 			}
-			//echo '<br/>';
-			if (!$poolAssigned) {
-				// No Pool assigned; try users
-				//echo 'Pool: ' . $vmpool->sstDisplayName . '; Users: ';
-				$vmuser = $vmpool->people;
-				foreach($vmuser as $vmoneuser) {
-					//echo $vmoneuser->ou . ', ';
-					if ($user->uid == $vmoneuser->ou) {
+		}
+		else if(Yii::app()->user->hasRight('dynamicVM', COsbdUser::$RIGHT_ACTION_VIEW, COsbdUser::$RIGHT_VALUE_OWNER)) {
+			$user = CLdapRecord::model('LdapUser')->findByDn('uid=' . Yii::app()->user->uid . ',ou=people');
+			$usergroups = Yii::app()->user->getState('groupuids', array());
+			//echo 'User: ' . $user->uid . ', MAC ' . Utils::getMacAddress($_SERVER["REMOTE_ADDR"]) . ' <pre>Usergroups: ' . print_r($usergroups, true) . '</pre>';
+			$data = array('vms'=>array(), 'vmpools'=>array());
+
+			// Let's check the dynamic VM Pools
+			//echo '<h1>dynamic</h1>';
+			$vmpools = LdapVmPool::model()->findAll(array('attr'=>array('sstVirtualMachinePoolType'=>'dynamic')));
+			foreach($vmpools as $vmpool) {
+				//echo '=&gt; Pool: ' . $vmpool->sstDisplayName . ', ' . $vmpool->sstVirtualMachinePool . '<br/>';
+				$poolAssigned = false;
+				$poolgroups = $vmpool->groups;
+				//echo 'Pool: ' . $vmpool->sstDisplayName . '; Groups: ';
+				foreach($poolgroups as $poolgroup) {
+					//echo $poolgroup->ou . ', ';
+					if (false !== array_search($poolgroup->ou, $usergroups)) {
 						$poolAssigned = true;
+						//echo '; group found';
 						break;
 					}
 				}
 				//echo '<br/>';
-			}
-			//echo 'looking for pool: ' . $vmpool->sstDisplayName . '<br/>';
-			$poolAssigned = $this->additionalVmPoolCheck($vmpool, $poolAssigned);
-			
-			if ($poolAssigned) {
-				$vmAssigned = false;
-				$vmFree = false;
-				//echo '   group found<br/>';
-				// The user is in a group. Now let's check if there is already a VM running
-				//$vms = LdapVm::model()->findAll(array('attr'=>array('sstVirtualMachinePool'=>$vmpool->sstVirtualMachinePool)));
-				$vms = $vmpool->runningDynVms;
-				foreach($vms as $vm) {
-					$vmpeople = $vm->people;
-					//echo '<span style="margin-left: 20px;"> </span>looking for vm: ' .  $vm->sstVirtualMachine . '<br/>';
-					if (0 == count($vmpeople) && !$vmFree) {
-						$vmFree = true;
+				if (!$poolAssigned) {
+					// No Pool assigned; try users
+					//echo 'Pool: ' . $vmpool->sstDisplayName . '; Users: ';
+					$vmuser = $vmpool->people;
+					foreach($vmuser as $vmoneuser) {
+						//echo $vmoneuser->ou . ', ';
+						if ($user->uid == $vmoneuser->ou) {
+							$poolAssigned = true;
+							//echo '; user found';
+							break;
+						}
 					}
-					$vmAssigned = $this->additionalVmCheck($vm, $vmAssigned);
-					if ($vmAssigned) {
+					//echo '<br/>';
+				}
+				//echo 'looking for pool: ' . $vmpool->sstDisplayName . '<br/>';
+				$poolAssigned = $this->additionalVmPoolCheck($vmpool, $poolAssigned);
+			
+				if ($poolAssigned) {
+					$vmAssigned = false;
+					$vmFree = false;
+					//echo '   group found<br/>';
+					// The user is in a group. Now let's check if there is already a VM running
+					//$vms = LdapVm::model()->findAll(array('attr'=>array('sstVirtualMachinePool'=>$vmpool->sstVirtualMachinePool)));
+					$vms = $vmpool->runningDynVms;
+					//echo '<span style="margin-left: 30px;"> </span>vm count: ' .  count($vms) . '<br/>';
+					foreach($vms as $vm) {
+						//echo '=&gt; VM: ' . $vm->sstDisplayName . '<br/>';
+						$vmpeople = $vm->people;
+						//echo '<span style="margin-left: 20px;"> </span>looking for vm: ' .  $vm->sstVirtualMachine . '<br/>';
+						if (0 == count($vmpeople) && !$vmFree) {
+							$vmFree = true;
+						}
+						$vmAssigned = $this->additionalVmCheck($vm, $vmAssigned);
+						if ($vmAssigned) {
+							$data['vmpools'][$vmpool->sstDisplayName] = array(
+								'description' => $vmpool->description,
+								'spiceuri' => $vm->getSpiceUri()
+							);
+							//echo ' <pre>DATA '  . var_export($data, true) . '</pre>';
+							break;
+						}
+					}
+					if (!$vmAssigned && $vmFree) {
 						$data['vmpools'][$vmpool->sstDisplayName] = array(
 							'description' => $vmpool->description,
-							'spiceuri' => $vm->getSpiceUri()
+							'dn' => $vmpool->getDn(),
 						);
-						//echo ' <pre>DATA '  . var_export($data, true) . '</pre>';
-						break;
 					}
+					//echo '<br/>';
 				}
-				if (!$vmAssigned && $vmFree) {
-					$data['vmpools'][$vmpool->sstDisplayName] = array(
-						'description' => $vmpool->description,
-						'dn' => $vmpool->getDn(),
-					);
-				}
-				//echo '<br/>';
 			}
 		}
 		$vms = LdapVm::getAssignedVms('persistent', array('attr' => array('sstVirtualMachineType' => 'persistent')));
@@ -173,7 +188,8 @@ class VmListController extends Controller
 			);
 		}
 		
-		$this->header[] = '<meta http-equiv="refresh" content="30; URL=' . Yii::app()->request->url . '">';
+		//$this->header[] = '<meta http-equiv="refresh" content="30;URL=' . Yii::app()->request->url . '" />';
+		$data['autostart'] = $as;
 		$this->render('index',array(
 			'data'=>$data,
 		));
