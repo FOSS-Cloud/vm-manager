@@ -741,8 +741,8 @@ function finishDyn(id, formdata)
 				$('#errorSelectDynamic').css('display', 'block');
 				$('#errorSelectDynamicMsg').html(data.message);
 				if (2 == data.error) {
-					$('#selectDynamicButton').removeAttr('disabled');
-					$('#selectDynamicButton').removeClass('ui-state-disabled');
+					$('#selectDynamicOkButton').removeAttr('disabled');
+					$('#selectDynamicOkButton').removeClass('ui-state-disabled');
 				}
 			}
 			else {
@@ -1116,7 +1116,7 @@ EOS
 		<br/>
  -->
 		<div id="errorSelectDynamic" class="ui-state-error ui-corner-all" style="display: none; width: 90%; margin-top: 10px; margin-left: 20px; padding: 0pt 0.7em; float: right;">
-			<p style="margin: 0.3em 0pt ; "><span style="float: left; margin-right: 0.3em;" class="ui-icon ui-icon-alert"></span><span id="errorSelectDynamicnMsg" style="display: block;"></span></p>
+			<p style="margin: 0.3em 0pt ; "><span style="float: left; margin-right: 0.3em;" class="ui-icon ui-icon-alert"></span><span id="errorSelectDynamicMsg" style="display: block;"></span></p>
 		</div>
 		<div id="infoSelectDynamic" class="ui-state-highlight ui-corner-all" style="display: none; width: 90%; margin-top: 10px; margin-left: 20px; padding: 0pt 0.7em; float: right;">
 			<p style="margin: 0.3em 0pt ; "><span style="float: left; margin-right: 0.3em;" class="ui-icon ui-icon-info"></span><span id="infoSelectDynamicMsg"></span></p>
