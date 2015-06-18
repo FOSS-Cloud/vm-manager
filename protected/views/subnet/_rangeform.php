@@ -111,8 +111,6 @@ EOS
 		<div class="row buttons">
 			<?php echo CHtml::submitButton($submittext, array('id' => 'submit')); ?>
 		</div>
-	</div>
-	<br class="clear"/>
-<?php $this->endWidget(); ?>
-
+		<br class="clear"/>
+	<?php $this->endWidget(); ?>
 </div><!-- form -->

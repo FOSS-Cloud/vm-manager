@@ -409,5 +409,6 @@ EOS
 			<?php echo CHtml::submitButton($submittext, array('id' => 'submit')); ?>
 		</div>
 		<br class="clear"/>
-	<?php $this->endWidget(); ?>
+	</div>
+<?php $this->endWidget(); ?>
 </div><!-- form -->
