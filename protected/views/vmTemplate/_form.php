@@ -211,6 +211,7 @@ else {
 EOS
 , CClientScript::POS_END);
 ?>
+	<div>
 		<div class="column span-6">
 				<?php echo $form->labelEx($model,'node'); ?>
 				<?php echo $form->textField($model, 'node',array('size'=>20, 'disabled'=>"disabled")) . '<span style="font-size: 70%;"> (readonly)</span><br/>'; ?>

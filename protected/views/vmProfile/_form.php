@@ -171,6 +171,7 @@ EOS
 }
 else {
 	echo $form->hiddenField($model, 'dn');
+	echo '<div>';
 }
 ?>
 		<div class="row">
