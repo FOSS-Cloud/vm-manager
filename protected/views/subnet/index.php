@@ -86,9 +86,9 @@ $this->widget('ext.zii.CJqGrid', array(
 			// 'width' => 124
 		),
 		'autowidth'=>true,
-//		'rowNum'=>20,
+		'rowNum'=>2000,
 //		'rowList'=> array(10,20,30),
-		'height'=>300,
+		'height'=>'auto',
 		'altRows'=>true,
 		'editurl'=>$deleteurl,
 		'treeGrid'=>true,
