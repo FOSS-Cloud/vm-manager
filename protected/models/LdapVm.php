@@ -243,6 +243,23 @@ class LdapVm extends CLdapRecord {
 				}
 				$criteriaVms['attr']['sstVirtualMachinePool'] = $pools;
 			}
+			else {
+				$criteriaPool = array('attr' => array('sstVirtualMachinePool' => $criteria['attr']['sstVirtualMachinePool']));
+				$criteriaPool['relattr'] = array();
+				$criteriaPool['relattr']['groups'] = array('ou' => $groups);
+				$assignedPools = LdapVmPool::model()->findAll($criteriaPool);
+				foreach($assignedPools as $pool) {
+					$pools[] = $pool->sstVirtualMachinePool;
+				}
+				$criteriaPool = array('attr' => array('sstVirtualMachinePool' => $criteria['attr']['sstVirtualMachinePool']));
+				$criteriaPool['relattr'] = array();
+				$criteriaPool['relattr']['people'] = array('ou' => $user->uid);
+				$assignedPools = LdapVmPool::model()->findAll($criteriaPool);
+				foreach($assignedPools as $pool) {
+					$pools[] = $pool->sstVirtualMachinePool;
+				}
+				$criteriaVms['attr']['sstVirtualMachinePool'] = $pools;
+			}
 			
 			//echo '<pre>criteria ' . print_r($criteriaVms, true) . '</pre>';
 			if (0 < count($pools)) {
