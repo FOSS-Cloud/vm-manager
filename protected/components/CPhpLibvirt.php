@@ -451,17 +451,18 @@ class CPhpLibvirt {
 		 * Use this filter for node-wide unique spice ports
 		 * '(&(objectClass=sstSpice)(sstNode=' . $node . '))'
 		 */
-		$result = $server->search('ou=virtualization,ou=services', '(&(objectClass=sstSpice)(sstNode=' . $node . '))', array('sstSpicePort'));
+		$result = $server->search('ou=virtualization,ou=services', '(&(objectClass=sstSpice))', array('sstSpicePort'));
 		for($i=0; $i<$result['count']; $i++) {
 			$port = $result[$i]['sstspiceport'][0];
 			$portsUsed[$port - $portMin] = true;
 		}
+/*
 		$result = $server->search('ou=virtualization,ou=services', '(&(objectClass=sstVirtualizationVirtualMachine)(sstMigrationNode=' . $node . '))', array('sstMigrationSpicePort'));
 		for($i=0; $i<$result['count']; $i++) {
 			$port = $result[$i]['sstmigrationspiceport'][0];
 			$portsUsed[$port - $portMin] = true;
 		}
-
+*/
 		$port = 0;
 		for ($i = 0; $i < $size; $i++) {
 			if (!$portsUsed[$i]) {
