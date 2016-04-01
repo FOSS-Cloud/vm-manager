@@ -397,9 +397,11 @@ class VmTemplateController extends Controller
 			//echo '<pre>' . print_r($profiles, true) . '</pre>';
 
 			$screens = array(0=>'');
-			$config = CLdapRecord::model('LdapVmPoolDefinition')->findByAttributes(array('attr'=>array('ou'=>$vm->vmpool->sstVirtualMachinePoolType)));
-			for($i=1; $i<=$config->sstNumberOfScreens; $i++) {
-				$screens[$i] = $i;
+			if (isset($vm)) {
+				$config = CLdapRecord::model('LdapVmPoolDefinition')->findByAttributes(array('attr'=>array('ou'=>$vm->vmpool->sstVirtualMachinePoolType)));
+				for($i=1; $i<=$config->sstNumberOfScreens; $i++) {
+					$screens[$i] = $i;
+				}
 			}
 			
 			$this->render('create',array(
