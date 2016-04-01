@@ -93,6 +93,11 @@ class VmListController extends Controller
 	}
 
 	public function actionIndex($as=false) {
+		$user = CLdapRecord::model('LdapUser')->findByDn('uid=' . Yii::app()->user->uid . ',ou=people');
+		$usergroups = Yii::app()->user->getState('groupuids', array());
+		//echo 'User: ' . $user->uid . ', MAC ' . Utils::getMacAddress($_SERVER["REMOTE_ADDR"]) . ' <pre>Usergroups: ' . print_r($usergroups, true) . '</pre>';
+		$data = array('vms'=>array(), 'vmpools'=>array());
+
 		if (Yii::app()->user->hasRight('dynamicVM', COsbdUser::$RIGHT_ACTION_VIEW, COsbdUser::$RIGHT_VALUE_ALL)) {
 			$criteria = array('attr' => array('sstVirtualMachineType' => 'dynamic'));
 			$vms = LdapVm::model()->findAll($criteria);
@@ -101,11 +106,6 @@ class VmListController extends Controller
 			}
 		}
 		else if(Yii::app()->user->hasRight('dynamicVM', COsbdUser::$RIGHT_ACTION_VIEW, COsbdUser::$RIGHT_VALUE_OWNER)) {
-			$user = CLdapRecord::model('LdapUser')->findByDn('uid=' . Yii::app()->user->uid . ',ou=people');
-			$usergroups = Yii::app()->user->getState('groupuids', array());
-			//echo 'User: ' . $user->uid . ', MAC ' . Utils::getMacAddress($_SERVER["REMOTE_ADDR"]) . ' <pre>Usergroups: ' . print_r($usergroups, true) . '</pre>';
-			$data = array('vms'=>array(), 'vmpools'=>array());
-
 			// Let's check the dynamic VM Pools
 			//echo '<h1>dynamic</h1>';
 			$vmpools = LdapVmPool::model()->findAll(array('attr'=>array('sstVirtualMachinePoolType'=>'dynamic')));
