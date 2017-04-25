@@ -76,6 +76,12 @@ return array(
 			// Don't change the following params if you don't know what you are doing
 			'spiceByName' => false,
 			'disableSpiceAcceleration' => false,
+			
+			// Custom URL-Handling if the node name isn't the domain the VMs should be accessed with
+			//'spiceHostDomain' => array(
+			//	'node-01.spicehost.ch' => 'node-01.customspicehost.ch',
+			//	'node-02.spicehost.ch' => 'node-02.customspicehost.ch'
+			//),
 		),
 	),
 );
