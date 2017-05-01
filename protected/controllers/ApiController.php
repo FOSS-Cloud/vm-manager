@@ -125,14 +125,14 @@ class ApiController extends Controller
         }
 
         // Display result
-        (new JsonFormatter(HttpStatusCode::BAD_REQUEST, 200031))->setData(array("vms" => $result))->display();
+        (new JsonFormatter(HttpStatusCode::SUCCESS, 200031))->setData(array("vms" => $result))->display();
     }
 
     public function actionVmAssign()
     {
         $this->apiBackend->checkAuthentification(Yii::app()->request->getQuery("realm"));
 
-        (new JsonFormatter(HttpStatusCode::BAD_REQUEST, 200031))->setData(array("vm" => $this->apiBackend->assignVm(Yii::app()->request->getQuery("pool"))))->display();
+        (new JsonFormatter(HttpStatusCode::SUCCESS, 200031))->setData(array("vm" => $this->apiBackend->assignVm(Yii::app()->request->getQuery("pool"))))->display();
     }
 
     /**
