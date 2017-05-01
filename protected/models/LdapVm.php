@@ -156,6 +156,7 @@ class LdapVm extends CLdapRecord {
 			$params['devices']['interfaces'][$interface->sstInterface]['sstSourceBridge'] = $interface->sstSourceBridge;
 			$params['devices']['interfaces'][$interface->sstInterface]['sstType'] = $interface->sstType;
 		}
+
 		return $params;
 	}
 
@@ -178,17 +179,17 @@ class LdapVm extends CLdapRecord {
 	/**
 	 * is there a backup running for this vm
 	 * @return boolean
-	 * 
+	 *
 	 * @copyright Copyright (c) 2014, stepping stone GmbH, Switzerland, http://www.stepping-stone.ch, support@stepping-stone.ch
 	 */
 	public function hasActiveBackup() {
 		$single = LdapVmSingleBackup::model();
 		$single->branchDn = $this->getDn(); // Don't use 'ou=backup,' . $this->getDn(); because there might be no backup branch
 		$active = $single->findAll(array('filterName' => 'active', 'depth' => true));
-				
+
 		return 0 < count($active);
 	}
-	
+
 	/**
 	 * @return array customized attribute labels (name=>label)
 	 */
@@ -226,7 +227,7 @@ class LdapVm extends CLdapRecord {
 		}
 		else if(Yii::app()->user->hasRight($type . 'VM', COsbdUser::$RIGHT_ACTION_VIEW, COsbdUser::$RIGHT_VALUE_OWNER)) {
 			$user = Yii::app()->user->getLdapUser();
-			
+
 			//echo 'User: ' . $user->cn . '(' . $user->uid . ')<br/>';
 			$groups = $user->sstGroupUID;
 			//echo '<pre>groups ' . print_r($groups, true) . '</pre>';
@@ -236,7 +237,7 @@ class LdapVm extends CLdapRecord {
 			//echo '<pre>criteria init ' . print_r($criteriaVms, true) . '</pre>';
 			if (!isset($criteria['attr']['sstVirtualMachinePool'])) {
 				$assignedPools = LdapVmPool::getAssignedPools($type);
-	
+
 				//echo '<h1>VMs</h1>';
 				foreach($assignedPools as $pool) {
 					$pools[] = $pool->sstVirtualMachinePool;
@@ -260,7 +261,7 @@ class LdapVm extends CLdapRecord {
 				}
 				$criteriaVms['attr']['sstVirtualMachinePool'] = $pools;
 			}
-			
+
 			//echo '<pre>criteria ' . print_r($criteriaVms, true) . '</pre>';
 			if (0 < count($pools)) {
 				$vms = LdapVm::model()->findAll($criteriaVms);
@@ -276,7 +277,7 @@ class LdapVm extends CLdapRecord {
 				$criteriaVms['relattr'] = array();
 				$criteriaVms['relattr']['groups'] = array('ou' => $groups);
 				//echo '<pre>criteria ' . print_r($criteria, true) . '</pre>';
-					
+
 				$vms = LdapVm::model()->findAll($criteriaVms);
 				//echo 'group vmcount ' . count($vms) . '<br/>';
 				foreach($vms as $vm) {
@@ -286,12 +287,12 @@ class LdapVm extends CLdapRecord {
 					}
 				}
 			}
-	
+
 			$criteriaVms = $criteria;
 			$criteriaVms['relattr'] = array();
 			$criteriaVms['relattr']['people'] = array('ou' => $user->uid);
 			//echo '<pre>criteria ' . print_r($criteriaVms, true) . '</pre>';
-					
+
 			$vms = LdapVm::model()->findAll($criteriaVms);
 			//echo 'people vmcount ' . count($vms) . '<br/>';
 			foreach($vms as $vm) {
@@ -307,7 +308,7 @@ class LdapVm extends CLdapRecord {
 		}
 		return $unique_vms;
 	}
-	
+
 	public static function getPoolsFromAssignedVms($type, $alsoFromPools=false, $attr=array()) {
 		$pools = array();
 		$vms = self::getAssignedVms($type, $attr);
@@ -321,7 +322,7 @@ class LdapVm extends CLdapRecord {
 		//foreach($pools as $pool) {
 		//	echo '<pre>	' . $pool->sstVirtualMachinePool . ', ' . $pool->sstDisplayName . '</pre>';
 		//}
-		
+
 		return $pools;
 	}
 }

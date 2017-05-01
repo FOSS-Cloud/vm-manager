@@ -7,6 +7,7 @@
  *
  * Authors:
  *  Christian Wittkowski <wittkowski@devroom.de>
+ *  Sören Busse <soeren.2011@live.de>
  *
  * Licensed under the EUPL, Version 1.1 or higher - as soon they
  * will be approved by the European Commission - subsequent
@@ -34,7 +35,7 @@
 
 $config = CMap::mergeArray(require(dirname(__FILE__).'/vm_config.php'), require(dirname(__FILE__).'/modules_config.php'));
 return CMap::mergeArray(
-    $config,
+	$config,
 	array(
 	'basePath' => dirname(__FILE__) . DIRECTORY_SEPARATOR . '..',
 	'name' => 'FOSS-Cloud',
@@ -67,9 +68,20 @@ return CMap::mergeArray(
 			'rules' => array(
 				'' => 'site/login',
 				'site/page/<view:\w+>'=>'site/page',
-						
+
+				// Foss-REST API patterns
+				'api/user/login(/realm/<realm:\w+>)?' => array('api/userLogin', 'verb' => 'GET'),
+				'api/server/realms' => array('api/serverRealms', 'verb' => 'GET'),
+				'api/vm/list(/<type:\w+>)?(/realm/<realm:\w+>)?' => array('api/vmList', 'verb' => 'GET'),
+				'api/vm/assign/<pool:([^\/]+)>(/realm/<realm:\w+>)?' => array('api/vmAssign', 'verb' => 'GET'),
+
+				// TODO: Workaround. Is this the proper way to disable the direct access to the api-actions?
+				// Redirect all unkown actions to the error action
+				'api/<action:.*>' => 'api/error',
+
+
 				'<module:\w+>/<controller:\w+>/<action:\w+>'=>'<module>/<controller>/<action>',
-				
+
 				'<controller:\w+>/<id:\d+>'=>'<controller>/view',
 				'<controller:\w+>/<action:\w+>/<id:\d+>'=>'<controller>/<action>',
 				'<controller:\w+>/<action:\w+>/<id:\d+>/<cid:\d+>'=>'<controller>/<action>',
@@ -82,8 +94,8 @@ return CMap::mergeArray(
 		),
 		'errorHandler'=>array(
 			// use 'site/error' action to display errors
-            'errorAction'=>'site/error',
-        ),
+			'errorAction'=>'site/error',
+		),
 		'log'=>array(
 			'class'=>'CLogRouter',
 			'routes'=>array(
@@ -110,7 +122,7 @@ return CMap::mergeArray(
 // 		),      
 		'clientScript' => array(
 			'scriptMap' => array(
- 				'jquery.js' => '/vm-manager/js/jquery-1.7.1.min.js',
+				'jquery.js' => '/vm-manager/js/jquery-1.7.1.min.js',
 				'jquerynew.js' => '/vm-manager/js/jquery-1.8.3.js',
 				'jqueryuinew.js' => '/vm-manager/js/jquery-ui-1.9.2.custom.min.js',
 				'globalize.js' => '/vm-manager/js/globalize.js',
