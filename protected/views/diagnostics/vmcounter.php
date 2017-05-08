@@ -118,8 +118,8 @@ else {
                                                      
 
 FOSS-Group GmbH
-Bismarckalle 9
-D-79098 Freiburg i.Br.
+Riedstrasse 29
+CH-2544 Bettlach
 
 
 
