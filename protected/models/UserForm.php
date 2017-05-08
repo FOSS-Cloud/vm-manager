@@ -48,7 +48,7 @@ class UserForm extends CFormModel {
 			array('password, passwordcheck, gender, telephone, language, usergroups', 'safe', 'on' => 'update'),
 			array('surname, givenname, username, mail, password, passwordcheck, userrole', 'required', 'on' => 'create'),
 			array('dn, gender, telephone, language, usergroups', 'safe', 'on' => 'create'),
-			array('username', 'match', 'pattern' => '/^[a-z0-9_]*$/', 'message' => Yii::t('user', 'Please use only<br/>a-z, 0-9 and the _ character.')),
+			array('username', 'match', 'pattern' => '/^[a-z0-9_.]*$/', 'message' => Yii::t('user', 'Please use only<br/>a-z, 0-9 and the _ character.')),
 			array('mail', 'email'),
 			array('telephone, mobile', 'match', 'pattern' => '/^[0-9\s\+\/\(\)]*$/', 'message' => Yii::t('user', 'Please use only<br/>"0-9+()" characters and blank.')),
 			array('passwordcheck', 'compare', 'compareAttribute' => 'password', 'allowEmpty' => true, 'on' => 'update'),
