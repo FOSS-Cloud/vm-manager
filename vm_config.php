@@ -29,53 +29,57 @@
  */
 
 return array(
-	// application components
-	'components'=>array(
-		'log'=>array(
-			'routes'=>array(
-				// uncomment the following to log messages for ldap actions
+    // application components
+    'components' => array(
+        'log' => array(
+            'routes' => array(
+                // uncomment the following to log messages for ldap actions
 //				array(
 //					'class' => 'CFileLogRoute',
 //					'levels' => 'profile',
 //					'categories' => 'ext.ldaprecord.*',
 //					'logFile' => 'ldaprecord.log'
 //				),
-				// uncomment the following to log messages for libvirt actions
+                // uncomment the following to log messages for libvirt actions
 //				array(
 //					'class' => 'CFileLogRoute',
 //					'levels' => 'profile',
 //					'categories' => 'phplibvirt',
 //					'logFile' => 'phplibvirt.log'
 //				),
-				array(
-					'class'=>'ext.ESysLogRoute',
-					'logName'=>'vm-manager',
-					'logFacility'=>LOG_LOCAL0,
-					'levels'=>'warning',
-					'categories' => 'ext.ldaprecord.* phplibvirt.log',
-				),
-			),
-		),
+                array(
+                    'class' => 'ext.ESysLogRoute',
+                    'logName' => 'vm-manager',
+                    'logFacility' => LOG_LOCAL0,
+                    'levels' => 'warning',
+                    'categories' => 'ext.ldaprecord.* phplibvirt.log',
+                ),
+            ),
+        ),
 		'ldap'=>array(
-                        'class' => 'ext.ldaprecord.LdapComponent',
-                        'serverclass' => 'COsbdLdapServer',
-                        'server' => 'ldaps://<FOSS-CLOUD-LDAP-HOSTNAME>/',
-                        'port' => 636,
-                        'bind_rdn' => 'cn=Manager,dc=foss-cloud,dc=org',
-                        'bind_pwd' => '<FOSS-CLOUD-LDAP-PASSWORD>',
-                        'base_dn' => 'dc=foss-cloud,dc=org',
-                        'passwordtype' => 'SHA',
+			'class' => 'ext.ldaprecord.LdapComponent',
+			'serverclass' => 'COsbdLdapServer',
+			'server' => 'ldaps://<FOSS-CLOUD-LDAP-HOSTNAME>/',
+			'port' => 636,
+			'bind_rdn' => 'cn=Manager,dc=foss-cloud,dc=org',
+			'bind_pwd' => '<FOSS-CLOUD-LDAP-PASSWORD>',
+			'base_dn' => 'dc=foss-cloud,dc=org',
+			'passwordtype' => 'SHA',
 		),
-	),
+    ),
 
-	// application-level parameters that can be accessed
-	// using Yii::app()->params['paramName']
-	'params'=>array(
-		'virtualization' => array(
-			'version' => '1.3.1.4',
-			// Don't change the following params if you don't know what you are doing
-			'spiceByName' => false,
-			'disableSpiceAcceleration' => false,
-		),
-	),
+    // application-level parameters that can be accessed
+    // using Yii::app()->params['paramName']
+    'params' => array(
+        'virtualization' => array(
+            'version' => '1.3.1.4',
+            // Don't change the following params if you don't know what you are doing
+            'spiceByName' => true,
+            'disableSpiceAcceleration' => false,
+        ),
+        'api' => array(
+            'enable' => false,
+            'defaultRealm' => "4000013",
+        ),
+    ),
 );
