@@ -16,9 +16,9 @@ return array(
 	),
 	'modules' => array(
 		'api' => array(
-			'enable' => true,
-			'defaultRealm' => "4000020",
-			'macByParameter' => true,
+			'enable' => false,
+			'defaultRealm' => "4000013",
+			'macByParameter' => false,
 		),
 	),
 );
