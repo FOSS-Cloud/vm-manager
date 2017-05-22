@@ -234,6 +234,14 @@ class Utils {
 		return null;
 	}
 
+	public static function isValidMacAddress($macAddress) {
+		if(preg_match("/^([0-9A-Fa-f]{2}[:]){5}([0-9A-Fa-f]{2})$/", $macAddress)) {
+			return true;
+		}
+
+		return false;
+	}
+
 	public static function generatePassword() {
 		return CPhpLibvirt::getInstance()->generateUUID();
 	}
