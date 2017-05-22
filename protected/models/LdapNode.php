@@ -88,6 +88,15 @@ class LdapNode extends CLdapRecord {
 	}
 
 	public function getSpiceIp() {
+		// Should a custom spice host be used?
+		if(array_key_exists('spiceHostDomain', Yii::app()->params['virtualization'])) {
+			// Does an assignment exists for this node name?
+			if(array_key_exists($this->getName(), Yii::app()->params['virtualization']['spiceHostDomain'])) {
+				// Returns the assigned custom URL for this node
+				return Yii::app()->params['virtualization']['spiceHostDomain'][$this->getName()];
+			}
+		}
+
 		$ip = (Yii::app()->params['virtualization']['spiceByName'] ? $this->getName() : $this->getVLanIP('pub'));
 		if ('0.0.0.0' == $ip) {
 			$ip = $_SERVER['SERVER_ADDR'];
