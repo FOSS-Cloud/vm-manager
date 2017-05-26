@@ -297,6 +297,16 @@ class LdapVmPool extends CLdapRecord {
 		return $retval;
 	}
 
+	public function hasPermissionForPool() {
+		//echo $this->sstVirtualMachinePool;
+		foreach (LdapVmPool::getAssignedPools() as $pool) {
+			if($pool->sstVirtualMachinePool == $this->sstVirtualMachinePool)
+				return true;
+		}
+
+		return false;
+	}
+
 	public static function getAssignedPools($type=null, $attr=array()) {
 		$unique_pools = array();
 		if (Yii::app()->user->hasRight('vmPool', COsbdUser::$RIGHT_ACTION_VIEW, COsbdUser::$RIGHT_VALUE_ALL)) {

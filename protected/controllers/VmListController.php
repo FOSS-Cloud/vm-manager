@@ -281,13 +281,17 @@ class VmListController extends Controller
 		$vmpool = CLdapRecord::model('LdapVmPool')->findByDn($dn);
 
 		if (!is_null($vmpool)) {
-			$vm = $vmpool->getFreeVm();
-			if (!is_null($vm)) {
-				$vm->assignUser();
-				$json = array('err' => false, 'message' => 'VM found!', 'spiceuri' => $vm->getSpiceUri());
-			}
-			else {
-				$json = array('err' => true, 'message' => <<<EOS
+
+		    // Checks whether the user has access to this pool -> security fix
+		    //if(!$vmpool->hasPermissionForPool()) {
+			//	$json = array('err' => true, 'message' => 'No permission for this pool');
+            //} else {
+				$vm = $vmpool->getFreeVm();
+				if (!is_null($vm)) {
+					$vm->assignUser();
+					$json = array('err' => false, 'message' => 'VM found!', 'spiceuri' => $vm->getSpiceUri());
+				} else {
+					$json = array('err' => true, 'message' => <<<EOS
 Two parameters must be taken into account in which always the lower has precedence:<br/><br/>
 
 <ul>
@@ -297,12 +301,14 @@ Two parameters must be taken into account in which always the lower has preceden
 There is currently no free workplace. Contact your administrator or try it again
 later.
 EOS
-				);
-			}
+					);
+				}
+			//}
 		}
 		else {
 			$json = array('err' => true, 'message' => 'VM Pool ' . $dn . ' not found!');
 		}
+
 		$this->sendJsonAnswer($json);
 	}
 
