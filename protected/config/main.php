@@ -7,6 +7,7 @@
  *
  * Authors:
  *  Christian Wittkowski <wittkowski@devroom.de>
+ *  Sören Busse <soeren.2011@live.de>
  *
  * Licensed under the EUPL, Version 1.1 or higher - as soon they
  * will be approved by the European Commission - subsequent
@@ -33,6 +34,7 @@
 // CWebApplication properties can be configured here.
 
 $config = CMap::mergeArray(require(dirname(__FILE__).'/vm_config.php'), require(dirname(__FILE__).'/modules_config.php'));
+$config = CMap::mergeArray($config, require(dirname(__FILE__).'/api_config.php'));
 return CMap::mergeArray(
     $config,
 	array(
