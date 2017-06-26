@@ -41,6 +41,8 @@ class ApiController extends CController
 
 		// Instantiate the ApiBackend Class
 		$this->apiBackend = new ApiBackend();
+
+		Yii::app()->errorHandler->errorAction='api/api/error';
 	}
 
 	/**

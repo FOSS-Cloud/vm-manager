@@ -46,11 +46,5 @@ class ApiModule extends CWebModule
 		$this->setImport(array(
 			"api.components.*"
 		));
-
-		Yii::app()->setComponents(array(
-			'errorHandler' => array(
-				'errorAction' => 'api/api/error',
-			),
-		));
 	}
 }
