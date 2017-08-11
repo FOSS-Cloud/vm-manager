@@ -29,8 +29,9 @@
  *
  */
 
-class ApiController extends CController
+class ApiController extends Controller
 {
+
 	// All API backend methods
 	private $apiBackend;
 
