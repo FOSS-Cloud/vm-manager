@@ -251,6 +251,9 @@ class CPhpLibvirt {
 	<uuid>{$data[\'sstUuid\']}</uuid>
 	<memory>{$data[\'sstMemory\']}</memory>
 	<vcpu>{$data[\'sstVCPU\']}</vcpu>
+	<cpu>
+  		<topology sockets=\"1\" cores=\"{$data[\'sstVCPU\']}\" threads=\'1\'/>
+	</cpu>
 	<os>
 		<type arch=\"{$data[\'sstOSArchitecture\']}\" machine=\"{$data[\'sstOSMachine\']}\">{$data[\'sstOSType\']}</type>
 		<boot dev=\"{$data[\'sstOSBootDevice\']}\"/>
